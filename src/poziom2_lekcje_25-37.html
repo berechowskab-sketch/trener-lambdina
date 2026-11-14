@@ -1,0 +1,1725 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lambdin — trener zaawansowany (morfologia, lekcje 25–37)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EBDD;--surface:#FBF7EE;--surface-2:#F6F0E3;
+    --ink:#22262F;--indigo:#2A3450;--verdigris:#2C6E63;--verdigris-soft:#E1EDE9;
+    --gold:#A9803A;--muted:#8A8270;--line:#DCD3BF;
+    --shadow:0 1px 2px rgba(40,30,10,.05),0 12px 30px -18px rgba(40,30,10,.35);
+    --he:'Frank Ruhl Libre',serif;--serif:'Spectral',Georgia,serif;--sans:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(120% 80% at 50% -10%, #F7F2E7 0%, var(--paper) 55%) fixed;color:var(--ink);font-family:var(--serif);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:780px;margin:0 auto;padding:26px 18px 60px}
+  header.masthead{text-align:center;margin-bottom:18px}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--verdigris);font-weight:600}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,5vw,30px);margin:.18em 0 .1em;letter-spacing:-.01em}
+  .sub{font-family:var(--sans);font-size:13px;color:var(--muted)}
+  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--line) 18%,var(--line) 82%,transparent);margin:18px 0}
+  .controls{display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
+  .label{font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-right:4px;align-self:center}
+  .chip{font-family:var(--sans);font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 13px;border-radius:999px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--verdigris)}
+  .chip[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+  .modes .chip[aria-pressed="true"]{background:var(--verdigris);border-color:var(--verdigris)}
+  .sub-toggle .chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#F6F2E7}
+  .chip:disabled{opacity:.35;cursor:default}
+  .stage{margin-top:18px;min-height:300px}
+  .deckbar{display:flex;justify-content:space-between;align-items:center;font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:10px}
+  .deckbar .meter{height:5px;flex:1;margin:0 12px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .deckbar .meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--verdigris),var(--gold));width:0;transition:width .3s}
+  /* parsing card */
+  .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:30px 24px 24px;text-align:center;cursor:pointer;min-height:280px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+  .corner{position:absolute;top:14px;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .corner.l{left:18px}.corner.r{right:18px}.corner.r .cat{color:var(--verdigris)}
+  .he{font-family:var(--he);direction:rtl;unicode-bidi:isolate;font-size:clamp(52px,14vw,78px);line-height:1.18;font-weight:500;color:var(--ink);padding-top:4px}
+  .lemma-hint{font-family:var(--sans);font-size:12px;color:var(--muted)}
+  .lemma-hint b{font-family:var(--he);font-weight:400;font-size:17px;color:var(--gold)}
+  .hint{font-family:var(--sans);font-size:12px;color:var(--muted)}
+  .back{border-top:1px dashed var(--line);margin-top:4px;padding-top:14px}
+  .translit{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--verdigris)}
+  .pl{font-family:var(--serif);font-size:22px;font-weight:600;margin-top:4px;color:var(--ink)}
+  .parsebar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
+  .tag{font-family:var(--sans);font-size:12px;font-weight:500;border-radius:7px;padding:4px 9px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink)}
+  .tag.binyan{background:var(--verdigris);border-color:var(--verdigris);color:#F6F2E7}
+  .tag.form{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+  .tag.root{font-family:var(--he);font-size:15px;direction:rtl;background:#F4ECD8;border-color:var(--gold);color:var(--ink)}
+  .tag.cls{background:#EAEFE0;border-color:#9DAE7E;color:#4C5A36}
+  .lemma-line{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:10px}
+  .lemma-line b{font-family:var(--he);font-weight:400;font-size:17px;color:var(--ink)}
+  .lemma-line i{font-style:italic;color:var(--verdigris)}
+  .note-wrap{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:8px;font-style:italic}
+  .known-flag{position:absolute;bottom:10px;left:0;right:0;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);opacity:0}
+  .card.is-known .known-flag{opacity:1}
+  .deck-actions{display:flex;gap:10px;margin-top:14px}
+  .btn{flex:1;font-family:var(--sans);font-size:14px;font-weight:600;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:.15s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.again{color:var(--indigo)}
+  .btn.know{background:var(--verdigris);border-color:var(--verdigris);color:#F6F2E7}
+  .navmini{display:flex;justify-content:center;gap:18px;margin-top:12px;font-family:var(--sans);font-size:13px}
+  .navmini button{background:none;border:none;color:var(--verdigris);cursor:pointer;font-weight:600;font-family:var(--sans);font-size:13px;padding:6px}
+  .navmini button:disabled{color:var(--line);cursor:default}
+  /* quiz */
+  .quiz .he{font-size:clamp(48px,12vw,68px)}
+  .q-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:26px 20px;text-align:center}
+  .q-prompt{font-family:var(--sans);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .options{display:flex;flex-direction:column;gap:9px;margin-top:18px}
+  .opt{font-family:var(--sans);font-size:15px;text-align:left;padding:12px 15px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;transition:.12s}
+  .opt:hover{border-color:var(--verdigris)}
+  .opt.correct{background:var(--verdigris-soft);border-color:var(--verdigris);color:#1d4d45;font-weight:600}
+  .opt.wrong{background:#F6E5DF;border-color:#C77B5E;color:#8a3d22}
+  .opt:disabled{cursor:default}
+  .score{font-family:var(--sans);font-size:13px;color:var(--muted);text-align:center;margin-top:16px}
+  .next-q{margin-top:14px;text-align:center}
+  /* paradigms */
+  .empty{text-align:center;font-family:var(--sans);font-size:14px;color:var(--muted);padding:40px 10px}
+  .para{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px 18px 8px;margin-bottom:20px}
+  .para h3{font-family:var(--serif);font-weight:600;font-size:18px;margin:0 0 2px}
+  .para .meta{font-family:var(--sans);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--verdigris);margin-bottom:12px}
+  .para table{width:100%;border-collapse:collapse}
+  .para td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:baseline}
+  .para td.h{font-family:var(--he);direction:rtl;font-size:26px;width:30%;white-space:nowrap;line-height:1.25}
+  .para td.t{font-family:var(--serif);font-style:italic;color:var(--verdigris);font-size:14px;width:30%}
+  .para td.g{font-family:var(--sans);font-size:12.5px;color:var(--muted)}
+  .para .twocol{display:grid;grid-template-columns:1fr 1fr;gap:6px 22px}
+  @media(max-width:560px){.para .twocol{grid-template-columns:1fr}}
+  .para .colhead{font-family:var(--sans);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);padding:4px 6px 2px;border-bottom:1px solid var(--gold)}
+  /* list */
+  .lemgroup{margin-bottom:22px}
+  .lemgroup .lh{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:4px}
+  .lemgroup .lh .lhe{font-family:var(--he);direction:rtl;font-size:26px;color:var(--ink)}
+  .lemgroup .lh .ltr{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--verdigris)}
+  .lemgroup .lh .lpl{font-family:var(--sans);font-size:12px;color:var(--muted);margin-left:auto;text-align:right}
+  .lrow{display:flex;align-items:baseline;gap:10px;padding:7px 4px;border-bottom:1px solid var(--line)}
+  .lrow .lhe2{font-family:var(--he);direction:rtl;font-size:24px;min-width:34%;line-height:1.3}
+  .lrow .ltr2{font-family:var(--serif);font-style:italic;color:var(--verdigris);font-size:13.5px;min-width:24%}
+  .lrow .lpl2{font-family:var(--sans);font-size:13px;color:var(--ink);flex:1}
+  .lrow .lpar{font-family:var(--sans);font-size:11px;color:var(--muted);text-align:right;min-width:30%}
+  footer{text-align:center;font-family:var(--sans);font-size:11.5px;color:var(--muted);margin-top:34px;line-height:1.7}
+  .reset{background:none;border:none;color:var(--verdigris);cursor:pointer;font-family:var(--sans);font-size:11.5px;text-decoration:underline}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* --- sesje quizu: podsumowanie --- */
+.qsum{max-width:620px;margin:0 auto}
+.qsum .ring{display:flex;align-items:center;justify-content:center;gap:18px;margin:6px 0 16px;flex-wrap:wrap}
+.qsum .big{font-family:var(--serif);font-size:54px;font-weight:600;line-height:1;color:var(--ink)}
+.qsum .big small{font-size:20px;color:var(--muted);font-weight:400}
+.qsum .verdict{font-family:var(--sans);font-size:13px;color:var(--verdigris);font-weight:600;letter-spacing:.06em}
+.qsum .tiles{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.qsum .tile{flex:1 1 130px;min-width:120px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+.qsum .tile b{display:block;font-family:var(--serif);font-size:23px;font-weight:600;color:var(--ink)}
+.qsum .tile span{font-family:var(--sans);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.qsum h4{font-family:var(--sans);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--verdigris);
+  font-weight:600;margin:18px 0 8px;text-align:left}
+.qsum .misses{display:flex;flex-direction:column;gap:8px;text-align:left}
+.qsum .miss{background:var(--surface);border:1px solid var(--line);border-left:3px solid #B4553F;border-radius:10px;padding:10px 12px}
+.qsum .miss .mhe{font-family:var(--he);font-size:26px;direction:rtl;unicode-bidi:isolate;line-height:1.3}
+.qsum .miss .mtr{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted)}
+.qsum .miss .mrow{font-family:var(--sans);font-size:12.5px;margin-top:4px;line-height:1.5}
+.qsum .miss .good{color:var(--verdigris);font-weight:600}
+.qsum .miss .bad{color:#B4553F;text-decoration:line-through}
+.qsum .allgood{font-family:var(--sans);font-size:13px;color:var(--verdigris);background:var(--surface);
+  border:1px dashed var(--line);border-radius:10px;padding:14px;text-align:center}
+.qsum .acts{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.qsum .lifetime{font-family:var(--sans);font-size:11.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+.qlen{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.qlen span{font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.qlen button{font-family:var(--sans);font-size:12px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.qlen button.on{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Lambdin · Hebrajszczyzna biblijna · wariant zaawansowany</div>
+    <h1>Trener morfologiczny — lekcje 25–37</h1>
+    <div class="sub">Hebrajski → polski · rozbiór gramatyczny form · klasy słabe + biniany · L34–36 imiesłów bierny / liczebniki / składnia / partykuły · L37 binian NIFAL · filtry: klasa rdzenia i binian</div>
+  </header>
+
+  <div class="rule"></div>
+
+  <div class="controls">
+    <div class="row modes" id="modes">
+      <span class="label">Tryb</span>
+      <button class="chip" data-mode="parse" aria-pressed="true">Rozbiór</button>
+      <button class="chip" data-mode="lex" aria-pressed="false">Słownik</button>
+      <button class="chip" data-mode="para" aria-pressed="false">Paradygmaty</button>
+      <button class="chip" data-mode="list" aria-pressed="false">Lista</button>
+    </div>
+
+    <div class="row sub-toggle" id="parseToggle">
+      <span class="label">Rozbiór jako</span>
+      <button class="chip" data-pmode="flash" aria-pressed="true">Fiszka</button>
+      <button class="chip" data-pmode="quiz" aria-pressed="false">Quiz</button>
+    </div>
+
+    <div class="row" id="lessonRow">
+      <span class="label">Lekcja</span>
+      <button class="chip" data-lesson="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-lesson="25">25</button>
+      <button class="chip" data-lesson="26">26</button>
+      <button class="chip" data-lesson="27">27</button>
+      <button class="chip" data-lesson="28">28</button>
+      <button class="chip" data-lesson="29">29</button>
+      <button class="chip" data-lesson="30">30</button>
+      <button class="chip" data-lesson="31">31</button>
+      <button class="chip" data-lesson="32">32</button>
+      <button class="chip" data-lesson="33">33</button>
+      <button class="chip" data-lesson="34">34</button>
+      <button class="chip" data-lesson="35">35</button>
+      <button class="chip" data-lesson="36">36</button>
+      <button class="chip" data-lesson="37">37</button>
+    </div>
+
+    <div class="row" id="catRow">
+      <span class="label">Kategoria</span>
+      <button class="chip" data-cat="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-cat="verb">Czasowniki</button>
+      <button class="chip" data-cat="noun">Rzeczowniki</button>
+    </div>
+
+    <div class="row" id="formRow">
+      <span class="label">Forma</span>
+      <button class="chip" data-form="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-form="impv">imperat.</button>
+      <button class="chip" data-form="juss">jussivus</button>
+      <button class="chip" data-form="coh">cohortat.</button>
+      <button class="chip" data-form="impf">imperf.</button>
+      <button class="chip" data-form="perf">perf.</button>
+      <button class="chip" data-form="ptcp">imiesłów</button>
+      <button class="chip" data-form="ptcpPass">im. bierny</button>
+      <button class="chip" data-form="inf">bezokol.</button>
+      <button class="chip" data-form="infAbs">inf. abs.</button>
+      <button class="chip" data-form="wayyiqtol">waw+impf</button>
+      <button class="chip" data-form="weqatal">waw+perf</button>
+    </div>
+
+    <div class="row" id="binyanRow">
+      <span class="label">Binian</span>
+      <button class="chip" data-binyan="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-binyan="qal">qal</button>
+      <button class="chip" data-binyan="niphal">nifal</button>
+      <button class="chip" data-binyan="piel">piel</button>
+      <button class="chip" data-binyan="hifil">hifil</button>
+      <button class="chip" data-binyan="hitpael">hitpael</button>
+    </div>
+
+    <div class="row" id="clsRow">
+      <span class="label">Klasa rdzenia</span>
+      <button class="chip" data-cls="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-cls="mocny">mocny</button>
+      <button class="chip" data-cls="Igard">I-gardł.</button>
+      <button class="chip" data-cls="IIgard">II-gardł.</button>
+      <button class="chip" data-cls="IIIgard">III-gardł.</button>
+      <button class="chip" data-cls="Ialef">I-alef</button>
+      <button class="chip" data-cls="IIIalef">III-alef</button>
+      <button class="chip" data-cls="Ijod">I-jod</button>
+      <button class="chip" data-cls="Inun">I-nun</button>
+      <button class="chip" data-cls="IIIhe">III-he</button>
+      <button class="chip" data-cls="pusty">pusty</button>
+      <button class="chip" data-cls="podw">podwojony</button>
+    </div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <footer>
+    Wariant zaawansowany trenera do <i>Wprowadzenia do hebrajskiego biblijnego</i> T. O. Lambdina (wyd. polskie).<br>
+    Lekcje 25–37 · kierunek He→Pl · pełna wokalizacja · nacisk na morfologię i słownik.<br>
+    <button class="reset" id="resetBtn">Wyzeruj postęp fiszek</button>
+  </footer>
+</div>
+
+<script>
+/* ============ LEKSEMY (Słowniczek XXV) ============ */
+const LEX = [
+ {id:'25-1',heb:'צָרָה',tr:'ṣārāh',pl:'ucisk, niepokój',pos:'rzeczownik',note:'l.mn. -ôṯ; st. constr. צָרַת'},
+ {id:'25-2',heb:'גְּבֶרֶת',tr:'gəḇéreṯ',pl:'pani, władczyni',pos:'rzeczownik'},
+ {id:'25-3',heb:'עֵדֶר',tr:'ʿēḏer',pl:'trzoda, stado',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'25-4',heb:'זֶרַע',tr:'zéraʿ',pl:'ziarno, potomstwo, potomek',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'25-5',heb:'יָרֵא',tr:'yārēʾ',pl:'bać się, lękać się',pos:'czasownik',note:'+ מִן / מִפְּנֵי'},
+ {id:'25-6',heb:'בָּרַח',tr:'bāraḥ',pl:'uciec',pos:'czasownik',note:'impf. יִבְרַח yiḇraḥ'},
+ {id:'25-7',heb:'שָׁב',tr:'šāḇ',pl:'powrócić, przyjść z powrotem',pos:'czasownik',note:'czasownik pusty'},
+ {id:'25-8',heb:'הָרָה',tr:'hārāh',pl:'począć, zajść w ciążę',pos:'czasownik'},
+ {id:'25-9',heb:'אֵי־מִזֶּה',tr:'ʾê-mizzeh',pl:'skąd?',pos:'przysłówek'},
+ {id:'25-10',heb:'פֶּן־',tr:'pen-',pl:'aby nie',pos:'spójnik',note:'+ imperfectum'},
+ {id:'25-11',heb:'כַּיּוֹם',tr:'kayyôm',pl:'dzisiaj, tego dnia',pos:'przysłówek'},
+ {id:'25-12',heb:'נָא',tr:'nāʾ',pl:'proszę (po rozkaźniku / jussiwie / kohortatiwie)',pos:'partykuła'},
+ {id:'25-13',heb:'הָגָר',tr:'hāḡār',pl:'Hagar (służąca Sary)',pos:'imię własne'},
+ {id:'25-14',heb:'יִשְׁמָעֵאל',tr:'yišmāʿēʾl',pl:'Izmael',pos:'imię własne'},
+ // ---- Słowniczek XXVI ----
+ {id:'26-1',heb:'בֶּגֶד',tr:'béḡeḏ',pl:'ubranie, szata',pos:'rzeczownik',note:'z przyr. בִּגְדִי; l.mn. -îm'},
+ {id:'26-2',heb:'שַׁעַר',tr:'šáʿar',pl:'brama; miejsce zgromadzeń urzędników',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'26-3',heb:'אָסִיר',tr:'ʾāsîr',pl:'więzień',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'26-4',heb:'אָבַד',tr:'ʾāḇaḏ',pl:'zginąć, być zniszczonym, umrzeć',pos:'czasownik',note:'I-alef; impf. יֹאבַד yōʾḇaḏ'},
+ {id:'26-5',heb:'אָחַז',tr:'ʾāḥaz',pl:'chwycić, złapać, trzymać',pos:'czasownik',note:'I-alef; impf. יֹאחֵז / יֶאֱחֹז'},
+ {id:'26-6',heb:'אָסַר',tr:'ʾāsar',pl:'związać, uwięzić',pos:'czasownik',note:'I-alef; impf. יֶאֱסֹר yeʾĕsōr'},
+ {id:'26-7',heb:'אָהַב',tr:'ʾāhaḇ',pl:'kochać',pos:'czasownik',note:'I-alef; impf. יֶאֱהַב yeʾĕhaḇ'},
+ {id:'26-8',heb:'קָרַע',tr:'qāraʿ',pl:'rozedrzeć',pos:'czasownik',note:'impf. יִקְרַע yiqraʿ'},
+ {id:'26-9',heb:'פָּתַח',tr:'pāṯaḥ',pl:'otworzyć',pos:'czasownik',note:'impf. יִפְתַּח yip̄taḥ'},
+ {id:'26-10',heb:'סָגַר',tr:'sāḡar',pl:'zamknąć',pos:'czasownik',note:'impf. יִסְגֹּר yisgōr'},
+ {id:'26-11',heb:'גָּדַל',tr:'gāḏal',pl:'być/stać się wielkim; urosnąć, dojrzeć',pos:'czasownik',note:'impf. יִגְדַּל yiḡdal'},
+ // ---- Słowniczek XXVII ----
+ {id:'27-1',heb:'זְקוּנִים',tr:'zəqûnîm',pl:'starość',pos:'rzeczownik',note:'tylko l.mn., w znaczeniu l.poj.'},
+ {id:'27-2',heb:'בְּאֵר',tr:'bəʾēr',pl:'studnia, dół',pos:'rzeczownik',note:'l.mn. -ôṯ; st. constr. l.mn. בְּאֵרוֹת'},
+ {id:'27-3',heb:'עֳנִי',tr:'ʿŏnî',pl:'ucisk',pos:'rzeczownik',note:'§112 (typ פְּרִי)'},
+ {id:'27-4',heb:'פָּקַד',tr:'pāqaḏ',pl:'zwrócić uwagę na; nawiedzić; ustanowić; dokonać przeglądu; ukarać, pomścić',pos:'czasownik',note:'impf. יִפְקֹד yip̄qōḏ'},
+ {id:'27-5',heb:'רַע',tr:'raʿ',pl:'być złym',pos:'czasownik',note:'rdzeń רעע; por. תַּם §87'},
+ {id:'27-6',heb:'תָּעָה',tr:'tāʿāh',pl:'błądzić, błąkać się',pos:'czasownik',note:'III-he'},
+ {id:'27-7',heb:'כָּלָה',tr:'kālāh',pl:'być skończonym, wyczerpanym; kończyć się',pos:'czasownik',note:'III-he'},
+ {id:'27-8',heb:'אַחֲרֵי כֵן',tr:'ʾaḥărê ḵēn',pl:'następnie, po tym',pos:'przysłówek'},
+ {id:'27-9',heb:'מַה־לְּךָ',tr:'mah-ləḵā',pl:'Co się z tobą dzieje?',pos:'idiom'},
+ {id:'27-10',heb:'יִצְחָק',tr:'yiṣḥāq',pl:'Izaak (syn Abrahama i Sary)',pos:'imię własne'},
+ // ---- Słowniczek XXVIII ----
+ {id:'28-1',heb:'יָכֹל',tr:'yāḵōl',pl:'być w stanie, móc; (+ לְ) pokonać, odnieść zwycięstwo',pos:'czasownik',note:'impf. יוּכַל yûḵal'},
+ {id:'28-2',heb:'חָפֵץ',tr:'ḥāp̄ēṣ',pl:'mieć upodobanie (w czymś), lubić; pragnąć (+ bezokol.)',pos:'czasownik',note:'impf. יַחְפֹּץ yaḥpōṣ'},
+ {id:'28-3',heb:'חָדַל',tr:'ḥāḏal',pl:'przestać, zatrzymać się; zaprzestać (robienia czegoś: + bezokol.)',pos:'czasownik',note:'impf. יֶחְדַּל yeḥdal'},
+ {id:'28-4',heb:'תַּם',tr:'tam',pl:'być skończonym, dobiec końca; skończyć (robienie czegoś: + bezokol.)',pos:'czasownik',note:'§87; czasownik podwojony'},
+ {id:'28-5',heb:'אָסַף',tr:'ʾāsap̄',pl:'zebrać, zgromadzić',pos:'czasownik',note:'I-alef; impf. יֶאֱסֹף yeʾĕsōp̄'},
+ {id:'28-6',heb:'תֹּאַר',tr:'tṓʾar',pl:'forma, kształt, wygląd',pos:'rzeczownik'},
+ {id:'28-7',heb:'מִשְׁתֶּה',tr:'mišteh',pl:'uczta',pos:'rzeczownik',note:'rzeczownik na -eh (§116)'},
+ {id:'28-8',heb:'אַהֲבָה',tr:'ʾahăḇāh',pl:'miłość',pos:'rzeczownik',note:'używany jako inf. constr. czas. אָהַב'},
+ {id:'28-9',heb:'אֵם',tr:'ʾēm',pl:'matka',pos:'rzeczownik',note:'z sufiksem אִמִּי; l.mn. -ôṯ'},
+ // ---- Słowniczek XXIX ----
+ {id:'29-1',heb:'מְגוּרִים',tr:'məḡûrîm',pl:'miejsce zamieszkania, przebywania; siedziba',pos:'rzeczownik',note:'tylko l.mn.'},
+ {id:'29-2',heb:'כְּתֹנֶת',tr:'kəṯṓneṯ',pl:'tunika',pos:'rzeczownik',note:'l.mn. -ôṯ; też כֻּתֹּנֶת'},
+ {id:'29-3',heb:'נֵדֶר',tr:'néḏer',pl:'ślub, przysięga',pos:'rzeczownik',note:'z przyr. נִדְרִי; l.mn. -îm'},
+ {id:'29-4',heb:'תּוֹלְדוֹת',tr:'tôləḏôṯ',pl:'genealogia, historia',pos:'rzeczownik',note:'tylko l.mn.'},
+ {id:'29-5',heb:'יִגַּשׁ',tr:'yiggaš',pl:'zbliżyć się (zazw. + אֶל)',pos:'czasownik',note:'I-nun; brak perfectum'},
+ {id:'29-6',heb:'נָדַר',tr:'nāḏar',pl:'ślubować, przysięgać',pos:'czasownik',note:'I-nun; impf. יִדֹּר yiddōr'},
+ {id:'29-7',heb:'גָּעַר',tr:'gāʿar',pl:'karcić, upominać',pos:'czasownik',note:'II-gardłowa; impf. יִגְעַר yiḡʿar'},
+ {id:'29-8',heb:'שָׂנֵא',tr:'śānēʾ',pl:'nienawidzić',pos:'czasownik',note:'III-alef; impf. יִשְׂנָא yiśnāʾ'},
+ {id:'29-9',heb:'הַב',tr:'haḇ',pl:'daj! dalejże! chodźmy!',pos:'czasownik',note:'czasownik ułomny, tylko tryb rozkazujący'},
+ {id:'29-10',heb:'נָשָׂא',tr:'nāśāʾ',pl:'podnieść, unieść, nieść',pos:'czasownik',note:'I-nun + III-alef; impf. יִשָּׂא yiśśāʾ'},
+ {id:'29-11',heb:'צָעִיר',tr:'ṣāʿîr',pl:'młody, mały',pos:'przymiotnik'},
+ {id:'29-12',heb:'שְׁנַיִם',tr:'šənáyim',pl:'dwa (r.m.)',pos:'liczebnik',note:'st. constr. שְׁנֵי šənê'},
+ {id:'29-13',heb:'שְׁתַּיִם',tr:'štáyim',pl:'dwie (r.ż.)',pos:'liczebnik',note:'st. constr. שְׁתֵּי štê'},
+ {id:'29-14',heb:'רָחֵל',tr:'rāḥēl',pl:'Rachela',pos:'imię własne'},
+ {id:'29-15',heb:'לֵאָה',tr:'lēʾāh',pl:'Lea',pos:'imię własne'},
+ {id:'29-16',heb:'לָבָן',tr:'lāḇān',pl:'Laban',pos:'imię własne'},
+ {id:'29-17',heb:'יַעֲקֹב',tr:'yaʿăqōḇ',pl:'Jakub',pos:'imię własne'},
+ // ---- Słowniczek XXX ----
+ {id:'30-1',heb:'שָׁלוֹם',tr:'šālôm',pl:'pokój, zdrowie, pomyślność',pos:'rzeczownik',note:'idiom שָׁאַל לְשָׁלוֹם לְ — spytać o powodzenie'},
+ {id:'30-2',heb:'עֵמֶק',tr:'ʿḗmeq',pl:'dolina, nizina',pos:'rzeczownik',note:'l.mn. -îm; +przyr. עִמְקִי'},
+ {id:'30-3',heb:'בַּעַל',tr:'báʿal',pl:'pan, władca, właściciel, mąż',pos:'rzeczownik',note:'l.mn. -îm; też imię bóstwa Baal'},
+ {id:'30-4',heb:'רָחוֹק',tr:'rāḥôq',pl:'odległy, daleki; dawny',pos:'przymiotnik',note:'מֵרָחוֹק — z daleka'},
+ {id:'30-5',heb:'קָרוֹב',tr:'qārôḇ',pl:'bliski, niedaleki (czemuś: + אֶל)',pos:'przymiotnik'},
+ {id:'30-6',heb:'קָרַב',tr:'qāraḇ',pl:'być blisko, podchodzić, zbliżać się',pos:'czasownik',note:'impf. יִקְרַב; + בְּ / לְ / אֶל'},
+ {id:'30-7',heb:'יָשֵׁן',tr:'yāšēn',pl:'spać',pos:'czasownik',note:'I-jod; impf. יִישַׁן yîšan'},
+ {id:'30-8',heb:'שָׁאַל',tr:'šāʾal',pl:'pytać, prosić (o coś / kogoś)',pos:'czasownik',note:'impf. יִשְׁאַל'},
+ {id:'30-9',heb:'עָנָה',tr:'ʿānāh',pl:'odpowiadać; (+ בְּ) zeznawać przeciwko',pos:'czasownik',note:'III-he'},
+ {id:'30-10',heb:'טֶרֶם',tr:'ṭérem',pl:'zanim, jeszcze nie',pos:'spójnik',note:'też בְּטֶרֶם; zwykle + imperfectum'},
+ {id:'30-11',heb:'יִשְׂרָאֵל',tr:'yiśrāʾēl',pl:'Izrael (Jakub; nazwa ludu)',pos:'imię własne'},
+ {id:'30-12',heb:'יוֹסֵף',tr:'yôsēp̄',pl:'Józef',pos:'imię własne'},
+ // ---- Słowniczek XXXI ----
+ {id:'31-1',heb:'בּוֹר',tr:'bôr',pl:'dół, cysterna; (przen.) grób',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'31-2',heb:'רֵעַ',tr:'rēaʿ',pl:'przyjaciel, towarzysz',pos:'rzeczownik',note:'l.mn. -îm; st. constr. רֵעֵי; +3ms רֵעֵהוּ'},
+ {id:'31-3',heb:'שִׂמְלָה',tr:'śimlāh',pl:'wierzchnia szata, płaszcz',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'31-4',heb:'שָׁפַךְ',tr:'šāp̄aḵ',pl:'rozlewać, przelewać (krew)',pos:'czasownik',note:'impf. יִשְׁפֹּךְ'},
+ {id:'31-5',heb:'תָּפַשׂ',tr:'tāp̄aś',pl:'chwycić, złapać',pos:'czasownik',note:'impf. יִתְפֹּשׂ'},
+ {id:'31-6',heb:'נָטָה',tr:'nāṭāh',pl:'wyciągnąć; rozbić (namiot); skręcić, zboczyć',pos:'czasownik',note:'I-nun + III-he; impf. יִטֶּה'},
+ {id:'31-7',heb:'בָּכָה',tr:'bāḵāh',pl:'płakać, opłakiwać',pos:'czasownik',note:'III-he; impf. יִבְכֶּה'},
+ {id:'31-8',heb:'שָׁחַט',tr:'šāḥaṭ',pl:'zarżnąć (zwykle zwierzę); dokonać rzezi',pos:'czasownik',note:'impf. יִשְׁחַט'},
+ {id:'31-9',heb:'עַתָּה',tr:'ʿattāh',pl:'teraz, więc, następnie',pos:'przysłówek'},
+ {id:'31-10',heb:'רֵיק',tr:'rêq',pl:'pusty, bezwartościowy, próżny',pos:'przymiotnik'},
+ {id:'31-11',heb:'דּוֹתָן',tr:'dôṯān',pl:'Dotan (miasto ok. 20 km na płn. od Sychem)',pos:'imię własne'},
+ {id:'31-12',heb:'רְאוּבֵן',tr:'rəʾûḇēn',pl:'Ruben (pierworodny syn Jakuba i Lei)',pos:'imię własne'},
+ // ---- Słowniczek XXXII ----
+ {id:'32-1',heb:'בֶּצַע',tr:'béṣaʿ',pl:'zysk, korzyść',pos:'rzeczownik',note:'+przyr. בִּצְעִי; idiom מַה־בֶּצַע — jaka z tego korzyść?'},
+ {id:'32-2',heb:'סָרִיס',tr:'sārîs',pl:'eunuch, urzędnik dworski lub wojskowy',pos:'rzeczownik',note:'l.mn. nieregularna סָרִיסִים'},
+ {id:'32-3',heb:'אָדוֹן',tr:'ʾāḏôn',pl:'pan, władca',pos:'rzeczownik',note:'l.mn. -îm; często l.mn. w znaczeniu l.poj.'},
+ {id:'32-4',heb:'שָׁת',tr:'šāṯ',pl:'położyć, postawić',pos:'czasownik',note:'pusty (II-Yod); impf. יָשִׁית; synonim שָׂם'},
+ {id:'32-5',heb:'רָץ',tr:'rāṣ',pl:'biec',pos:'czasownik',note:'pusty; impf. יָרוּץ'},
+ {id:'32-6',heb:'נָס',tr:'nās',pl:'uciec',pos:'czasownik',note:'pusty; impf. יָנוּס'},
+ {id:'32-7',heb:'רָדַף',tr:'rāḏap̄',pl:'ścigać, prześladować',pos:'czasownik',note:'impf. יִרְדֹּף; + אַחֲרֵי / אֶת'},
+ {id:'32-8',heb:'קָנָה',tr:'qānāh',pl:'kupić, nabyć',pos:'czasownik',note:'III-he; impf. יִקְנֶה'},
+ {id:'32-9',heb:'לִקְרַאת',tr:'liqraʾṯ',pl:'naprzeciw, na spotkanie, w kierunku',pos:'przyimek',note:'+przyr. לִקְרָאתִי'},
+ {id:'32-10',heb:'הִנֵּה',tr:'hinnēh',pl:'oto',pos:'partykuła',note:'w idiomie z רָאָה zwykle pomijana w tłumaczeniu'},
+ {id:'32-11',heb:'פַּרְעֹה',tr:'parʿōh',pl:'Faraon (tytuł króla Egiptu)',pos:'imię własne'},
+ {id:'32-12',heb:'פּוֹטִיפַר',tr:'pôṭîp̄ar',pl:'Potifar',pos:'imię własne'},
+ {id:'32-13',heb:'גִּלְעָד',tr:'gilʿāḏ',pl:'Gilead (region na wschód od Jordanu)',pos:'imię własne'},
+ {id:'32-14',heb:'יְהוּדָה',tr:'yəhûḏāh',pl:'Juda (syn Jakuba; pokolenie; królestwo)',pos:'imię własne'},
+ {id:'32-15',heb:'יִשְׁמְעֵאלִים',tr:'yišməʿēʾlîm',pl:'Izmaelici',pos:'imię własne'},
+ // ---- Słowniczek XXXIII ----
+ {id:'33-1',heb:'אַף',tr:'ʾap̄',pl:'twarz, nos; gniew',pos:'rzeczownik',note:'l.podw. אַפַּיִם; idiom חָרָה לוֹ אַפּוֹ — rozgniewał się'},
+ {id:'33-2',heb:'חָשַׂךְ',tr:'ḥāśaḵ',pl:'powstrzymać, zatrzymać coś dla siebie',pos:'czasownik',note:'I-gardłowa; impf. יַחְשֹׂךְ'},
+ {id:'33-3',heb:'חָנַן',tr:'ḥānan',pl:'być łaskawym, sprzyjać',pos:'czasownik',note:'podwojony; impf. יָחֹן yāḥōn'},
+ {id:'33-4',heb:'שָׁמֵם',tr:'šāmēm',pl:'być zniszczonym, opuszczonym (o miejscu); przerażonym (o osobach)',pos:'czasownik',note:'podwojony; impf. יִשַּׁם / יֵשַׁם'},
+ {id:'33-5',heb:'דַּם',tr:'dam',pl:'stać bez ruchu; milczeć, zachowywać spokój',pos:'czasownik',note:'podwojony; impf. יִדֹּם'},
+ {id:'33-6',heb:'מָדַד',tr:'māḏaḏ',pl:'mierzyć',pos:'czasownik',note:'podwojony; impf. יָמֹד'},
+ {id:'33-7',heb:'עִבְרִי',tr:'ʿiḇrî',pl:'Hebrajczyk; hebrajski',pos:'rzeczownik',note:'l.mn. עִבְרִים; r.ż. עִבְרִיָּה'},
+ {id:'33-8',heb:'כִּי אִם',tr:'kî ʾim',pl:'jeśli nie; lecz raczej; oprócz tego, że; z wyjątkiem',pos:'spójnik'},
+ {id:'33-9',heb:'אֵיךְ',tr:'ʾêḵ',pl:'jak? w jaki sposób?',pos:'przysłówek',note:'pytajny; też w okrzykach'},
+ {id:'33-10',heb:'אֵיכָה',tr:'ʾêḵāh',pl:'jak? (to samo co אֵיךְ)',pos:'przysłówek'},
+ // ---- Słowniczek XXXIV ----
+ {id:'34-1',heb:'קֵץ',tr:'qēṣ',pl:'koniec',pos:'rzeczownik',note:'brak l.mn.; מִקֵּץ — na końcu, po upływie'},
+ {id:'34-2',heb:'קָצֶה',tr:'qāṣeh',pl:'koniec, granica, zewnętrzna część',pos:'rzeczownik',note:'brak l.mn.; מִקְצֵה — na końcu (+ czas lub miejsce)'},
+ {id:'34-3',heb:'פָּרָה',tr:'pārāh',pl:'krowa, jałówka',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'34-4',heb:'שָׂפָה',tr:'śāp̄āh',pl:'usta; brzeg, krawędź; (przen.) język',pos:'rzeczownik',note:'l.podw. שְׂפָתַיִם; st. constr. שִׂפְתֵי'},
+ {id:'34-5',heb:'חָכָם',tr:'ḥāḵām',pl:'mędrzec; mądry',pos:'rzeczownik',note:'l.mn. -îm; też przymiotnik'},
+ {id:'34-6',heb:'יְאֹר',tr:'yəʾōr',pl:'Nil; rzeka',pos:'rzeczownik',note:'zwykle z rodzajnikiem'},
+ {id:'34-7',heb:'יָקַץ',tr:'yāqaṣ',pl:'obudzić się',pos:'czasownik',note:'I-jod; impf. יִיקַץ; brak perfectum'},
+ // ---- Słowniczek XXXV ----
+ {id:'35-1',heb:'אֹכֶל',tr:'ʾṓḵel',pl:'jedzenie, pokarm',pos:'rzeczownik',note:'brak l.mn.; +przyr. אָכְלִי'},
+ {id:'35-2',heb:'עֶרְוָה',tr:'ʿerwāh',pl:'wstyd, nagość',pos:'rzeczownik',note:'brak l.mn.'},
+ {id:'35-3',heb:'נָבוֹן',tr:'nāḇôn',pl:'inteligentny, rozumny',pos:'przymiotnik',note:'por. בִּינָה'},
+ {id:'35-4',heb:'כֵּן',tr:'kēn',pl:'uczciwy, prawy',pos:'przymiotnik'},
+ {id:'35-5',heb:'יָטַב',tr:'yāṭaḇ',pl:'powodzić się (nieosobowo z לְ)',pos:'czasownik',note:'I-jod; impf. יִיטַב; brak perf.; np. יִיטַב לִי — będzie mi się powodziło'},
+ {id:'35-6',heb:'רָעֵב',tr:'rāʿēḇ',pl:'być głodnym',pos:'czasownik',note:'impf. יִרְעַב'},
+ {id:'35-7',heb:'חָיָה',tr:'ḥāyāh',pl:'żyć, być żywym',pos:'czasownik',note:'III-he; impf. יִחְיֶה'},
+ {id:'35-8',heb:'קָרָה',tr:'qārāh',pl:'spotkać; wydarzyć się',pos:'czasownik',note:'III-he; też קָרָא (III-alef); formy mieszane'},
+ {id:'35-9',heb:'רַק',tr:'raq',pl:'tylko',pos:'przysłówek'},
+ {id:'35-10',heb:'שְׁמִינִי',tr:'šəmînî',pl:'ósmy',pos:'liczebnik',note:'porządkowy'},
+ {id:'35-11',heb:'תְּשִׁיעִי',tr:'təšîʿî',pl:'dziewiąty',pos:'liczebnik',note:'porządkowy'},
+ {id:'35-12',heb:'עֲשִׂירִי',tr:'ʿăśîrî',pl:'dziesiąty',pos:'liczebnik',note:'porządkowy'},
+ {id:'35-13',heb:'יֵשׁ',tr:'yēš',pl:'jest, są (orzecznik istnienia)',pos:'partykuła',note:'z sufiksami zaimkowymi: יֶשְׁךָ, יֶשְׁנוֹ; często po אִם'},
+ {id:'35-14',heb:'אֵין',tr:'ʾên',pl:'nie ma, nie istnieje (orzecznik nieistnienia)',pos:'partykuła',note:'z sufiksami: אֵינֶנִּי, אֵינְךָ, אֵינָם; negacja orzeczenia imiesłowowego'},
+ // ---- Słowniczek XXXVI ----
+ {id:'36-1',heb:'מְרַגֵּל',tr:'məraggēl',pl:'szpieg, zwiadowca',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'36-2',heb:'אֱמֶת',tr:'ʾĕméṯ',pl:'prawda',pos:'rzeczownik',note:'brak l.mn.; +przyr. אֲמִתִּי'},
+ {id:'36-3',heb:'בָּחַן',tr:'bāḥan',pl:'próbować, poddawać próbie, wystawiać na próbę',pos:'czasownik',note:'impf. יִבְחַן'},
+ {id:'36-4',heb:'הִנֵּה',tr:'hinnēh',pl:'oto (orzecznik istnienia; podkreśla teraźniejszość)',pos:'partykuła',note:'z sufiksami: הִנְנִי, הִנֶּנּוּ, הִנָּם; por. L32'},
+ {id:'36-5',heb:'נָא',tr:'nāʾ',pl:'proszę, błagam (partykuła prekatywna)',pos:'partykuła',note:'dołączana do trybu rozkazującego / jussivu / cohortativu; też הִנֵּה־נָא'},
+ {id:'36-6',heb:'עוֹד',tr:'ʿôḏ',pl:'znowu, jeszcze, nadal',pos:'przysłówek',note:'z sufiksami jak orzecznik istnienia: עוֹדֶנִּי, עוֹדֶנּוּ; בְּעוֹד — gdy jeszcze'},
+ {id:'36-7',heb:'אַיֵּה',tr:'ʾayyēh',pl:'gdzie?',pos:'przysłówek',note:'pytajny; z sufiksami: אַיֶּכָּה, אַיּוֹ, אַיָּם'},
+ {id:'36-8',heb:'חַי',tr:'ḥay',pl:'na życie… (w przysiędze, przed imieniem)',pos:'partykuła',note:'też חֵי; np. חֵי פַרְעֹה — na życie faraona; formuła ḥay X אִם + impf.'},
+ {id:'36-9',heb:'כָּל־',tr:'kull-',pl:'wszystek, każdy, cały',pos:'rzeczownik',note:'z sufiksami w apozycji: כֻּלָּם — wszyscy oni, כֻּלְּכֶם — wy wszyscy'},
+ // ---- Słowniczek XXXVII ----
+ {id:'37-1',heb:'נֶפֶשׁ',tr:'nép̄eš',pl:'dusza, siła witalna; osoba, żywe stworzenie',pos:'rzeczownik',note:'l.mn. -ôṯ; +przyr. נַפְשִׁי = się, siebie samego'},
+ {id:'37-2',heb:'שַׂק',tr:'śaq',pl:'worek; wór pokutny',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'37-3',heb:'מִשְׁמָר',tr:'mišmār',pl:'więzienie, miejsce odosobnienia; straż',pos:'rzeczownik',note:'brak l.mn.'},
+ {id:'37-4',heb:'מָלוֹן',tr:'mālôn',pl:'miejsce noclegu, zajazd, gospoda',pos:'rzeczownik'},
+ {id:'37-5',heb:'אָשֵׁם',tr:'ʾāšēm',pl:'być winnym; (przym.) winny',pos:'czasownik',note:'impf. יֶאְשַׁם'},
+ {id:'37-6',heb:'לָן',tr:'lān',pl:'spędzić noc, przenocować',pos:'czasownik',note:'pusty; impf. יָלִין'},
+ {id:'37-7',heb:'נֶאֱמַן',tr:'neʾĕman',pl:'być pewnym, solidnym, godnym zaufania',pos:'czasownik',note:'nifal; impf. יֵאָמֵן'},
+ {id:'37-8',heb:'נִשְׁאַר',tr:'nišʾar',pl:'być pozostawionym, przeżyć, ocaleć',pos:'czasownik',note:'nifal; impf. יִשָּׁאֵר'},
+ {id:'37-9',heb:'לְבַד־',tr:'ləḇad-',pl:'tylko, jedynie, sam',pos:'przysłówek',note:'z sufiksem: אֲנִי לְבַדִּי — tylko ja, ja sam'},
+ {id:'37-10',heb:'אֲבָל',tr:'ʾăḇāl',pl:'zaprawdę, naprawdę; jednakże',pos:'przysłówek'}
+];
+
+/* ============ FORMY DO ROZBIORU (z czytanki „Sara i Hagar" + ćwiczeń) ============ */
+/* cat: verb|noun ; v.form: impv|juss|impf|perf|ptcp|wayyiqtol|weqatal */
+const FORMS = [
+ // ---- imperatyw ----
+ {id:'F25-01',heb:'דִּרְשׁוּ',tr:'diršû',pl:'szukajcie',lemma:'דָּרַשׁ',lemmaTr:'dāraš',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'דרשׁ'}},
+ {id:'F25-02',heb:'קְבֹץ',tr:'qəḇōṣ',pl:'zgromadź',lemma:'קָבַץ',lemmaTr:'qāḇaṣ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'קבץ'}},
+ {id:'F25-03',heb:'לִכְדוּ',tr:'liḵḏû',pl:'zdobądźcie',lemma:'לָכַד',lemmaTr:'lāḵaḏ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'לכד'}},
+ {id:'F25-04',heb:'קְבֹר',tr:'qəḇōr',pl:'pogrzeb',lemma:'קָבַר',lemmaTr:'qāḇar',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'קבר'}},
+ {id:'F25-05',heb:'רְכַב',tr:'rəḵaḇ',pl:'jedź (konno)',lemma:'רָכַב',lemmaTr:'rāḵaḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'רכב'}},
+ {id:'F25-06',heb:'עִבְרוּ',tr:'ʿiḇrû',pl:'przejdźcie',lemma:'עָבַר',lemmaTr:'ʿāḇar',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'עבר',note:'I-gardłowa (§103)'}},
+ {id:'F25-07',heb:'שׁוּבִי',tr:'šûḇî',pl:'wróć (do kobiety)',lemma:'שׁוּב',lemmaTr:'šûḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'f',num:'sg',root:'שׁוב',note:'czasownik pusty (mediae waw)'}},
+ {id:'F25-08',heb:'שִׁלַּחְנָה',tr:'šillaḥnāh',pl:'wyślijcie (do kobiet)',lemma:'שִׁלַּח',lemmaTr:'šillaḥ',cat:'verb',p:{binyan:'piel',form:'impv',pers:2,gen:'f',num:'pl',root:'שׁלח'}},
+ // ---- jussivus / zakaz אַל ----
+ {id:'F25-09',heb:'תִּכְרְתוּ',tr:'tiḵrəṯû',pl:'(nie) zawierajcie',lemma:'כָּרַת',lemmaTr:'kāraṯ',cat:'verb',p:{binyan:'qal',form:'juss',pers:2,gen:'m',num:'pl',root:'כרת',note:'po אַל — zakaz'}},
+ {id:'F25-10',heb:'תַּעֲזֹב',tr:'taʿăzōḇ',pl:'(nie) opuszczaj',lemma:'עָזַב',lemmaTr:'ʿāzaḇ',cat:'verb',p:{binyan:'qal',form:'juss',pers:2,gen:'m',num:'sg',root:'עזב',note:'I-gardłowa; po אַל'}},
+ {id:'F25-11',heb:'תַּעַמְדִי',tr:'taʿamḏî',pl:'(nie) stój (do kobiety)',lemma:'עָמַד',lemmaTr:'ʿāmaḏ',cat:'verb',p:{binyan:'qal',form:'juss',pers:2,gen:'f',num:'sg',root:'עמד',note:'I-gardłowa; po אַל'}},
+ // ---- imperfectum ----
+ {id:'F25-12',heb:'תַעַבְרוּ',tr:'ṯaʿaḇrû',pl:'będziecie przekraczać',lemma:'עָבַר',lemmaTr:'ʿāḇar',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'pl',root:'עבר',note:'I-gardłowa'}},
+ {id:'F25-13',heb:'תִּשְׁמַע',tr:'tišmaʿ',pl:'posłuchasz',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'שׁמע'}},
+ {id:'F25-14',heb:'יַהַרְגוּ',tr:'yaharḡû',pl:'zabiją',lemma:'הָרַג',lemmaTr:'hāraḡ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'הרג',note:'I-gardłowa; po פֶּן'}},
+ {id:'F25-15',heb:'תַּעַמְדוּ',tr:'taʿamḏû',pl:'staniecie',lemma:'עָמַד',lemmaTr:'ʿāmaḏ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'pl',root:'עמד',note:'I-gardłowa'}},
+ {id:'F25-16',heb:'נַעֲבֹר',tr:'naʿăḇōr',pl:'przejdziemy',lemma:'עָבַר',lemmaTr:'ʿāḇar',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'pl',root:'עבר',note:'I-gardłowa'}},
+ {id:'F25-17',heb:'אֶרְכַּב',tr:'ʾerkaḇ',pl:'wjadę (konno)',lemma:'רָכַב',lemmaTr:'rāḵaḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'sg',root:'רכב'}},
+ {id:'F25-18',heb:'תִּקְבֹּץ',tr:'tiqbōṣ',pl:'zgromadzisz',lemma:'קָבַץ',lemmaTr:'qāḇaṣ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'קבץ'}},
+ {id:'F25-19',heb:'תִּקְרְאִי',tr:'tiqrəʾî',pl:'nadasz (imię)',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'f',num:'sg',root:'קרא',note:'III-alef'}},
+ {id:'F25-20',heb:'תֶחֶטְאוּ',tr:'ṯeḥeṭʾû',pl:'będziecie grzeszyć',lemma:'חָטָא',lemmaTr:'ḥāṭāʾ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'pl',root:'חטא',note:'I-gardłowa + III-alef (§103)'}},
+ // ---- perfectum ----
+ {id:'F25-21',heb:'שָׁכַב',tr:'šāḵaḇ',pl:'położył się',lemma:'שָׁכַב',lemmaTr:'šāḵaḇ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁכב'}},
+ {id:'F25-22',heb:'יָלְדָה',tr:'yāləḏāh',pl:'urodziła',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'ילד',note:'I-jod'}},
+ {id:'F25-23',heb:'נָתְנָה',tr:'nāṯənāh',pl:'dała',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'נתן'}},
+ {id:'F25-24',heb:'בָּא',tr:'bāʾ',pl:'przyszedł, zbliżył się',lemma:'בּוֹא',lemmaTr:'bôʾ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'בוא',note:'czasownik pusty'}},
+ {id:'F25-25',heb:'בָּאת',tr:'bāʾṯ',pl:'przyszłaś',lemma:'בּוֹא',lemmaTr:'bôʾ',cat:'verb',p:{binyan:'qal',form:'perf',pers:2,gen:'f',num:'sg',root:'בוא',note:'czasownik pusty'}},
+ {id:'F25-26',heb:'הָרָתָה',tr:'hārāṯāh',pl:'poczęła',lemma:'הָרָה',lemmaTr:'hārāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'הרה',note:'III-he'}},
+ {id:'F25-27',heb:'חָרָה',tr:'ḥārāh',pl:'rozgniewał się (חָרָה לְ‑)',lemma:'חָרָה',lemmaTr:'ḥārāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'חרה',note:'III-he; nieosobowo'}},
+ {id:'F25-28',heb:'רָאֲתָה',tr:'rāʾăṯāh',pl:'zobaczyła',lemma:'רָאָה',lemmaTr:'rāʾāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'ראה',note:'III-he'}},
+ {id:'F25-29',heb:'יָרְאָה',tr:'yārəʾāh',pl:'przelękła się',lemma:'יָרֵא',lemmaTr:'yārēʾ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'ירא',note:'statywny; + מִפְּנֵי'}},
+ {id:'F25-30',heb:'מָצָא',tr:'māṣāʾ',pl:'znalazł',lemma:'מָצָא',lemmaTr:'māṣāʾ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'מצא',note:'III-alef'}},
+ {id:'F25-31',heb:'אָמַר',tr:'ʾāmar',pl:'powiedział',lemma:'אָמַר',lemmaTr:'ʾāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'אמר'}},
+ {id:'F25-32',heb:'אָמְרָה',tr:'ʾāmərāh',pl:'powiedziała',lemma:'אָמַר',lemmaTr:'ʾāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'אמר'}},
+ {id:'F25-33',heb:'שָׁמַע',tr:'šāmaʿ',pl:'usłyszał',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמע'}},
+ {id:'F25-34',heb:'שָׁבָה',tr:'šāḇāh',pl:'wróciła',lemma:'שׁוּב',lemmaTr:'šûḇ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'שׁוב',note:'czasownik pusty'}},
+ // ---- imiesłów ----
+ {id:'F25-35',heb:'הֹלֶכֶת',tr:'hōléḵeṯ',pl:'idąca',lemma:'הָלַךְ',lemmaTr:'hālaḵ',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'f',num:'sg',root:'הלך',note:'imiesłów czynny'}},
+ {id:'F25-36',heb:'בֹּרַחַת',tr:'bōraḥaṯ',pl:'uciekająca',lemma:'בָּרַח',lemmaTr:'bāraḥ',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'f',num:'sg',root:'ברח',note:'imiesłów czynny'}},
+ {id:'F25-37',heb:'יֹשְׁבִים',tr:'yōšəḇîm',pl:'mieszkający, siedzący',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'pl',root:'ישׁב',note:'imiesłów czynny (w tekście z rodzajnikiem)'}},
+ // ---- waw consecutivum ----
+ {id:'F25-38',heb:'וַתִּבְרַח',tr:'wattiḇraḥ',pl:'i uciekła',lemma:'בָּרַח',lemmaTr:'bāraḥ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'ברח',note:'waw consec. + imperfectum'}},
+ {id:'F25-39',heb:'וַיַּחֲלֹם',tr:'wayyaḥălōm',pl:'i śnił',lemma:'חָלַם',lemmaTr:'ḥālam',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'חלם',note:'I-gardłowa'}},
+ {id:'F25-40',heb:'וַיִּקְרָא',tr:'wayyiqrāʾ',pl:'i nazwał, zawołał',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'קרא',note:'III-alef'}},
+ {id:'F25-41',heb:'וְשַׁבְתָּ',tr:'wəšaḇtā',pl:'i wrócisz',lemma:'שׁוּב',lemmaTr:'šûḇ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'sg',root:'שׁוב',note:'waw consec. + perfectum'}},
+ {id:'F25-42',heb:'וְיָשַׁבְנוּ',tr:'wəyāšaḇnû',pl:'i zamieszkamy',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:1,gen:'c',num:'pl',root:'ישׁב'}},
+ {id:'F25-43',heb:'וְהָרַגְתִּי',tr:'wəhāraḡtî',pl:'i zabiję',lemma:'הָרַג',lemmaTr:'hāraḡ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:1,gen:'c',num:'sg',root:'הרג'}},
+ {id:'F25-44',heb:'וְאָמַרְתִּי',tr:'wəʾāmartî',pl:'i powiem',lemma:'אָמַר',lemmaTr:'ʾāmar',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:1,gen:'c',num:'sg',root:'אמר'}},
+ {id:'F25-45',heb:'וּשְׁמַעְתֶּם',tr:'ûšəmaʿtem',pl:'i wysłuchacie',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'pl',root:'שׁמע'}},
+ // ---- rzeczowniki: status / sufiks ----
+ {id:'F25-46',heb:'גְּבִרְתָּהּ',tr:'gəḇirtāh',pl:'jej pani',lemma:'גְּבֶרֶת',lemmaTr:'gəḇéreṯ',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'3fs',root:'גבר'}},
+ {id:'F25-47',heb:'גְּבִרְתֵּךְ',tr:'gəḇirtēḵ',pl:'twoja pani',lemma:'גְּבֶרֶת',lemmaTr:'gəḇéreṯ',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'2fs',root:'גבר'}},
+ {id:'F25-48',heb:'שִׁפְחָתָהּ',tr:'šip̄ḥāṯāh',pl:'jej służąca',lemma:'שִׁפְחָה',lemmaTr:'šip̄ḥāh',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'3fs',root:'שׁפח'}},
+ {id:'F25-49',heb:'אֹיְבֵיכֶם',tr:'ʾōyəḇêḵem',pl:'wasi wrogowie',lemma:'אֹיֵב',lemmaTr:'ʾōyēḇ',cat:'noun',p:{state:'suf',gen:'m',num:'pl',suf:'2mp',root:'איב',note:'l.mn. + sufiks'}},
+ {id:'F25-50',heb:'צָרָתֵךְ',tr:'ṣārāṯēḵ',pl:'twój ucisk',lemma:'צָרָה',lemmaTr:'ṣārāh',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'2fs',root:'צרר'}},
+ {id:'F25-51',heb:'בְּנוֹ',tr:'bənô',pl:'jego syn',lemma:'בֵּן',lemmaTr:'bēn',cat:'noun',p:{state:'suf',gen:'m',num:'sg',suf:'3ms',root:'בנן'}},
+ {id:'F25-52',heb:'שִׁפְחַת',tr:'šip̄ḥaṯ',pl:'służąca (kogoś)',lemma:'שִׁפְחָה',lemmaTr:'šip̄ḥāh',cat:'noun',p:{state:'constr',gen:'f',num:'sg',root:'שׁפח',note:'status constructus'}},
+ /* ===== LEKCJA 26: jussivus/cohortativus (§106-107) + czasowniki I-alef (§108) ===== */
+ // ---- wolitywne: jussivus ----
+ {id:'F26-01',heb:'תֹּאבַד',tr:'tōʾḇaḏ',pl:'niech zginie',lemma:'אָבַד',lemmaTr:'ʾāḇaḏ',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'f',num:'sg',root:'אבד',note:'I-alef; jussivus (≠ „zginie")'}},
+ {id:'F26-02',heb:'יֹאבְדוּ',tr:'yōʾḇəḏû',pl:'niech zginą',lemma:'אָבַד',lemmaTr:'ʾāḇaḏ',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'m',num:'pl',root:'אבד',note:'I-alef; jussivus'}},
+ {id:'F26-03',heb:'וְיֹאבַד',tr:'wəyōʾḇaḏ',pl:'aby zginął (a zginie)',lemma:'אָבַד',lemmaTr:'ʾāḇaḏ',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'m',num:'sg',root:'אבד',note:'sekwencja wolitywna — cel/skutek (§107)'}},
+ // ---- wolitywne: cohortativus ----
+ {id:'F26-04',heb:'נִשְׁלְחָה',tr:'nišləḥāh',pl:'wyślijmy',lemma:'שָׁלַח',lemmaTr:'šālaḥ',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'שׁלח',note:'cohortativus (≠ נִשְׁלַח „poślemy")'}},
+ {id:'F26-05',heb:'נֹאמְרָה',tr:'nōʾmərāh',pl:'powiedzmy',lemma:'אָמַר',lemmaTr:'ʾāmar',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'אמר',note:'I-alef; cohortativus'}},
+ // ---- imperatyw ----
+ {id:'F26-06',heb:'אֱחֹז',tr:'ʾĕḥōz',pl:'chwyć, weź',lemma:'אָחַז',lemmaTr:'ʾāḥaz',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'אחז',note:'I-alef'}},
+ {id:'F26-07',heb:'אִסְרוּ',tr:'ʾisrû',pl:'zwiążcie',lemma:'אָסַר',lemmaTr:'ʾāsar',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'אסר',note:'I-alef'}},
+ {id:'F26-08',heb:'סִגְרוּ',tr:'sigrû',pl:'zamknijcie',lemma:'סָגַר',lemmaTr:'sāḡar',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'סגר'}},
+ // ---- imperfectum (w tym I-alef) ----
+ {id:'F26-09',heb:'יֹאחֲזוּ',tr:'yōʾḥăzû',pl:'pochwycą',lemma:'אָחַז',lemmaTr:'ʾāḥaz',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'אחז',note:'I-alef'}},
+ {id:'F26-10',heb:'תֶּאֱהַב',tr:'teʾĕhaḇ',pl:'będziesz kochać',lemma:'אָהַב',lemmaTr:'ʾāhaḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'אהב',note:'I-alef'}},
+ {id:'F26-11',heb:'תֹאכְלוּ',tr:'ṯōʾḵəlû',pl:'będziecie jeść',lemma:'אָכַל',lemmaTr:'ʾāḵal',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'pl',root:'אכל',note:'I-alef (ō w prefiksie)'}},
+ {id:'F26-12',heb:'יִפְתְּחוּ',tr:'yip̄təḥû',pl:'otworzą',lemma:'פָּתַח',lemmaTr:'pāṯaḥ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'פתח'}},
+ {id:'F26-13',heb:'יִמְצְאוּ',tr:'yimṣəʾû',pl:'znajdą',lemma:'מָצָא',lemmaTr:'māṣāʾ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'מצא',note:'III-alef; po פֶּן'}},
+ // ---- perfectum ----
+ {id:'F26-14',heb:'קָרַע',tr:'qāraʿ',pl:'rozdarł',lemma:'קָרַע',lemmaTr:'qāraʿ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'קרע'}},
+ {id:'F26-15',heb:'שְׁמַעְתֶּם',tr:'šəmaʿtem',pl:'słuchaliście',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'perf',pers:2,gen:'m',num:'pl',root:'שׁמע'}},
+ {id:'F26-16',heb:'שְׁמַרְתֶּם',tr:'šəmartem',pl:'strzegliście',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:2,gen:'m',num:'pl',root:'שׁמר'}},
+ // ---- waw consecutivum ----
+ {id:'F26-17',heb:'וַיֹּאמֶר',tr:'wayyōʾmer',pl:'i rzekł',lemma:'אָמַר',lemmaTr:'ʾāmar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'אמר',note:'I-alef; cofnięcie akcentu (§108)'}},
+ {id:'F26-18',heb:'וְאָסְרוּ',tr:'wəʾāsərû',pl:'a uwiężą',lemma:'אָסַר',lemmaTr:'ʾāsar',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:3,gen:'c',num:'pl',root:'אסר',note:'I-alef'}},
+ {id:'F26-19',heb:'וּבְרַחְתֶּם',tr:'ûḇəraḥtem',pl:'a uciekniecie',lemma:'בָּרַח',lemmaTr:'bāraḥ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'pl',root:'ברח'}},
+ {id:'F26-20',heb:'וְנָתַתָּ',tr:'wənāṯáttā',pl:'a dasz',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'sg',root:'נתן'}},
+ {id:'F26-21',heb:'וְנָגַף',tr:'wənāḡap̄',pl:'a porazi, dotknie',lemma:'נָגַף',lemmaTr:'nāḡap̄',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:3,gen:'m',num:'sg',root:'נגף'}},
+ // ---- rzeczownik: segolat + sufiks ----
+ {id:'F26-22',heb:'בְּגָדָיו',tr:'bəḡāḏāyw',pl:'jego szaty',lemma:'בֶּגֶד',lemmaTr:'béḡeḏ',cat:'noun',p:{state:'suf',gen:'m',num:'pl',suf:'3ms',root:'בגד',note:'segolat, l.mn. + sufiks'}},
+ /* ===== LEKCJA 27: konstrukcja czasowa wayhî/wəhāyāh (§110) + rzeczowniki ż. -et/-at (§111) + typ פְּרִי (§112) ===== */
+ // ---- konstrukcja czasowa + sekwencje ----
+ {id:'F27-01',heb:'וַיְהִי',tr:'wayhî',pl:'i stało się',lemma:'הָיָה',lemmaTr:'hāyāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'היה',note:'konstrukcja czasowa (§110); narracja o przeszłości'}},
+ {id:'F27-02',heb:'וְהָיָה',tr:'wəhāyāh',pl:'i stanie się',lemma:'הָיָה',lemmaTr:'hāyāh',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:3,gen:'m',num:'sg',root:'היה',note:'konstrukcja czasowa (§110); narracja o przyszłości'}},
+ {id:'F27-03',heb:'הָיָה',tr:'hāyāh',pl:'był',lemma:'הָיָה',lemmaTr:'hāyāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'היה'}},
+ {id:'F27-04',heb:'וַנַּעֲזֹב',tr:'wannaʿăzōḇ',pl:'i opuściliśmy',lemma:'עָזַב',lemmaTr:'ʿāzaḇ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:1,gen:'c',num:'pl',root:'עזב',note:'I-gardłowa'}},
+ {id:'F27-05',heb:'וַנַּעֲבֹר',tr:'wannaʿăḇōr',pl:'i przeszliśmy',lemma:'עָבַר',lemmaTr:'ʿāḇar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:1,gen:'c',num:'pl',root:'עבר',note:'I-gardłowa'}},
+ {id:'F27-06',heb:'וְשָׁלַחְתִּי',tr:'wəšālaḥtî',pl:'i poślę',lemma:'שָׁלַח',lemmaTr:'šālaḥ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:1,gen:'c',num:'sg',root:'שׁלח'}},
+ {id:'F27-07',heb:'וַיִּשְׁכַּח',tr:'wayyiškaḥ',pl:'i zapomniał',lemma:'שָׁכַח',lemmaTr:'šāḵaḥ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׁכח'}},
+ {id:'F27-08',heb:'וְזָכַרְתִּי',tr:'wəzāḵartî',pl:'i wspomnę',lemma:'זָכַר',lemmaTr:'zāḵar',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:1,gen:'c',num:'sg',root:'זכר'}},
+ {id:'F27-09',heb:'וַיִּשְׂמַח',tr:'wayyiśmaḥ',pl:'i ucieszył się',lemma:'שָׂמַח',lemmaTr:'śāmaḥ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׂמח'}},
+ {id:'F27-10',heb:'וְרָעִיתָ',tr:'wərāʿîṯā',pl:'i będziesz pasł',lemma:'רָעָה',lemmaTr:'rāʿāh',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'sg',root:'רעה',note:'III-he'}},
+ {id:'F27-11',heb:'יַאַסְרוּ',tr:'yaʾasrû',pl:'(aby nie) związali',lemma:'אָסַר',lemmaTr:'ʾāsar',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'אסר',note:'I-alef; po פֶּן'}},
+ {id:'F27-12',heb:'וְלָקְחוּ',tr:'wəlāqəḥû',pl:'i zabiorą',lemma:'לָקַח',lemmaTr:'lāqaḥ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:3,gen:'c',num:'pl',root:'לקח'}},
+ {id:'F27-13',heb:'אֶקְרָא',tr:'ʾeqrāʾ',pl:'zawołam',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'sg',root:'קרא',note:'III-alef'}},
+ {id:'F27-14',heb:'וּבָרַחְתָּ',tr:'ûḇāraḥtā',pl:'i uciekniesz',lemma:'בָּרַח',lemmaTr:'bāraḥ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'sg',root:'ברח'}},
+ {id:'F27-15',heb:'וְסָבְבוּ',tr:'wəsāḇəḇû',pl:'i otoczą',lemma:'סָבַב',lemmaTr:'sāḇaḇ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:3,gen:'c',num:'pl',root:'סבב',note:'czasownik podwojony (geminata)'}},
+ {id:'F27-16',heb:'אָרַר',tr:'ʾārar',pl:'przeklął',lemma:'אָרַר',lemmaTr:'ʾārar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'ארר',note:'czasownik podwojony'}},
+ {id:'F27-17',heb:'פָּקַד',tr:'pāqaḏ',pl:'nawiedził, ukarał',lemma:'פָּקַד',lemmaTr:'pāqaḏ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'פקד'}},
+ {id:'F27-18',heb:'וַתֹּאמֶר',tr:'wattṓmer',pl:'i rzekła',lemma:'אָמַר',lemmaTr:'ʾāmar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'אמר',note:'I-alef'}},
+ {id:'F27-19',heb:'גָּרֵשׁ',tr:'gārēš',pl:'wypędź',lemma:'גֵּרֵשׁ',lemmaTr:'gērēš',cat:'verb',p:{binyan:'piel',form:'impv',pers:2,gen:'m',num:'sg',root:'גרשׁ',note:'piel'}},
+ {id:'F27-20',heb:'יִקָּרֵא',tr:'yiqqārēʾ',pl:'będzie nazwany, wezwany',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'קרא',note:'niphal (strona bierna); III-alef'}},
+ {id:'F27-21',heb:'אֲשִׂימֶנּוּ',tr:'ʾăśîmennû',pl:'uczynię go',lemma:'שִׂים',lemmaTr:'śîm',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'sg',root:'שׂים',note:'czasownik pusty + sufiks energiczny („go")'}},
+ {id:'F27-22',heb:'רַע',tr:'raʿ',pl:'był zły',lemma:'רַע',lemmaTr:'raʿ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'רעע',note:'czasownik podwojony'}},
+ {id:'F27-23',heb:'וַיְשַׁלַּח',tr:'wayšallaḥ',pl:'odprawił, wypędził',lemma:'שִׁלַּח',lemmaTr:'šillaḥ',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׁלח',note:'piel'}},
+ {id:'F27-24',heb:'תָּעְתָה',tr:'tāʿəṯāh',pl:'błądziła',lemma:'תָּעָה',lemmaTr:'tāʿāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'תעה',note:'III-he'}},
+ {id:'F27-25',heb:'כָּלוּ',tr:'kālû',pl:'skończyły się',lemma:'כָּלָה',lemmaTr:'kālāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'כלה',note:'III-he'}},
+ {id:'F27-26',heb:'וַתֵּבְךְ',tr:'wattēḇḵ',pl:'i płakała',lemma:'בָּכָה',lemmaTr:'bāḵāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'בכה',note:'III-he'}},
+ {id:'F27-27',heb:'תִּירְאִי',tr:'tîrəʾî',pl:'nie bój się (do kobiety)',lemma:'יָרֵא',lemmaTr:'yārēʾ',cat:'verb',p:{binyan:'qal',form:'juss',pers:2,gen:'f',num:'sg',root:'ירא',note:'po אַל'}},
+ {id:'F27-28',heb:'וַתִּמְצָא',tr:'wattimṣāʾ',pl:'i znalazła',lemma:'מָצָא',lemmaTr:'māṣāʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'מצא',note:'III-alef'}},
+ {id:'F27-29',heb:'וַיִּגְדַּל',tr:'wayyiḡdal',pl:'i dorósł',lemma:'גָּדַל',lemmaTr:'gāḏal',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'גדל'}},
+ // ---- rzeczowniki §111 / §112 ----
+ {id:'F27-30',heb:'גְּבִרְתִּי',tr:'gəḇirtî',pl:'moja pani',lemma:'גְּבֶרֶת',lemmaTr:'gəḇéreṯ',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'1cs',root:'גבר',note:'§111 (deklinacja jak segolat)'}},
+ {id:'F27-31',heb:'מִלְחַמְתֵּנוּ',tr:'milḥamtēnû',pl:'nasza wojna',lemma:'מִלְחָמָה',lemmaTr:'milḥāmāh',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'1cp',root:'לחם',note:'§111 (st. constr. מִלְחֶמֶת)'}},
+ {id:'F27-32',heb:'מְלַאכְתּוֹ',tr:'məlaʾḵtô',pl:'jego dzieło, praca',lemma:'מְלָאכָה',lemmaTr:'məlāʾḵāh',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'3ms',root:'לאך',note:'§111 (st. constr. מְלֶאכֶת)'}},
+ {id:'F27-33',heb:'פִּרְיוֹ',tr:'piryô',pl:'jego owoc',lemma:'פְּרִי',lemmaTr:'pərî',cat:'noun',p:{state:'suf',gen:'m',num:'sg',suf:'3ms',root:'פרה',note:'§112 (typ פְּרִי)'}},
+ {id:'F27-34',heb:'עָנְיֶךָ',tr:'ʿānyéḵā',pl:'twój ucisk',lemma:'עֳנִי',lemmaTr:'ʿŏnî',cat:'noun',p:{state:'suf',gen:'m',num:'sg',suf:'2ms',root:'ענה',note:'§112'}},
+ {id:'F27-35',heb:'זְקוּנֶיךָ',tr:'zəqûnéḵā',pl:'twoja starość',lemma:'זְקוּנִים',lemmaTr:'zəqûnîm',cat:'noun',p:{state:'suf',gen:'m',num:'pl',suf:'2ms',root:'זקן',note:'tylko l.mn.'}},
+ {id:'F27-36',heb:'זַרְעֲךָ',tr:'zarʿăḵā',pl:'twoje potomstwo',lemma:'זֶרַע',lemmaTr:'zéraʿ',cat:'noun',p:{state:'suf',gen:'m',num:'sg',suf:'2ms',root:'זרע',note:'segolat (§104, L25)'}},
+ /* ===== LEKCJA 28: infinitivus constructus (§114-115) — bez sufiksu, z sufiksem, z przyimkami ===== */
+ // ---- inf. constr. bazowy / wg klas ----
+ {id:'F28-01',heb:'כְּתֹב',tr:'kəṯōḇ',pl:'pisanie',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'qal',form:'inf',root:'כתב',note:'infinitivus constructus (wzór §114)'}},
+ {id:'F28-02',heb:'כָּתְבִי',tr:'koṯḇî',pl:'moje pisanie',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'qal',form:'inf',root:'כתב',note:'inf. constr. + sufiks 1 os. lp.'}},
+ {id:'F28-03',heb:'שָׁמְרְךָ',tr:'šomrəḵā',pl:'twoje przestrzeganie',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'inf',root:'שׁמר',note:'inf. constr. + sufiks 2 os. r.m.'}},
+ // ---- inf. constr. z przyimkami ----
+ {id:'F28-04',heb:'לִשְׁמֹעַ',tr:'lišmōaʿ',pl:'aby słuchać',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'inf',root:'שׁמע',note:'inf. constr. + לְ (cel); III-gardłowa'}},
+ {id:'F28-05',heb:'כִּשְׁמֹעַ',tr:'kišmōaʿ',pl:'gdy usłyszał',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'inf',root:'שׁמע',note:'inf. constr. + כְּ (czas)'}},
+ {id:'F28-06',heb:'בְּעָמְדִי',tr:'bəʿomdî',pl:'gdy stałem',lemma:'עָמַד',lemmaTr:'ʿāmaḏ',cat:'verb',p:{binyan:'qal',form:'inf',root:'עמד',note:'inf. constr. + בְּ + sufiks 1 os.; I-gardłowa'}},
+ {id:'F28-07',heb:'לַעֲשׂוֹת',tr:'laʿăśôṯ',pl:'aby czynić',lemma:'עָשָׂה',lemmaTr:'ʿāśāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'עשׂה',note:'inf. constr. + לְ; III-he'}},
+ {id:'F28-08',heb:'לִסְגֹּר',tr:'lisgōr',pl:'zamknąć',lemma:'סָגַר',lemmaTr:'sāḡar',cat:'verb',p:{binyan:'qal',form:'inf',root:'סגר',note:'inf. constr. + לְ'}},
+ {id:'F28-09',heb:'בְּהָרְגוֹ',tr:'bəhorḡô',pl:'gdy zabił',lemma:'הָרַג',lemmaTr:'hāraḡ',cat:'verb',p:{binyan:'qal',form:'inf',root:'הרג',note:'inf. constr. + בְּ + sufiks 3 os. r.m.; I-gardłowa'}},
+ {id:'F28-10',heb:'כִּשְׁלֹחַ',tr:'kišlōaḥ',pl:'gdy posłał',lemma:'שָׁלַח',lemmaTr:'šālaḥ',cat:'verb',p:{binyan:'qal',form:'inf',root:'שׁלח',note:'inf. constr. + כְּ; III-gardłowa'}},
+ {id:'F28-11',heb:'בְּכָרְתֵנוּ',tr:'bəḵorṯēnû',pl:'gdy zawarliśmy',lemma:'כָּרַת',lemmaTr:'kāraṯ',cat:'verb',p:{binyan:'qal',form:'inf',root:'כרת',note:'inf. constr. + בְּ + sufiks 1 os. lmn.'}},
+ {id:'F28-12',heb:'בְּבָרְאוֹ',tr:'bəḇorʾô',pl:'gdy stworzył',lemma:'בָּרָא',lemmaTr:'bārāʾ',cat:'verb',p:{binyan:'qal',form:'inf',root:'ברא',note:'inf. constr. + בְּ + sufiks 3 os.; III-alef'}},
+ {id:'F28-13',heb:'לַהֲרֹג',tr:'lahărōḡ',pl:'aby zabić',lemma:'הָרַג',lemmaTr:'hāraḡ',cat:'verb',p:{binyan:'qal',form:'inf',root:'הרג',note:'inf. constr. + לְ; I-gardłowa'}},
+ {id:'F28-14',heb:'בְּצַעֲקָם',tr:'bəṣaʿăqām',pl:'gdy krzyczeli',lemma:'צָעַק',lemmaTr:'ṣāʿaq',cat:'verb',p:{binyan:'qal',form:'inf',root:'צעק',note:'inf. constr. + בְּ + sufiks 3 os. lmn.; III-gardłowa'}},
+ {id:'F28-15',heb:'בְּכָתְבְךָ',tr:'bəḵoṯḇəḵā',pl:'gdy zapisywałeś',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'qal',form:'inf',root:'כתב',note:'inf. constr. + בְּ + sufiks 2 os. r.m.'}},
+ {id:'F28-16',heb:'בִּשְׂרֹף',tr:'biśrōp̄',pl:'gdy spalił',lemma:'שָׂרַף',lemmaTr:'śārap̄',cat:'verb',p:{binyan:'qal',form:'inf',root:'שׂרף',note:'inf. constr. + בְּ'}},
+ {id:'F28-17',heb:'סָגְרָם',tr:'soḡrām',pl:'ich zamknięcie (że zamknęli)',lemma:'סָגַר',lemmaTr:'sāḡar',cat:'verb',p:{binyan:'qal',form:'inf',root:'סגר',note:'inf. constr. + sufiks 3 os. lmn. (po יַעַן)'}},
+ {id:'F28-18',heb:'מָצְאָם',tr:'māṣʾām',pl:'ich znalezienie (dopóki nie znaleźli)',lemma:'מָצָא',lemmaTr:'māṣāʾ',cat:'verb',p:{binyan:'qal',form:'inf',root:'מצא',note:'inf. constr. + sufiks 3 os. lmn. (po עַד); III-alef'}},
+ {id:'F28-19',heb:'אֲכֹל',tr:'ʾăḵōl',pl:'(aby) nie jeść',lemma:'אָכַל',lemmaTr:'ʾāḵal',cat:'verb',p:{binyan:'qal',form:'inf',root:'אכל',note:'inf. constr. po negacji בִּלְתִּי; I-alef'}},
+ {id:'F28-20',heb:'בֶּאֱחֹז',tr:'beʾĕḥōz',pl:'gdy chwyciła',lemma:'אָחַז',lemmaTr:'ʾāḥaz',cat:'verb',p:{binyan:'qal',form:'inf',root:'אחז',note:'inf. constr. + בְּ; I-alef'}},
+ {id:'F28-21',heb:'בִּפְקֹד',tr:'bip̄qōḏ',pl:'gdy nawiedzi',lemma:'פָּקַד',lemmaTr:'pāqaḏ',cat:'verb',p:{binyan:'qal',form:'inf',root:'פקד',note:'inf. constr. + בְּ'}},
+ {id:'F28-22',heb:'בְּאַהֲבָתוֹ',tr:'bəʾahăḇāṯô',pl:'w jego miłowaniu (jej)',lemma:'אָהַב',lemmaTr:'ʾāhaḇ',cat:'verb',p:{binyan:'qal',form:'inf',root:'אהב',note:'inf. constr. (forma אַהֲבָה) + בְּ + sufiks 3 os.'}},
+ {id:'F28-23',heb:'אָסְפוֹ',tr:'ʾāsəp̄ô',pl:'jego zebranie (gdy zebrał)',lemma:'אָסַף',lemmaTr:'ʾāsap̄',cat:'verb',p:{binyan:'qal',form:'inf',root:'אסף',note:'inf. constr. + sufiks 3 os. (po אַחֲרֵי); I-alef'}},
+ {id:'F28-24',heb:'לִגְאֹל',tr:'liḡʾōl',pl:'wykupić',lemma:'גָּאַל',lemmaTr:'gāʾal',cat:'verb',p:{binyan:'qal',form:'inf',root:'גאל',note:'inf. constr. + לְ; II-gardłowa'}},
+ // ---- nowe leksemy w formach osobowych ----
+ {id:'F28-25',heb:'יָכְלוּ',tr:'yāḵəlû',pl:'mogli, zdołali',lemma:'יָכֹל',lemmaTr:'yāḵōl',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'יכל',note:'I-jod (nieregularny)'}},
+ {id:'F28-26',heb:'יַחְפֹּץ',tr:'yaḥpōṣ',pl:'zechce, pragnie',lemma:'חָפֵץ',lemmaTr:'ḥāp̄ēṣ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'חפץ',note:'I-gardłowa'}},
+ {id:'F28-27',heb:'חָדְלוּ',tr:'ḥāḏəlû',pl:'przestali',lemma:'חָדַל',lemmaTr:'ḥāḏal',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'חדל',note:'I-gardłowa'}},
+ {id:'F28-28',heb:'תַּמּוּ',tr:'tammû',pl:'skończyli; dobiegli końca',lemma:'תַּם',lemmaTr:'tam',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'תמם',note:'czasownik podwojony'}},
+ {id:'F28-29',heb:'וַיַּחְפֹּץ',tr:'wayyaḥpōṣ',pl:'i zapragnął',lemma:'חָפֵץ',lemmaTr:'ḥāp̄ēṣ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'חפץ',note:'I-gardłowa'}},
+ {id:'F28-30',heb:'וַיֶּאֱהַב',tr:'wayyeʾĕhaḇ',pl:'i pokochał',lemma:'אָהַב',lemmaTr:'ʾāhaḇ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'אהב',note:'I-alef'}},
+ /* ===== LEKCJA 29: czasowniki I-Nun (§118) — asymilacja nun, skrócony imperat./inf. constr. ===== */
+ // ---- imperativus (skrócony) ----
+ {id:'F29-01',heb:'תֵּן',tr:'tēn',pl:'daj',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'נתן',note:'I-nun; skrócony imperativus'}},
+ {id:'F29-02',heb:'קַח',tr:'qaḥ',pl:'weź',lemma:'לָקַח',lemmaTr:'lāqaḥ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'לקח',note:'odmienia się jak I-nun'}},
+ {id:'F29-03',heb:'קְחִי',tr:'qəḥî',pl:'weź (do kobiety)',lemma:'לָקַח',lemmaTr:'lāqaḥ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'f',num:'sg',root:'לקח'}},
+ {id:'F29-04',heb:'גְּשִׁי',tr:'gəšî',pl:'zbliż się (do kobiety)',lemma:'נָגַשׁ',lemmaTr:'nāḡaš',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'f',num:'sg',root:'נגשׁ',note:'I-nun'}},
+ {id:'F29-05',heb:'סְעוּ',tr:'səʿû',pl:'wyruszcie',lemma:'נָסַע',lemmaTr:'nāsaʿ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'נסע',note:'I-nun'}},
+ {id:'F29-06',heb:'שָׂא',tr:'śāʾ',pl:'podnieś, nieś',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'נשׂא',note:'I-nun + III-alef'}},
+ {id:'F29-07',heb:'אֱסֹף',tr:'ʾĕsōp̄',pl:'zgromadź',lemma:'אָסַף',lemmaTr:'ʾāsap̄',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'אסף',note:'I-alef'}},
+ {id:'F29-08',heb:'הַב',tr:'haḇ',pl:'daj! dalejże!',lemma:'הַב',lemmaTr:'haḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'יהב',note:'czasownik ułomny (tylko imperativus)'}},
+ {id:'F29-09',heb:'הָבָה',tr:'hāḇāh',pl:'dalejże, chodźmy',lemma:'הַב',lemmaTr:'haḇ',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'יהב',note:'forma zachęty (kohortatywna)'}},
+ // ---- imperfectum (asymilacja nun) ----
+ {id:'F29-10',heb:'יִפֹּל',tr:'yippōl',pl:'upadnie',lemma:'נָפַל',lemmaTr:'nāp̄al',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'נפל',note:'I-nun; nun asymiluje (dagesz)'}},
+ {id:'F29-11',heb:'יִגַּשׁ',tr:'yiggaš',pl:'zbliży się',lemma:'נָגַשׁ',lemmaTr:'nāḡaš',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'נגשׁ',note:'I-nun'}},
+ {id:'F29-12',heb:'יִגְּשׁוּ',tr:'yiggəšû',pl:'zbliżą się',lemma:'נָגַשׁ',lemmaTr:'nāḡaš',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'נגשׁ',note:'I-nun'}},
+ {id:'F29-13',heb:'יִשָּׂא',tr:'yiśśāʾ',pl:'podniesie',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'נשׂא',note:'I-nun + III-alef'}},
+ {id:'F29-14',heb:'יִתֵּן',tr:'yittēn',pl:'da',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'נתן',note:'I-nun; ē w imperfectum'}},
+ {id:'F29-15',heb:'יִקַּח',tr:'yiqqaḥ',pl:'weźmie',lemma:'לָקַח',lemmaTr:'lāqaḥ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'לקח',note:'odmienia się jak I-nun'}},
+ {id:'F29-16',heb:'תִּשְׂנְאוּ',tr:'tiśnəʾû',pl:'(nie) nienawidźcie',lemma:'שָׂנֵא',lemmaTr:'śānēʾ',cat:'verb',p:{binyan:'qal',form:'juss',pers:2,gen:'m',num:'pl',root:'שׂנא',note:'III-alef; po אַל'}},
+ // ---- waw consecutivum ----
+ {id:'F29-17',heb:'וַתִּדֹּר',tr:'wattiddōr',pl:'i złożyła ślub',lemma:'נָדַר',lemmaTr:'nāḏar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'נדר',note:'I-nun'}},
+ {id:'F29-18',heb:'וַיִּגֹּף',tr:'wayyiggōp̄',pl:'i poraził',lemma:'נָגַף',lemmaTr:'nāḡap̄',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נגף',note:'I-nun'}},
+ {id:'F29-19',heb:'וַיִּטְּעוּ',tr:'wayyiṭṭəʿû',pl:'i zasadzili',lemma:'נָטַע',lemmaTr:'nāṭaʿ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'נטע',note:'I-nun'}},
+ {id:'F29-20',heb:'וַיִּקְחוּ',tr:'wayyiqḥû',pl:'i wzięli',lemma:'לָקַח',lemmaTr:'lāqaḥ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'לקח'}},
+ {id:'F29-21',heb:'וָאֶשָּׂא',tr:'wāʾeśśāʾ',pl:'i podniosłem',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:1,gen:'c',num:'sg',root:'נשׂא',note:'I-nun + III-alef'}},
+ // ---- perfectum ----
+ {id:'F29-22',heb:'נָדַר',tr:'nāḏar',pl:'ślubował',lemma:'נָדַר',lemmaTr:'nāḏar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'נדר',note:'I-nun'}},
+ {id:'F29-23',heb:'שָׂנֵא',tr:'śānēʾ',pl:'nienawidził',lemma:'שָׂנֵא',lemmaTr:'śānēʾ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׂנא',note:'III-alef; statywny'}},
+ {id:'F29-24',heb:'חָפַצְתִּי',tr:'ḥāp̄aṣtî',pl:'chciałem, pragnąłem',lemma:'חָפֵץ',lemmaTr:'ḥāp̄ēṣ',cat:'verb',p:{binyan:'qal',form:'perf',pers:1,gen:'c',num:'sg',root:'חפץ',note:'I-gardłowa'}},
+ {id:'F29-25',heb:'יָכֹלְתִּי',tr:'yāḵōltî',pl:'mogłem, zdołałem',lemma:'יָכֹל',lemmaTr:'yāḵōl',cat:'verb',p:{binyan:'qal',form:'perf',pers:1,gen:'c',num:'sg',root:'יכל',note:'I-jod (nieregularny)'}},
+ // ---- infinitivus constructus (I-nun, z -t; z przyimkami) ----
+ {id:'F29-26',heb:'גֶּשֶׁת',tr:'géšeṯ',pl:'zbliżenie się',lemma:'נָגַשׁ',lemmaTr:'nāḡaš',cat:'verb',p:{binyan:'qal',form:'inf',root:'נגשׁ',note:'I-nun; inf. constr. z -t'}},
+ {id:'F29-27',heb:'לָגֶשֶׁת',tr:'lāgéšeṯ',pl:'zbliżyć się',lemma:'נָגַשׁ',lemmaTr:'nāḡaš',cat:'verb',p:{binyan:'qal',form:'inf',root:'נגשׁ',note:'inf. constr. + לְ (akcent na 1. sylabie)'}},
+ {id:'F29-28',heb:'תֵּת',tr:'tēṯ',pl:'danie, dać',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'inf',root:'נתן',note:'I-nun; inf. constr. z -t'}},
+ {id:'F29-29',heb:'לָתֵת',tr:'lāṯēṯ',pl:'dać',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'inf',root:'נתן',note:'inf. constr. + לְ'}},
+ {id:'F29-30',heb:'לָקַחַת',tr:'lāqáḥaṯ',pl:'wziąć',lemma:'לָקַח',lemmaTr:'lāqaḥ',cat:'verb',p:{binyan:'qal',form:'inf',root:'לקח',note:'inf. constr. + לְ (z -t)'}},
+ {id:'F29-31',heb:'לָשֵׂאת',tr:'lāśēʾṯ',pl:'podnieść, nieść',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'qal',form:'inf',root:'נשׂא',note:'inf. constr. + לְ; I-nun + III-alef'}},
+ {id:'F29-32',heb:'בְּנִשְׂאוֹ',tr:'bənisʾô',pl:'gdy podniósł',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'qal',form:'inf',root:'נשׂא',note:'inf. constr. + בְּ + sufiks 3 os.'}},
+ {id:'F29-33',heb:'לִנְסֹעַ',tr:'linsōaʿ',pl:'wyruszyć',lemma:'נָסַע',lemmaTr:'nāsaʿ',cat:'verb',p:{binyan:'qal',form:'inf',root:'נסע',note:'inf. constr. + לְ; I-nun (forma regularna נְסֹעַ)'}},
+ // ---- rzeczowniki (kontynuacja -eh i nowe leksemy) ----
+ {id:'F29-34',heb:'מִקְנֵהוּ',tr:'miqnēhû',pl:'jego trzoda, bydło',lemma:'מִקְנֶה',lemmaTr:'miqneh',cat:'noun',p:{state:'suf',gen:'m',num:'sg',suf:'3ms',root:'קנה',note:'rzeczownik na -eh (§116, L28)'}},
+ {id:'F29-35',heb:'כֻּתָּנְתּוֹ',tr:'kuttontô',pl:'jego tunika',lemma:'כְּתֹנֶת',lemmaTr:'kəṯṓneṯ',cat:'noun',p:{state:'suf',gen:'f',num:'sg',suf:'3ms',root:'כתן',note:'rzecz. ż. na -et (§111, L27)'}},
+ // ---- czytanka L29 „Jakub i Rachela" ----
+ {id:'F29-36',heb:'הָיְתָה',tr:'hāyəṯāh',pl:'była',lemma:'הָיָה',lemmaTr:'hāyāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'היה',note:'III-he'}},
+ {id:'F29-37',heb:'אֶעֱבֹד',tr:'ʾeʿĕḇōḏ',pl:'będę służył',lemma:'עָבַד',lemmaTr:'ʿāḇaḏ',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'sg',root:'עבד',note:'I-gardłowa'}},
+ {id:'F29-38',heb:'תִּתִּי',tr:'tittî',pl:'moje danie',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'inf',root:'נתן',note:'inf. constr. (תֵּת) + sufiks 1 os.; I-nun'}},
+ {id:'F29-39',heb:'מָלְאוּ',tr:'mālʾû',pl:'wypełniły się (dni)',lemma:'מָלֵא',lemmaTr:'mālēʾ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'מלא',note:'III-alef'}},
+ {id:'F29-40',heb:'וַיַּעַשׂ',tr:'wayyaʿaś',pl:'i przygotował, uczynił',lemma:'עָשָׂה',lemmaTr:'ʿāśāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'עשׂה',note:'III-he, forma apokopowana'}},
+ {id:'F29-41',heb:'רִמִּיתַנִי',tr:'rimmîṯanî',pl:'oszukałeś mnie',lemma:'רִמָּה',lemmaTr:'rimmāh',cat:'verb',p:{binyan:'piel',form:'perf',pers:2,gen:'m',num:'sg',root:'רמה',note:'piel + sufiks 1 os.; III-he'}},
+ /* ===== LEKCJA 30: czasowniki I-Yod (§120) — imperfectum z ē, skrócony imperat./inf. constr., wayyiqtol ===== */
+ // ---- imperativus (skrócony) ----
+ {id:'F30-01',heb:'שֵׁב',tr:'šēḇ',pl:'siedź, zamieszkaj',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'ישׁב',note:'I-jod; skrócony imperativus'}},
+ {id:'F30-02',heb:'רֵד',tr:'rēḏ',pl:'zejdź',lemma:'יָרַד',lemmaTr:'yāraḏ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'ירד',note:'I-jod'}},
+ {id:'F30-03',heb:'צֵא',tr:'ṣēʾ',pl:'wyjdź',lemma:'יָצָא',lemmaTr:'yāṣāʾ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'יצא',note:'I-jod + III-alef'}},
+ {id:'F30-04',heb:'לֵךְ',tr:'lēḵ',pl:'idź',lemma:'הָלַךְ',lemmaTr:'hālaḵ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'הלך',note:'nieregularny, odmienia się jak I-jod'}},
+ {id:'F30-05',heb:'דַּע',tr:'daʿ',pl:'wiedz',lemma:'יָדַע',lemmaTr:'yāḏaʿ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'ידע',note:'I-jod; a w impf. (III-gardłowa)'}},
+ {id:'F30-06',heb:'דְּעוּ',tr:'dəʿû',pl:'wiedzcie',lemma:'יָדַע',lemmaTr:'yāḏaʿ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'ידע'}},
+ {id:'F30-07',heb:'שְׁבוּ',tr:'šəḇû',pl:'mieszkajcie, siądźcie',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'ישׁב'}},
+ {id:'F30-08',heb:'צְאוּ',tr:'ṣəʾû',pl:'wyjdźcie',lemma:'יָצָא',lemmaTr:'yāṣāʾ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'יצא',note:'I-jod + III-alef'}},
+ {id:'F30-09',heb:'רַשׁ',tr:'raš',pl:'odziedzicz',lemma:'יָרַשׁ',lemmaTr:'yāraš',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'ירשׁ',note:'I-jod (typ a, zachowuje jod)'}},
+ {id:'F30-10',heb:'קְרַב',tr:'qəraḇ',pl:'podejdź, zbliż się',lemma:'קָרַב',lemmaTr:'qāraḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'קרב'}},
+ // ---- imperfectum (z ē / û) ----
+ {id:'F30-11',heb:'יֵשֵׁב',tr:'yēšēḇ',pl:'będzie siedział, zamieszka',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'ישׁב',note:'I-jod; ē w prefiksie'}},
+ {id:'F30-12',heb:'יֵלֵד',tr:'yēlēḏ',pl:'urodzi',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'ילד',note:'I-jod'}},
+ {id:'F30-13',heb:'יֵרֵד',tr:'yērēḏ',pl:'zejdzie',lemma:'יָרַד',lemmaTr:'yāraḏ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'ירד',note:'I-jod'}},
+ {id:'F30-14',heb:'יֵדַע',tr:'yēḏaʿ',pl:'będzie wiedział',lemma:'יָדַע',lemmaTr:'yāḏaʿ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'ידע',note:'I-jod'}},
+ {id:'F30-15',heb:'יֵצֵא',tr:'yēṣēʾ',pl:'wyjdzie',lemma:'יָצָא',lemmaTr:'yāṣāʾ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'יצא',note:'I-jod + III-alef'}},
+ {id:'F30-16',heb:'יֵלֵךְ',tr:'yēlēḵ',pl:'pójdzie',lemma:'הָלַךְ',lemmaTr:'hālaḵ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'הלך',note:'nieregularny (jak I-jod)'}},
+ {id:'F30-17',heb:'תִּירְשׁוּ',tr:'tîrəšû',pl:'odziedziczycie',lemma:'יָרַשׁ',lemmaTr:'yāraš',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'pl',root:'ירשׁ',note:'I-jod (typ a)'}},
+ {id:'F30-18',heb:'יִישַׁן',tr:'yîšan',pl:'zaśnie',lemma:'יָשֵׁן',lemmaTr:'yāšēn',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'ישׁן',note:'I-jod (typ a, zachowuje jod)'}},
+ {id:'F30-19',heb:'תּוּכַל',tr:'tûḵal',pl:'będziesz mogła',lemma:'יָכֹל',lemmaTr:'yāḵōl',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'f',num:'sg',root:'יכל',note:'û w prefiksie (nieregularny)'}},
+ {id:'F30-20',heb:'נוּכַל',tr:'nûḵal',pl:'będziemy mogli',lemma:'יָכֹל',lemmaTr:'yāḵōl',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'pl',root:'יכל',note:'û w prefiksie'}},
+ {id:'F30-21',heb:'תִּשְׁאַל',tr:'tišʾal',pl:'zapytasz',lemma:'שָׁאַל',lemmaTr:'šāʾal',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'שׁאל'}},
+ // ---- wayyiqtol (cofnięcie akcentu) ----
+ {id:'F30-22',heb:'וַיֵּשֶׁב',tr:'wayyḗšeḇ',pl:'i usiadł, zamieszkał',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ישׁב',note:'I-jod; cofnięcie akcentu, ē→e'}},
+ {id:'F30-23',heb:'וַתֵּלֶד',tr:'wattḗleḏ',pl:'i urodziła',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'ילד',note:'I-jod; cofnięcie akcentu'}},
+ {id:'F30-24',heb:'וַיֵּלֶךְ',tr:'wayyḗleḵ',pl:'i poszedł',lemma:'הָלַךְ',lemmaTr:'hālaḵ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'הלך',note:'nieregularny; cofnięcie akcentu'}},
+ {id:'F30-25',heb:'וַיֵּרֶד',tr:'wayyḗreḏ',pl:'i zszedł',lemma:'יָרַד',lemmaTr:'yāraḏ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ירד',note:'I-jod; cofnięcie akcentu'}},
+ {id:'F30-26',heb:'וַיֵּצֵא',tr:'wayyēṣēʾ',pl:'i wyszedł',lemma:'יָצָא',lemmaTr:'yāṣāʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'יצא',note:'wyjątek: bez cofnięcia (III-alef)'}},
+ {id:'F30-27',heb:'וַיֵּדַע',tr:'wayyḗḏaʿ',pl:'i poznał',lemma:'יָדַע',lemmaTr:'yāḏaʿ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ידע',note:'wyjątek w grupie a'}},
+ {id:'F30-28',heb:'וַיִּקְרְבוּ',tr:'wayyiqrəḇû',pl:'i zbliżyli się',lemma:'קָרַב',lemmaTr:'qāraḇ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'קרב'}},
+ {id:'F30-29',heb:'וַיִּשְׁאַל',tr:'wayyišʾal',pl:'i zapytał',lemma:'שָׁאַל',lemmaTr:'šāʾal',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׁאל'}},
+ // ---- infinitivus constructus (z -t / przyimkami) ----
+ {id:'F30-30',heb:'שֶׁבֶת',tr:'šéḇeṯ',pl:'siedzenie, mieszkanie',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'inf',root:'ישׁב',note:'I-jod; inf. constr. z -t'}},
+ {id:'F30-31',heb:'לָלֶכֶת',tr:'lāleḵeṯ',pl:'iść',lemma:'הָלַךְ',lemmaTr:'hālaḵ',cat:'verb',p:{binyan:'qal',form:'inf',root:'הלך',note:'inf. constr. + לְ'}},
+ {id:'F30-32',heb:'לֶדֶת',tr:'léḏeṯ',pl:'urodzenie, urodzić',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'qal',form:'inf',root:'ילד',note:'I-jod; inf. constr. z -t'}},
+ {id:'F30-33',heb:'בְּלִדְתֵּךְ',tr:'bəliḏtēḵ',pl:'gdy urodziłaś',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'qal',form:'inf',root:'ילד',note:'inf. constr. + בְּ + sufiks 2 os. r.ż.'}},
+ {id:'F30-34',heb:'לִישֹׁן',tr:'lîšōn',pl:'spać',lemma:'יָשֵׁן',lemmaTr:'yāšēn',cat:'verb',p:{binyan:'qal',form:'inf',root:'ישׁן',note:'inf. constr. + לְ; I-jod'}},
+ {id:'F30-35',heb:'לִשְׁאֹל',tr:'lišʾōl',pl:'zapytać, prosić',lemma:'שָׁאַל',lemmaTr:'šāʾal',cat:'verb',p:{binyan:'qal',form:'inf',root:'שׁאל',note:'inf. constr. + לְ'}},
+ {id:'F30-36',heb:'בִּרְשְׁתְּכֶם',tr:'bərištəḵem',pl:'gdy odziedziczycie',lemma:'יָרַשׁ',lemmaTr:'yāraš',cat:'verb',p:{binyan:'qal',form:'inf',root:'ירשׁ',note:'inf. constr. + בְּ + sufiks 2 os. lmn.'}},
+ // ---- czytanka L30 „Józef i jego bracia (1)" — pierwsze hifil/hitpael ----
+ {id:'F30-37',heb:'רֹעֶה',tr:'rōʿeh',pl:'pasący, pasterz',lemma:'רָעָה',lemmaTr:'rāʿāh',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'sg',root:'רעה',note:'III-he; imiesłów czynny'}},
+ {id:'F30-38',heb:'וַיִּשְׂנְאוּ',tr:'wayyiśnəʾû',pl:'i znienawidzili',lemma:'שָׂנֵא',lemmaTr:'śānēʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'שׂנא',note:'III-alef'}},
+ {id:'F30-39',heb:'דַּבְּרוֹ',tr:'dabbərô',pl:'rozmawiać z nim',lemma:'דִּבֵּר',lemmaTr:'dibbēr',cat:'verb',p:{binyan:'piel',form:'inf',root:'דבר',note:'piel inf. constr. + sufiks 3 os.'}},
+ {id:'F30-40',heb:'וַיַּגֵּד',tr:'wayyaggēḏ',pl:'i opowiedział, oznajmił',lemma:'הִגִּיד',lemmaTr:'higgîḏ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נגד',note:'hifil; I-nun (pierwsze hifil w trenerze)'}},
+ {id:'F30-41',heb:'יִשְׁתַּחֲווּ',tr:'yištaḥăwû',pl:'oddają pokłon, kłaniają się',lemma:'הִשְׁתַּחֲוָה',lemmaTr:'hištaḥăwāh',cat:'verb',p:{binyan:'hitpael',form:'impf',pers:3,gen:'m',num:'pl',root:'חוה',note:'hitpael (forma refleksywna); III-he'}},
+ {id:'F30-42',heb:'לְהִשְׁתַּחֲווֹת',tr:'ləhištaḥăwôṯ',pl:'by oddać pokłon',lemma:'הִשְׁתַּחֲוָה',lemmaTr:'hištaḥăwāh',cat:'verb',p:{binyan:'hitpael',form:'inf',root:'חוה',note:'hitpael inf. constr. + לְ'}},
+ {id:'F30-43',heb:'וַיִּגְעַר',tr:'wayyiḡʿar',pl:'i skarcił',lemma:'גָּעַר',lemmaTr:'gāʿar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'גער',note:'II-gardłowa'}},
+ /* ===== LEKCJA 31: czasowniki III-Hē (§122) — imperf. -eh, imperat. -ēh, inf. -ôṯ, jussivus apokopowany ===== */
+ // ---- imperfectum ----
+ {id:'F31-01',heb:'יִבְנֶה',tr:'yiḇneh',pl:'zbuduje',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'בנה',note:'III-he; końcówka -eh'}},
+ {id:'F31-02',heb:'יִבְנוּ',tr:'yiḇnû',pl:'zbudują',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'בנה',note:'III-he'}},
+ {id:'F31-03',heb:'יַעֲלֶה',tr:'yaʿăleh',pl:'wstąpi, wejdzie',lemma:'עָלָה',lemmaTr:'ʿālāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'עלה',note:'I-gardłowa + III-he'}},
+ {id:'F31-04',heb:'יִרְעֶה',tr:'yirʿeh',pl:'będzie pasł',lemma:'רָעָה',lemmaTr:'rāʿāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'רעה',note:'III-he'}},
+ {id:'F31-05',heb:'תִּבְכֶּה',tr:'tiḇkeh',pl:'będziesz płakać',lemma:'בָּכָה',lemmaTr:'bāḵāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'בכה',note:'III-he'}},
+ {id:'F31-06',heb:'אֶהְיֶה',tr:'ʾehyeh',pl:'będę',lemma:'הָיָה',lemmaTr:'hāyāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'sg',root:'היה',note:'III-he (nieregularny)'}},
+ {id:'F31-07',heb:'אֵלֵד',tr:'ʾēlēḏ',pl:'urodzę',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'sg',root:'ילד',note:'I-jod'}},
+ // ---- imperativus (-ēh) ----
+ {id:'F31-08',heb:'בְּנֵה',tr:'bənēh',pl:'zbuduj',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'בנה',note:'III-he; imperat. na -ēh'}},
+ {id:'F31-09',heb:'עֲלֵה',tr:'ʿălēh',pl:'wstąp, wejdź',lemma:'עָלָה',lemmaTr:'ʿālāh',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'עלה',note:'I-gardłowa + III-he'}},
+ {id:'F31-10',heb:'נְטֵה',tr:'nəṭēh',pl:'wyciągnij',lemma:'נָטָה',lemmaTr:'nāṭāh',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'נטה',note:'I-nun + III-he'}},
+ // ---- jussivus apokopowany ----
+ {id:'F31-11',heb:'יְהִי',tr:'yəhî',pl:'niech będzie',lemma:'הָיָה',lemmaTr:'hāyāh',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'m',num:'sg',root:'היה',note:'forma apokopowana'}},
+ {id:'F31-12',heb:'יַעַל',tr:'yáʿal',pl:'niech wstąpi',lemma:'עָלָה',lemmaTr:'ʿālāh',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'m',num:'sg',root:'עלה',note:'jussivus apokopowany'}},
+ {id:'F31-13',heb:'יֵט',tr:'yēṭ',pl:'niech wyciągnie',lemma:'נָטָה',lemmaTr:'nāṭāh',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'m',num:'sg',root:'נטה',note:'jussivus apokopowany (I-nun + III-he)'}},
+ {id:'F31-14',heb:'אַל־תֵּתַע',tr:'tēṯaʿ',pl:'nie błądź',lemma:'תָּעָה',lemmaTr:'tāʿāh',cat:'verb',p:{binyan:'qal',form:'juss',pers:2,gen:'m',num:'sg',root:'תעה',note:'apokopowany; po אַל'}},
+ // ---- wayyiqtol apokopowany ----
+ {id:'F31-15',heb:'וַיִּחַר',tr:'wayyíḥar',pl:'i rozgniewał się',lemma:'חָרָה',lemmaTr:'ḥārāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'חרה',note:'III-he, apokopowany (חָרָה לְ‑)'}},
+ {id:'F31-16',heb:'וַיִּכְלוּ',tr:'wayyiḵlû',pl:'i skończyły się, wyschły',lemma:'כָּלָה',lemmaTr:'kālāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'כלה',note:'III-he'}},
+ {id:'F31-17',heb:'וַנַּעַל',tr:'wannáʿal',pl:'i wstąpiliśmy',lemma:'עָלָה',lemmaTr:'ʿālāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:1,gen:'c',num:'pl',root:'עלה',note:'apokopowany (I-gardłowa + III-he)'}},
+ {id:'F31-18',heb:'וַיַּעַן',tr:'wayyáʿan',pl:'i odpowiedział',lemma:'עָנָה',lemmaTr:'ʿānāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ענה',note:'apokopowany (I-gardłowa + III-he)'}},
+ {id:'F31-19',heb:'וַיַּעֲלוּ',tr:'wayyaʿălû',pl:'i weszli, wstąpili',lemma:'עָלָה',lemmaTr:'ʿālāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'עלה',note:'forma pełna (lmn. nieskrócona)'}},
+ {id:'F31-20',heb:'וַתֵּתַע',tr:'wattēṯaʿ',pl:'i błądziła',lemma:'תָּעָה',lemmaTr:'tāʿāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'תעה',note:'apokopowany'}},
+ {id:'F31-21',heb:'וַיֵּט',tr:'wayyēṭ',pl:'i wyciągnął',lemma:'נָטָה',lemmaTr:'nāṭāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נטה',note:'apokopowany (I-nun + III-he)'}},
+ {id:'F31-22',heb:'וַיַּעַשׂ',tr:'wayyáʿaś',pl:'i uczynił',lemma:'עָשָׂה',lemmaTr:'ʿāśāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'עשׂה',note:'apokopowany (I-gardłowa + III-he)'}},
+ {id:'F31-23',heb:'וַיִּשְׁחֲטוּ',tr:'wayyišḥăṭû',pl:'i zarżnęli',lemma:'שָׁחַט',lemmaTr:'šāḥaṭ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'שׁחט',note:'II-gardłowa'}},
+ // ---- infinitivus constructus (-ôṯ, z przyimkami/sufiksami) ----
+ {id:'F31-24',heb:'בְּנוֹת',tr:'bənôṯ',pl:'budowanie, zbudować',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'בנה',note:'III-he; inf. constr. na -ôṯ'}},
+ {id:'F31-25',heb:'בְּנוֹתִי',tr:'bənôṯî',pl:'moje budowanie',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'בנה',note:'inf. constr. + sufiks 1 os.'}},
+ {id:'F31-26',heb:'לִרְאוֹת',tr:'lirʾôṯ',pl:'zobaczyć',lemma:'רָאָה',lemmaTr:'rāʾāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'ראה',note:'inf. constr. + לְ; III-he'}},
+ {id:'F31-27',heb:'כִּרְאוֹתִי',tr:'kirʾôṯî',pl:'gdy zobaczyłem',lemma:'רָאָה',lemmaTr:'rāʾāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'ראה',note:'inf. constr. + כְּ + sufiks 1 os.'}},
+ {id:'F31-28',heb:'בִּרְעוֹתָם',tr:'birʿôṯām',pl:'gdy paśli',lemma:'רָעָה',lemmaTr:'rāʿāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'רעה',note:'inf. constr. + בְּ + sufiks 3 os. lmn.'}},
+ {id:'F31-29',heb:'לַעֲלוֹת',tr:'laʿălôṯ',pl:'wstąpić, wejść',lemma:'עָלָה',lemmaTr:'ʿālāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'עלה',note:'inf. constr. + לְ; I-gardłowa + III-he'}},
+ // ---- imiesłowy / leksemy słowniczka ----
+ {id:'F31-30',heb:'עֹשֶׂה',tr:'ʿōśeh',pl:'czyniący, robiący',lemma:'עָשָׂה',lemmaTr:'ʿāśāh',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'sg',root:'עשׂה',note:'III-he; imiesłów czynny'}},
+ {id:'F31-31',heb:'וַיִּשְׁפֹּךְ',tr:'wayyišpōḵ',pl:'i przelał (krew)',lemma:'שָׁפַךְ',lemmaTr:'šāp̄aḵ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׁפך'}},
+ {id:'F31-32',heb:'וַיִּתְפֹּשׂ',tr:'wayyiṯpōś',pl:'i schwytał',lemma:'תָּפַשׂ',lemmaTr:'tāp̄aś',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'תפשׂ'}},
+ {id:'F31-33',heb:'יִקְנֶה',tr:'yiqneh',pl:'kupi',lemma:'קָנָה',lemmaTr:'qānāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'קנה',note:'III-he'}},
+ {id:'F31-34',heb:'יִשְׁתֶּה',tr:'yišteh',pl:'będzie pił',lemma:'שָׁתָה',lemmaTr:'šāṯāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁתה',note:'III-he'}},
+ // ---- czytanka L31 „Józef i jego bracia (2)" ----
+ {id:'F31-35',heb:'וַיֵּלְכוּ',tr:'wayyēləḵû',pl:'i poszli',lemma:'הָלַךְ',lemmaTr:'hālaḵ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'הלך',note:'nieregularny (jak I-jod)'}},
+ {id:'F31-36',heb:'רֹעִים',tr:'rōʿîm',pl:'pasący',lemma:'רָעָה',lemmaTr:'rāʿāh',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'pl',root:'רעה',note:'III-he; imiesłów czynny'}},
+ {id:'F31-37',heb:'רְאֵה',tr:'rəʾēh',pl:'zobacz',lemma:'רָאָה',lemmaTr:'rāʾāh',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'ראה',note:'III-he; imperat. na -ēh'}},
+ {id:'F31-38',heb:'וַיָּבֹא',tr:'wayyāḇōʾ',pl:'i przyszedł',lemma:'בּוֹא',lemmaTr:'bôʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'בוא',note:'czasownik pusty'}},
+ {id:'F31-39',heb:'וְנַהַרְגָה',tr:'wənaharḡāh',pl:'i zabijmy',lemma:'הָרַג',lemmaTr:'hāraḡ',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'הרג',note:'I-gardłowa; cohortativus'}},
+ {id:'F31-40',heb:'וַיִּתְפְּשׂוּ',tr:'wayyiṯpəśû',pl:'i pochwycili',lemma:'תָּפַשׂ',lemmaTr:'tāp̄aś',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'תפשׂ'}},
+ {id:'F31-41',heb:'וַיַּשְׁלִיכוּ',tr:'wayyašlîḵû',pl:'i wrzucili',lemma:'הִשְׁלִיךְ',lemmaTr:'hišlîḵ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'שׁלך',note:'hifil'}},
+ {id:'F31-42',heb:'אֲכָלָה',tr:'ʾăḵālāh',pl:'pożarła',lemma:'אָכַל',lemmaTr:'ʾāḵal',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'אכל',note:'I-alef'}},
+ /* ===== LEKCJA 32: czasowniki puste II-Waw/Yod (§124) — imperf. yāqûm, jussivus yāqōm, wayyiqtol wayyā́qom ===== */
+ // ---- imperfectum ----
+ {id:'F32-01',heb:'יָקוּם',tr:'yāqûm',pl:'wstanie',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'קום',note:'pusty II-Waw; û w temacie'}},
+ {id:'F32-02',heb:'יָשִׂים',tr:'yāśîm',pl:'położy, ustanowi',lemma:'שָׂם',lemmaTr:'śām',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׂים',note:'pusty II-Yod; î w temacie'}},
+ {id:'F32-03',heb:'יָבוֹא',tr:'yāḇôʾ',pl:'przyjdzie, wejdzie',lemma:'בּוֹא',lemmaTr:'bôʾ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'בוא',note:'pusty; samogłoska ô'}},
+ {id:'F32-04',heb:'יָרוּץ',tr:'yārûṣ',pl:'pobiegnie',lemma:'רָץ',lemmaTr:'rāṣ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'רוץ',note:'pusty'}},
+ {id:'F32-05',heb:'יָנוּס',tr:'yānûs',pl:'ucieknie',lemma:'נָס',lemmaTr:'nās',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'נוס',note:'pusty'}},
+ {id:'F32-06',heb:'יָמוּת',tr:'yāmûṯ',pl:'umrze',lemma:'מֵת',lemmaTr:'mēṯ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'מות',note:'pusty'}},
+ // ---- jussivus (skrócony) ----
+ {id:'F32-07',heb:'יָקֹם',tr:'yāqōm',pl:'niech wstanie',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'m',num:'sg',root:'קום',note:'jussivus (≠ forma odwrócona)'}},
+ {id:'F32-08',heb:'יָשֵׂם',tr:'yāśēm',pl:'niech położy',lemma:'שָׂם',lemmaTr:'śām',cat:'verb',p:{binyan:'qal',form:'juss',pers:3,gen:'m',num:'sg',root:'שׂים',note:'jussivus'}},
+ // ---- wayyiqtol (cofnięcie akcentu) ----
+ {id:'F32-09',heb:'וַיָּקָם',tr:'wayyā́qom',pl:'i wstał',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'קום',note:'pusty; cofnięcie akcentu, û→o'}},
+ {id:'F32-10',heb:'וַתָּקָם',tr:'wattā́qom',pl:'i wstała',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'קום'}},
+ {id:'F32-11',heb:'וַיָּשֶׂם',tr:'wayyā́śem',pl:'i położył',lemma:'שָׂם',lemmaTr:'śām',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׂים',note:'pusty; cofnięcie akcentu'}},
+ {id:'F32-12',heb:'וַיָּבוֹא',tr:'wayyāḇôʾ',pl:'i przyszedł',lemma:'בּוֹא',lemmaTr:'bôʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'בוא',note:'pusty; bez cofnięcia akcentu'}},
+ {id:'F32-13',heb:'וַיָּגָר',tr:'wayyā́ḡor',pl:'i zamieszkał',lemma:'גָּר',lemmaTr:'gār',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'גור',note:'pusty'}},
+ {id:'F32-14',heb:'וָאָקוּם',tr:'wāʾāqûm',pl:'i wstałem',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:1,gen:'c',num:'sg',root:'קום',note:'1 os. — bez cofnięcia'}},
+ {id:'F32-15',heb:'וָאָנוּס',tr:'wāʾānûs',pl:'i uciekłem',lemma:'נָס',lemmaTr:'nās',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:1,gen:'c',num:'sg',root:'נוס'}},
+ {id:'F32-16',heb:'וַיָּסַר',tr:'wayyā́sar',pl:'i zboczył, odszedł',lemma:'סָר',lemmaTr:'sār',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'סור',note:'pusty; wariant z a (rdzeń gardłowy/ר)'}},
+ // ---- cohortativus ----
+ {id:'F32-17',heb:'נָקוּמָה',tr:'nāqûmāh',pl:'powstańmy',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'קום'}},
+ {id:'F32-18',heb:'נָשִׂימָה',tr:'nāśîmāh',pl:'ustanówmy, połóżmy',lemma:'שָׂם',lemmaTr:'śām',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'שׂים'}},
+ // ---- imperativus ----
+ {id:'F32-19',heb:'קוּם',tr:'qûm',pl:'wstań',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'קום'}},
+ {id:'F32-20',heb:'קוּמִי',tr:'qûmî',pl:'wstań (do kobiety)',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'f',num:'sg',root:'קום'}},
+ {id:'F32-21',heb:'שִׂים',tr:'śîm',pl:'połóż, ustanów',lemma:'שָׂם',lemmaTr:'śām',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'שׂים'}},
+ {id:'F32-22',heb:'נוּסוּ',tr:'nûsû',pl:'uciekajcie',lemma:'נָס',lemmaTr:'nās',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'נוס'}},
+ {id:'F32-23',heb:'שׁוּבִי',tr:'šûḇî',pl:'wróć (do kobiety)',lemma:'שָׁב',lemmaTr:'šāḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'f',num:'sg',root:'שׁוב'}},
+ {id:'F32-24',heb:'רְדֹף',tr:'rəḏōp̄',pl:'ścigaj',lemma:'רָדַף',lemmaTr:'rāḏap̄',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'רדף'}},
+ // ---- infinitivus constructus ----
+ {id:'F32-25',heb:'קוּם',tr:'qûm',pl:'wstanie, powstać',lemma:'קָם',lemmaTr:'qām',cat:'verb',p:{binyan:'qal',form:'inf',root:'קום',note:'inf. constr. = imperat. w pustych'}},
+ {id:'F32-26',heb:'לָצוּם',tr:'lāṣûm',pl:'pościć',lemma:'צָם',lemmaTr:'ṣām',cat:'verb',p:{binyan:'qal',form:'inf',root:'צום',note:'inf. constr. + לְ'}},
+ {id:'F32-27',heb:'לָרוּץ',tr:'lārûṣ',pl:'biec',lemma:'רָץ',lemmaTr:'rāṣ',cat:'verb',p:{binyan:'qal',form:'inf',root:'רוץ',note:'inf. constr. + לְ'}},
+ {id:'F32-28',heb:'בּוֹא',tr:'bôʾ',pl:'przyjście, wejść',lemma:'בּוֹא',lemmaTr:'bôʾ',cat:'verb',p:{binyan:'qal',form:'inf',root:'בוא',note:'inf. constr.'}},
+ // ---- perfectum / imiesłowy (nowe leksemy) ----
+ {id:'F32-29',heb:'קָנוּ',tr:'qānû',pl:'kupili',lemma:'קָנָה',lemmaTr:'qānāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'קנה',note:'III-he'}},
+ {id:'F32-30',heb:'שָׁת',tr:'šāṯ',pl:'położył',lemma:'שָׁת',lemmaTr:'šāṯ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁית',note:'pusty II-Yod'}},
+ {id:'F32-31',heb:'הָרָץ',tr:'hārāṣ',pl:'biegnący',lemma:'רָץ',lemmaTr:'rāṣ',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'sg',root:'רוץ',note:'pusty; imiesłów czynny'}},
+ {id:'F32-32',heb:'רֹדְפִים',tr:'rōḏəp̄îm',pl:'ścigający',lemma:'רָדַף',lemmaTr:'rāḏap̄',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'pl',root:'רדף'}},
+ // ---- czytanka L32 „Józef uprowadzony do Egiptu" ----
+ {id:'F32-33',heb:'וַיֵּשְׁבוּ',tr:'wayyēšəḇû',pl:'i usiedli',lemma:'יָשַׁב',lemmaTr:'yāšaḇ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'ישׁב',note:'I-jod'}},
+ {id:'F32-34',heb:'וַיִּשְׂאוּ',tr:'wayyiśʾû',pl:'i podnieśli (oczy)',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'נשׂא',note:'I-nun + III-alef'}},
+ {id:'F32-35',heb:'לָרֶדֶת',tr:'lāreḏeṯ',pl:'by zejść',lemma:'יָרַד',lemmaTr:'yāraḏ',cat:'verb',p:{binyan:'qal',form:'inf',root:'ירד',note:'inf. constr. + לְ; I-jod'}},
+ {id:'F32-36',heb:'וְנִמְכְּרָה',tr:'wənimkərāh',pl:'sprzedajmy',lemma:'מָכַר',lemmaTr:'māḵar',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'מכר'}},
+ {id:'F32-37',heb:'וַיִּמְכְּרוּ',tr:'wayyimkərû',pl:'i sprzedali',lemma:'מָכַר',lemmaTr:'māḵar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'מכר'}},
+ {id:'F32-38',heb:'וַיִּקֶן',tr:'wayyiqen',pl:'i kupił',lemma:'קָנָה',lemmaTr:'qānāh',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'קנה',note:'III-he, forma apokopowana'}},
+ {id:'F32-39',heb:'מַצְלִיחַ',tr:'maṣlîaḥ',pl:'odnoszący powodzenie, pomyślny',lemma:'הִצְלִיחַ',lemmaTr:'hiṣlîaḥ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'צלח',note:'hifil; imiesłów'}},
+ /* ===== LEKCJA 33: czasowniki geminowane / podwojone ע״ע (§126) ===== */
+ // ---- imperfectum (typ ō / a) ----
+ {id:'F33-01',heb:'יָסֹב',tr:'yāsōḇ',pl:'otoczy, obejdzie',lemma:'סָבַב',lemmaTr:'sāḇaḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'סבב',note:'podwojony; typ ō'}},
+ {id:'F33-02',heb:'יָסֹבּוּ',tr:'yāsṓbbû',pl:'otoczą',lemma:'סָבַב',lemmaTr:'sāḇaḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'סבב',note:'podwojenie wraca przed sufiksem'}},
+ {id:'F33-03',heb:'תָּסֹבּוּ',tr:'tāsōbbû',pl:'okrążycie',lemma:'סָבַב',lemmaTr:'sāḇaḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'pl',root:'סבב'}},
+ {id:'F33-04',heb:'יֵקַל',tr:'yēqal',pl:'będzie lekki',lemma:'קַל',lemmaTr:'qal',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'קלל',note:'podwojony; typ a'}},
+ {id:'F33-05',heb:'יֵרַע',tr:'yēraʿ',pl:'będzie złe',lemma:'רַע',lemmaTr:'raʿ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'רעע',note:'podwojony; typ a'}},
+ {id:'F33-06',heb:'יַחְשֹׂךְ',tr:'yaḥśōḵ',pl:'powstrzyma',lemma:'חָשַׂךְ',lemmaTr:'ḥāśaḵ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'חשׂך',note:'I-gardłowa (nie geminowany)'}},
+ {id:'F33-07',heb:'יָמֹד',tr:'yāmōḏ',pl:'zmierzy',lemma:'מָדַד',lemmaTr:'māḏaḏ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'מדד',note:'podwojony'}},
+ {id:'F33-08',heb:'יָדֹמּוּ',tr:'yāḏōmmû',pl:'zamilkną',lemma:'דַּם',lemmaTr:'dam',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'דמם',note:'podwojony'}},
+ {id:'F33-09',heb:'תֵּשַׁם',tr:'tēšam',pl:'będzie spustoszone',lemma:'שָׁמֵם',lemmaTr:'šāmēm',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'f',num:'sg',root:'שׁמם',note:'podwojony'}},
+ // ---- wayyiqtol ----
+ {id:'F33-10',heb:'וַיָּסָב',tr:'wayyā́soḇ',pl:'i otoczył, obrócił się',lemma:'סָבַב',lemmaTr:'sāḇaḇ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'סבב',note:'podwojony; cofnięcie akcentu'}},
+ {id:'F33-11',heb:'וַיֵּרְעוּ',tr:'wayyērʿû',pl:'i były złe',lemma:'רַע',lemmaTr:'raʿ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'רעע',note:'podwojony'}},
+ {id:'F33-12',heb:'וַיִּתַּמּוּ',tr:'wayyittammû',pl:'i skończyli',lemma:'תַּם',lemmaTr:'tam',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'תמם',note:'podwojony (typ jak I-nun)'}},
+ {id:'F33-13',heb:'וַתִּדַּם',tr:'wattiddam',pl:'i zamilkła',lemma:'דַּם',lemmaTr:'dam',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'דמם',note:'podwojony (typ jak I-nun)'}},
+ // ---- imperativus ----
+ {id:'F33-14',heb:'סֹב',tr:'sōḇ',pl:'otocz, obejdź',lemma:'סָבַב',lemmaTr:'sāḇaḇ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'סבב',note:'podwojony'}},
+ {id:'F33-15',heb:'דֹּמּוּ',tr:'dōmmû',pl:'zamilknijcie',lemma:'דַּם',lemmaTr:'dam',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'pl',root:'דמם'}},
+ {id:'F33-16',heb:'חֹן',tr:'ḥōn',pl:'zmiłuj się',lemma:'חָנַן',lemmaTr:'ḥānan',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'חנן',note:'podwojony'}},
+ // ---- infinitivus constructus ----
+ {id:'F33-17',heb:'סֹב',tr:'sōḇ',pl:'otoczenie, obejście',lemma:'סָבַב',lemmaTr:'sāḇaḇ',cat:'verb',p:{binyan:'qal',form:'inf',root:'סבב',note:'podwojony; inf. constr.'}},
+ {id:'F33-18',heb:'לָמֹד',tr:'lāmōḏ',pl:'mierzyć',lemma:'מָדַד',lemmaTr:'māḏaḏ',cat:'verb',p:{binyan:'qal',form:'inf',root:'מדד',note:'inf. constr. + לְ'}},
+ // ---- perfectum / imiesłowy (leksemy słowniczka) ----
+ {id:'F33-19',heb:'מָדַד',tr:'māḏaḏ',pl:'zmierzył',lemma:'מָדַד',lemmaTr:'māḏaḏ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'מדד',note:'podwojony'}},
+ {id:'F33-20',heb:'חָנַן',tr:'ḥānan',pl:'zmiłował się, sprzyjał',lemma:'חָנַן',lemmaTr:'ḥānan',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'חנן',note:'podwojony'}},
+ {id:'F33-21',heb:'חָשַׂךְ',tr:'ḥāśaḵ',pl:'powstrzymał, zatrzymał',lemma:'חָשַׂךְ',lemmaTr:'ḥāśaḵ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'חשׂך',note:'I-gardłowa'}},
+ {id:'F33-22',heb:'שָׁמֵם',tr:'šāmēm',pl:'opuszczony, spustoszony',lemma:'שָׁמֵם',lemmaTr:'šāmēm',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'sg',root:'שׁמם',note:'podwojony; imiesłów czynny'}},
+ {id:'F33-23',heb:'תָּחֹן',tr:'tāḥōn',pl:'zmiłujesz się',lemma:'חָנַן',lemmaTr:'ḥānan',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'חנן',note:'podwojony'}},
+ // ---- czytanka L33 „Józef i żona Potifara" ----
+ {id:'F33-24',heb:'וַתִּשָּׂא',tr:'wattiśśāʾ',pl:'i podniosła (oczy)',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'נשׂא',note:'I-nun + III-alef'}},
+ {id:'F33-25',heb:'וַיְמָאֵן',tr:'wayməʾēn',pl:'i odmówił',lemma:'מֵאֵן',lemmaTr:'mēʾēn',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'מאן',note:'piel'}},
+ {id:'F33-26',heb:'וַיָּנָס',tr:'wayyānos',pl:'i uciekł',lemma:'נָס',lemmaTr:'nās',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נוס',note:'pusty'}},
+ /* ===== LEKCJA 34: imiesłów bierny (§128) + infinitivus absolutus (§129) ===== */
+ // ---- imiesłów bierny (qāṭûl) ----
+ {id:'F34-01',heb:'כָּתוּב',tr:'kāṯûḇ',pl:'napisany',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'כתב',note:'imiesłów bierny qāṭûl'}},
+ {id:'F34-02',heb:'שָׁלוּחַ',tr:'šālûaḥ',pl:'posłany',lemma:'שָׁלַח',lemmaTr:'šālaḥ',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'שׁלח',note:'pátaḥ furtivum (III-gardłowa)'}},
+ {id:'F34-03',heb:'בָּנוּי',tr:'bānûy',pl:'zbudowany',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'בנה',note:'końcowe -uy (III-he)'}},
+ {id:'F34-04',heb:'הָרוּג',tr:'hārûḡ',pl:'zabity',lemma:'הָרַג',lemmaTr:'hāraḡ',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'הרג'}},
+ {id:'F34-05',heb:'אָסוּר',tr:'ʾāsûr',pl:'związany, uwięziony',lemma:'אָסַר',lemmaTr:'ʾāsar',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'אסר'}},
+ {id:'F34-06',heb:'סָגוּר',tr:'sāḡûr',pl:'zamknięty',lemma:'סָגַר',lemmaTr:'sāḡar',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'סגר'}},
+ {id:'F34-07',heb:'שָׂרוּף',tr:'śārûp̄',pl:'spalony',lemma:'שָׂרַף',lemmaTr:'śārap̄',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'שׂרף'}},
+ {id:'F34-08',heb:'שְׁבוּרִים',tr:'šəḇûrîm',pl:'rozbite, połamane',lemma:'שָׁבַר',lemmaTr:'šāḇar',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'pl',root:'שׁבר'}},
+ {id:'F34-09',heb:'אָרוּר',tr:'ʾārûr',pl:'przeklęty',lemma:'אָרַר',lemmaTr:'ʾārar',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'ארר',note:'podwojony'}},
+ {id:'F34-10',heb:'נָטוּעַ',tr:'nāṭûaʿ',pl:'zasadzony',lemma:'נָטַע',lemmaTr:'nāṭaʿ',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'נטע',note:'I-nun; pátaḥ furtivum'}},
+ {id:'F34-11',heb:'יָדוּעַ',tr:'yāḏûaʿ',pl:'znany, poznany',lemma:'יָדַע',lemmaTr:'yāḏaʿ',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'ידע',note:'I-jod'}},
+ {id:'F34-12',heb:'קָרוּא',tr:'qārûʾ',pl:'wezwany, zwołany',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'m',num:'sg',root:'קרא',note:'III-alef'}},
+ {id:'F34-13',heb:'שְׁחוּטָה',tr:'šəḥûṭāh',pl:'zarżnięta',lemma:'שָׁחַט',lemmaTr:'šāḥaṭ',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'f',num:'sg',root:'שׁחט'}},
+ {id:'F34-14',heb:'בְּנוּיָה',tr:'bənûyāh',pl:'zbudowana',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'f',num:'sg',root:'בנה',note:'III-he'}},
+ {id:'F34-15',heb:'שְׂרוּפַת',tr:'śərûp̄aṯ',pl:'spalona (czymś)',lemma:'שָׂרַף',lemmaTr:'śārap̄',cat:'verb',p:{binyan:'qal',form:'ptcpPass',gen:'f',num:'sg',root:'שׂרף',note:'forma constructus (עִיר שְׂרוּפַת אֵשׁ)'}},
+ // ---- infinitivus absolutus (qāṭôl) ----
+ {id:'F34-16',heb:'כָּתוֹב',tr:'kāṯôḇ',pl:'pisać (inf. abs.)',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'כתב',note:'wzmacnia/uzupełnia czasownik osobowy'}},
+ {id:'F34-17',heb:'שָׁמוֹר',tr:'šāmôr',pl:'strzec (inf. abs.); strzeż!',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'שׁמר',note:'np. שָׁמוֹר תִּשְׁמְרוּ — wiernie przestrzegajcie'}},
+ {id:'F34-18',heb:'זָכוֹר',tr:'zāḵôr',pl:'pamiętać (inf. abs.); pamiętaj!',lemma:'זָכַר',lemmaTr:'zāḵar',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'זכר',note:'inf. abs. w funkcji rozkazu'}},
+ {id:'F34-19',heb:'הָלוֹךְ',tr:'hālôḵ',pl:'idąc (inf. abs.)',lemma:'הָלַךְ',lemmaTr:'hālaḵ',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'הלך',note:'np. הָלוֹךְ וְאָכוֹל — szedł jedząc'}},
+ {id:'F34-20',heb:'אָכוֹל',tr:'ʾāḵôl',pl:'jedząc (inf. abs.)',lemma:'אָכַל',lemmaTr:'ʾāḵal',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'אכל'}},
+ {id:'F34-21',heb:'רָאֹה',tr:'rāʾōh',pl:'widzieć (inf. abs.)',lemma:'רָאָה',lemmaTr:'rāʾāh',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'ראה',note:'III-he; np. רָאֹה רָאִיתִי — naprawdę widziałem'}},
+ {id:'F34-22',heb:'עָשֹׂה',tr:'ʿāśōh',pl:'czynić (inf. abs.)',lemma:'עָשָׂה',lemmaTr:'ʿāśāh',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'עשׂה',note:'III-he'}},
+ {id:'F34-23',heb:'נָתוֹן',tr:'nāṯôn',pl:'dać (inf. abs.)',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'נתן',note:'I-nun'}},
+ {id:'F34-24',heb:'שָׁבוֹת',tr:'šāḇôṯ',pl:'zaprzestać (inf. abs.)',lemma:'שָׁבַת',lemmaTr:'šāḇaṯ',cat:'verb',p:{binyan:'qal',form:'infAbs',root:'שׁבת'}},
+ // ---- czytanka L34 „Józef jako tłumacz snów" ----
+ {id:'F34-25',heb:'וַיִּפְתֹּר',tr:'wayyip̄tōr',pl:'i wytłumaczył (sen)',lemma:'פָּתַר',lemmaTr:'pāṯar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'פתר'}},
+ {id:'F34-26',heb:'וַיִּיקַץ',tr:'wayyîqaṣ',pl:'i obudził się',lemma:'יָקַץ',lemmaTr:'yāqaṣ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'יקץ',note:'I-jod'}},
+ {id:'F34-27',heb:'וַתֹּאכַלְנָה',tr:'wattōʾḵalnāh',pl:'i pożarły',lemma:'אָכַל',lemmaTr:'ʾāḵal',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'f',num:'pl',root:'אכל',note:'I-alef'}},
+ {id:'F34-28',heb:'עֹמֵד',tr:'ʿōmēḏ',pl:'stojący',lemma:'עָמַד',lemmaTr:'ʿāmaḏ',cat:'verb',p:{binyan:'qal',form:'ptcp',gen:'m',num:'sg',root:'עמד',note:'I-gardłowa'}},
+ /* ===== LEKCJA 35: składnia — sekwencje zdań z wə- (§132) + יֵשׁ/אֵין (§133) ===== */
+ // ---- weqatal (waw consec. + perfectum) — sygnatura sekwencji ----
+ {id:'F35-01',heb:'וְלָקַחְתָּ',tr:'wəlāqaḥtā',pl:'i weźmiesz',lemma:'לָקַח',lemmaTr:'lāqaḥ',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'sg',root:'לקח',note:'waw consec. + perf. (sekwencja po imiesłowie/impf.)'}},
+ {id:'F35-02',heb:'וְנָתַתָּ',tr:'wənāṯattā',pl:'i dasz',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'sg',root:'נתן',note:'I-nun; waw consec. + perf.'}},
+ {id:'F35-03',heb:'וְנָסְנוּ',tr:'wənāsnû',pl:'i uciekniemy',lemma:'נָס',lemmaTr:'nās',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:1,gen:'c',num:'pl',root:'נוס',note:'pusty; waw consec. + perf.'}},
+ {id:'F35-04',heb:'וְשָׁמַרְתָּ',tr:'wəšāmartā',pl:'i będziesz przestrzegał',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'weqatal',pers:2,gen:'m',num:'sg',root:'שׁמר',note:'sekwencja po trybie rozkazującym'}},
+ // ---- nowe leksemy słowniczka XXXV ----
+ {id:'F35-05',heb:'יִיטַב',tr:'yîṭaḇ',pl:'będzie się powodziło',lemma:'יָטַב',lemmaTr:'yāṭaḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'יטב',note:'I-jod; nieosobowo z לְ'}},
+ {id:'F35-06',heb:'תִּרְעַב',tr:'tirʿaḇ',pl:'zgłodniejesz',lemma:'רָעֵב',lemmaTr:'rāʿēḇ',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'רעב',note:'II-gardłowa'}},
+ {id:'F35-07',heb:'יִחְיֶה',tr:'yiḥyeh',pl:'będzie żył',lemma:'חָיָה',lemmaTr:'ḥāyāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'חיה',note:'III-he'}},
+ {id:'F35-08',heb:'נִחְיֶה',tr:'niḥyeh',pl:'abyśmy żyli',lemma:'חָיָה',lemmaTr:'ḥāyāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'pl',root:'חיה',note:'III-he; po לְמַעַן'}},
+ {id:'F35-09',heb:'יִקְרֶה',tr:'yiqreh',pl:'wydarzy się, spotka',lemma:'קָרָה',lemmaTr:'qārāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'קרה',note:'III-he'}},
+ {id:'F35-10',heb:'נַעַזְבָה',tr:'naʿazḇāh',pl:'opuśćmy',lemma:'עָזַב',lemmaTr:'ʿāzaḇ',cat:'verb',p:{binyan:'qal',form:'coh',pers:1,gen:'c',num:'pl',root:'עזב',note:'I-gardłowa; cohortativus'}},
+ // ---- czytanka L35 (Józef i głód) ----
+ {id:'F35-11',heb:'וַיִּצְעַק',tr:'wayyiṣʿaq',pl:'i wołał, krzyczał',lemma:'צָעַק',lemmaTr:'ṣāʿaq',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'צעק',note:'II-gardłowa'}},
+ {id:'F35-12',heb:'לִקְנוֹת',tr:'liqnôṯ',pl:'by kupić',lemma:'קָנָה',lemmaTr:'qānāh',cat:'verb',p:{binyan:'qal',form:'inf',root:'קנה',note:'III-he; inf. constr. + לְ'}},
+ {id:'F35-13',heb:'נָמוּת',tr:'nāmûṯ',pl:'umrzemy',lemma:'מֵת',lemmaTr:'mēṯ',cat:'verb',p:{binyan:'qal',form:'impf',pers:1,gen:'c',num:'pl',root:'מות',note:'pusty'}},
+ /* ===== LEKCJA 36: partykuły dyskursu — הִנֵּה (§135), נָא (§136), עוֹד / אַיֵּה (§137), כָּל־ (§138) ===== */
+ // ---- נָא przy trybie rozkazującym ----
+ {id:'F36-01',heb:'רוּץ־נָא',tr:'rûṣ-nāʾ',pl:'pobiegnij, proszę',lemma:'רָץ',lemmaTr:'rāṣ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'רוץ',note:'pusty + partykuła נָא'}},
+ {id:'F36-02',heb:'שְׁמַע־נָא',tr:'šəmaʿ-nāʾ',pl:'posłuchaj, proszę',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'שׁמע',note:'III-gardłowa + partykuła נָא'}},
+ // ---- nowy czasownik słowniczka ----
+ {id:'F36-03',heb:'בָּחַן',tr:'bāḥan',pl:'poddał próbie, wystawił na próbę',lemma:'בָּחַן',lemmaTr:'bāḥan',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'בחן'}},
+ {id:'F36-04',heb:'יִבְחַן',tr:'yiḇḥan',pl:'podda próbie',lemma:'בָּחַן',lemmaTr:'bāḥan',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'בחן'}},
+ // ---- czytanka L36 „Józef przyjmuje braci" ----
+ {id:'F36-05',heb:'וַיַּכֵּר',tr:'wayyakkēr',pl:'i rozpoznał',lemma:'הִכִּיר',lemmaTr:'hikkîr',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נכר',note:'hifil'}},
+ {id:'F36-06',heb:'וַיִּזְכֹּר',tr:'wayyizkōr',pl:'i przypomniał sobie',lemma:'זָכַר',lemmaTr:'zāḵar',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'זכר'}},
+ /* ===== LEKCJA 37: binian NIFAL (§139–141) — pierwszy binian pochodny, znaczenie medio-pasywne ===== */
+ // ---- nifal perfectum (medio-pasywny / rezultatywny) ----
+ {id:'F37-01',heb:'נִכְתַּב',tr:'niḵtaḇ',pl:'został napisany',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'כתב',note:'wzór regularny; przedrostek n-'}},
+ {id:'F37-02',heb:'נֶעֶזְבָה',tr:'neʿezḇāh',pl:'została opuszczona',lemma:'עָזַב',lemmaTr:'ʿāzaḇ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'f',num:'sg',root:'עזב',note:'I-gardłowa'}},
+ {id:'F37-03',heb:'נֶהֱרַג',tr:'nehĕraḡ',pl:'został zabity',lemma:'הָרַג',lemmaTr:'hāraḡ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'הרג',note:'I-gardłowa'}},
+ {id:'F37-04',heb:'נִשְׁבַּר',tr:'nišbar',pl:'rozbił się, został rozbity',lemma:'שָׁבַר',lemmaTr:'šāḇar',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁבר',note:'znaczenie medialne'}},
+ {id:'F37-05',heb:'נִפְתַּח',tr:'nip̄taḥ',pl:'otworzył się',lemma:'פָּתַח',lemmaTr:'pāṯaḥ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'פתח',note:'III-gardłowa; medialne'}},
+ {id:'F37-06',heb:'נִמְכַּר',tr:'nimkar',pl:'został sprzedany, sprzedał się',lemma:'מָכַר',lemmaTr:'māḵar',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'מכר',note:'zwrotne'}},
+ {id:'F37-07',heb:'נִמְצָא',tr:'nimṣāʾ',pl:'znajduje się, istnieje',lemma:'מָצָא',lemmaTr:'māṣāʾ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'מצא',note:'III-alef; rezultatywne'}},
+ {id:'F37-08',heb:'נֶאֱמַן',tr:'neʾĕman',pl:'był godny zaufania',lemma:'נֶאֱמַן',lemmaTr:'neʾĕman',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'אמן',note:'I-gardłowa (+ alef): schemat neʾĕman'}},
+ {id:'F37-09',heb:'נִכְתַּבְתִּי',tr:'niḵtáḇtî',pl:'zostałem zapisany',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:1,gen:'c',num:'sg',root:'כתב'}},
+ // ---- nifal bez odpowiednika w Qalu ----
+ {id:'F37-10',heb:'נִלְחַם',tr:'nilḥam',pl:'walczył',lemma:'נִלְחַם',lemmaTr:'nilḥam',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'לחם',note:'nifal bez Qalu'}},
+ {id:'F37-11',heb:'נִמְלַט',tr:'nimlaṭ',pl:'uciekł, ocalał',lemma:'נִמְלַט',lemmaTr:'nimlaṭ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'מלט',note:'nifal bez Qalu'}},
+ {id:'F37-12',heb:'נִסְתַּר',tr:'nistar',pl:'ukrył się',lemma:'נִסְתַּר',lemmaTr:'nistar',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'סתר',note:'nifal bez Qalu'}},
+ {id:'F37-13',heb:'נִרְדַּם',tr:'nirdam',pl:'zasnął mocno',lemma:'נִרְדַּם',lemmaTr:'nirdam',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'רדם',note:'nifal bez Qalu'}},
+ // ---- nifal imperfectum (podwojenie 1. spółgłoski) ----
+ {id:'F37-14',heb:'יִכָּתֵב',tr:'yikkāṯēḇ',pl:'zostanie napisany',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'כתב',note:'asymilacja n → podwojenie 1. spółgłoski'}},
+ {id:'F37-15',heb:'יִשָּׁלַח',tr:'yiššālaḥ',pl:'zostanie posłany',lemma:'שָׁלַח',lemmaTr:'šālaḥ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁלח',note:'III-gardłowa: ē→a'}},
+ {id:'F37-16',heb:'יֵאָמֵן',tr:'yēʾāmēn',pl:'będzie godny zaufania',lemma:'נֶאֱמַן',lemmaTr:'neʾĕman',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'אמן',note:'I-gardłowa: wydłużenie zastępcze i→ē'}},
+ {id:'F37-17',heb:'יִשָּׁאֵר',tr:'yiššāʾēr',pl:'pozostanie, ocaleje',lemma:'נִשְׁאַר',lemmaTr:'nišʾar',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁאר'}},
+ {id:'F37-18',heb:'אֶכָּתֵב',tr:'ʾekkāṯēḇ',pl:'zostanę zapisany',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:1,gen:'c',num:'sg',root:'כתב'}},
+ // ---- nifal wayyiqtol ----
+ {id:'F37-19',heb:'וַיִּלָּחֶם',tr:'wayyillāḥem',pl:'i walczył',lemma:'נִלְחַם',lemmaTr:'nilḥam',cat:'verb',p:{binyan:'niphal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'לחם'}},
+ {id:'F37-20',heb:'וַיִּמָּלֵט',tr:'wayyimmālēṭ',pl:'i uciekł, ocalał',lemma:'נִמְלַט',lemmaTr:'nimlaṭ',cat:'verb',p:{binyan:'niphal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'מלט'}},
+ // ---- nifal imperativus ----
+ {id:'F37-21',heb:'הִכָּתֵב',tr:'hikkāṯēḇ',pl:'zostań zapisany',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'niphal',form:'impv',pers:2,gen:'m',num:'sg',root:'כתב',note:'temat jak imperfectum'}},
+ {id:'F37-22',heb:'הִשָּׁמֵר',tr:'hiššāmēr',pl:'strzeż się!',lemma:'נִשְׁמַר',lemmaTr:'nišmar',cat:'verb',p:{binyan:'niphal',form:'impv',pers:2,gen:'m',num:'sg',root:'שׁמר',note:'bardzo częsta forma'}},
+ // ---- nifal imiesłów ----
+ {id:'F37-23',heb:'נִכְתָּב',tr:'niḵtāḇ',pl:'napisany, zapisywany',lemma:'כָּתַב',lemmaTr:'kāṯaḇ',cat:'verb',p:{binyan:'niphal',form:'ptcp',gen:'m',num:'sg',root:'כתב',note:'temat jak perfectum (dłuższa samogłoska)'}},
+ {id:'F37-24',heb:'נוֹרָא',tr:'nôrāʾ',pl:'straszliwy, budzący lęk',lemma:'נוֹרָא',lemmaTr:'nôrāʾ',cat:'verb',p:{binyan:'niphal',form:'ptcp',gen:'m',num:'sg',root:'ירא',note:'I-jod; znaczenie potencjalne'}},
+ {id:'F37-25',heb:'נִמְצָאִים',tr:'nimṣāʾîm',pl:'obecni, znajdujący się',lemma:'מָצָא',lemmaTr:'māṣāʾ',cat:'verb',p:{binyan:'niphal',form:'ptcp',gen:'m',num:'pl',root:'מצא',note:'III-alef'}},
+ // ---- nifal infinitivus constructus ----
+ {id:'F37-26',heb:'הִשָּׁמֵר',tr:'hiššāmēr',pl:'strzec się',lemma:'נִשְׁמַר',lemmaTr:'nišmar',cat:'verb',p:{binyan:'niphal',form:'inf',root:'שׁמר',note:'inf. constr.'}},
+ {id:'F37-27',heb:'לְהִלָּחֵם',tr:'ləhillāḥēm',pl:'walczyć',lemma:'נִלְחַם',lemmaTr:'nilḥam',cat:'verb',p:{binyan:'niphal',form:'inf',root:'לחם',note:'inf. constr. + לְ'}}
+];
+
+/* ============ PARADYGMATY referencyjne (§103, §104) ============ */
+const PARADIGMS = [
+ {title:'Imperatyw qal — I-gardłowa, typ ō',meta:'§103 · wzór עָבַד „służyć"',rows:[
+   {h:'עֲבֹד',t:'ʿăḇōḏ',g:'2 os. r.m. lp.'},
+   {h:'עִבְדִי',t:'ʿiḇḏî',g:'2 os. r.ż. lp.'},
+   {h:'עִבְדוּ',t:'ʿiḇḏû',g:'2 os. r.m. lmn.'},
+   {h:'עֲבֹדְנָה',t:'ʿăḇōḏnāh',g:'2 os. r.ż. lmn.'}
+ ]},
+ {title:'Imperatyw qal — I-gardłowa, typ a',meta:'§103 · wzór חָזַק „być silnym"',rows:[
+   {h:'חֲזַק',t:'ḥăzaq',g:'2 os. r.m. lp.'},
+   {h:'חִזְקִי',t:'ḥizqî',g:'2 os. r.ż. lp.'},
+   {h:'חִזְקוּ',t:'ḥizqû',g:'2 os. r.m. lmn.'},
+   {h:'חֲזַקְנָה',t:'ḥăzáqnāh',g:'2 os. r.ż. lmn.'}
+ ]},
+ {title:'Imperfectum qal — I-gardłowa, typ ō',meta:'§103 · wzór עָמַד „stać"',rows:[
+   {h:'יַעֲמֹד',t:'yaʿămōḏ',g:'3 os. r.m. lp.'},
+   {h:'תַּעֲמֹד',t:'taʿămōḏ',g:'3 os. r.ż. lp.'},
+   {h:'תַּעֲמֹד',t:'taʿămōḏ',g:'2 os. r.m. lp.'},
+   {h:'תַּעַמְדִי',t:'taʿamḏî',g:'2 os. r.ż. lp.'},
+   {h:'אֶעֱמֹד',t:'ʾeʿĕmōḏ',g:'1 os. lp.'},
+   {h:'יַעַמְדוּ',t:'yaʿamḏû',g:'3 os. r.m. lmn.'},
+   {h:'תַּעֲמֹדְנָה',t:'taʿămōḏnāh',g:'3 os. r.ż. lmn.'},
+   {h:'תַּעַמְדוּ',t:'taʿamḏû',g:'2 os. r.m. lmn.'},
+   {h:'תַּעֲמֹדְנָה',t:'taʿămōḏnāh',g:'2 os. r.ż. lmn.'},
+   {h:'נַעֲמֹד',t:'naʿămōḏ',g:'1 os. lmn.'}
+ ]},
+ {title:'Imperfectum qal — I-gardłowa, typ a',meta:'§103 · wzór חָזַק „być silnym"',rows:[
+   {h:'יֶחֱזַק',t:'yeḥĕzaq',g:'3 os. r.m. lp.'},
+   {h:'תֶּחֱזַק',t:'teḥĕzaq',g:'3 os. r.ż. lp.'},
+   {h:'תֶּחֱזַק',t:'teḥĕzaq',g:'2 os. r.m. lp.'},
+   {h:'תֶּחֶזְקִי',t:'teḥezqî',g:'2 os. r.ż. lp.'},
+   {h:'אֶחֱזַק',t:'ʾeḥĕzaq',g:'1 os. lp.'},
+   {h:'יֶחֶזְקוּ',t:'yeḥezqû',g:'3 os. r.m. lmn.'},
+   {h:'תֶּחֱזַקְנָה',t:'teḥĕzáqnāh',g:'3 os. r.ż. lmn.'},
+   {h:'תֶּחֶזְקוּ',t:'teḥezqû',g:'2 os. r.m. lmn.'},
+   {h:'תֶּחֱזַקְנָה',t:'teḥĕzáqnāh',g:'2 os. r.ż. lmn.'},
+   {h:'נֶחֱזַק',t:'neḥĕzaq',g:'1 os. lmn.'}
+ ]},
+ {title:'Czasowniki I-gardłowe bez drugorzędnej samogłoski',meta:'§103 · odmiana jak יִכְתֹּב / יִכְבַּד',rows:[
+   {h:'יַחְשֹׁב',t:'yaḥšōḇ',g:'będzie liczył (3 os. r.m. lp.)'},
+   {h:'יַחְשְׁבוּ',t:'yaḥšəḇû',g:'będą liczyli (3 os. r.m. lmn.)'},
+   {h:'תֶּהְדַּר',t:'tehdar',g:'będziesz czcił (2 os. r.m. lp.)'}
+ ]},
+ {title:'Imperfectum qal — I-gardłowa + III-alef',meta:'§103 · wzór חָטָא „grzeszyć"',rows:[
+   {h:'יֶחֱטָא',t:'yeḥĕṭāʾ',g:'3 os. r.m. lp.'},
+   {h:'תֶּחֱטָא',t:'teḥĕṭāʾ',g:'3 os. r.ż. lp.'},
+   {h:'תֶּחֱטָא',t:'teḥĕṭāʾ',g:'2 os. r.m. lp.'},
+   {h:'תֶּחֶטְאִי',t:'teḥeṭʾî',g:'2 os. r.ż. lp.'},
+   {h:'אֶחֱטָא',t:'ʾeḥĕṭāʾ',g:'1 os. lp.'},
+   {h:'יֶחֶטְאוּ',t:'yeḥeṭʾû',g:'3 os. r.m. lmn.'},
+   {h:'תֶּחֱטֶאנָה',t:'teḥĕṭeʾnāh',g:'3 os. r.ż. lmn.'},
+   {h:'תֶּחֶטְאוּ',t:'teḥeṭʾû',g:'2 os. r.m. lmn.'},
+   {h:'תֶּחֱטֶאנָה',t:'teḥĕṭeʾnāh',g:'2 os. r.ż. lmn.'},
+   {h:'נֶחֱטָא',t:'neḥĕṭāʾ',g:'1 os. lmn.'}
+ ]},
+ {title:'Rzeczownik segolowy — I-gardłowa',meta:'§104a · wzór עֵדֶר „stado"',rows:[
+   {h:'עֵדֶר',t:'ʿēḏer',g:'st. absolutus / constructus lp.'},
+   {h:'עֶדְרִי',t:'ʿeḏrî',g:'+ sufiks 1 os. lp. („moje stado")'},
+   {h:'עֶדְרְךָ',t:'ʿeḏrəḵā',g:'+ sufiks 2 os. r.m. lp.'},
+   {h:'עֶדְרְכֶם',t:'ʿeḏrəḵem',g:'+ sufiks 2 os. r.m. lmn.'},
+   {h:'עֲדָרִים',t:'ʿăḏārîm',g:'l.mn. absolutus'},
+   {h:'עֶדְרֵי',t:'ʿeḏrê',g:'l.mn. constructus'},
+   {h:'עֲדָרַי',t:'ʿăḏāray',g:'l.mn. + sufiks 1 os. lp.'}
+ ]},
+ {title:'Rzeczownik segolowy — II-gardłowa',meta:'§104b · wzór נַעַר „chłopiec"',rows:[
+   {h:'נַעַר',t:'náʿar',g:'st. absolutus / constructus lp.'},
+   {h:'נַעֲרִי',t:'naʿărî',g:'+ sufiks 1 os. lp.'},
+   {h:'נַעַרְךָ',t:'naʿarḵā',g:'+ sufiks 2 os. r.m. lp.'},
+   {h:'נַעַרְכֶם',t:'naʿarḵem',g:'+ sufiks 2 os. r.m. lmn.'},
+   {h:'נְעָרִים',t:'nəʿārîm',g:'l.mn. absolutus'},
+   {h:'נַעֲרֵי',t:'naʿărê',g:'l.mn. constructus'},
+   {h:'נַעֲרֵיכֶם',t:'naʿărêḵem',g:'l.mn. + sufiks 2 os. r.m. lmn.'}
+ ]},
+ {title:'Rzeczownik segolowy — III-gardłowa',meta:'§104c · wzór זֶרַע „ziarno"',rows:[
+   {h:'זֶרַע',t:'zéraʿ',g:'st. absolutus / constructus lp.'},
+   {h:'זַרְעִי',t:'zarʿî',g:'+ sufiks 1 os. lp.'},
+   {h:'זַרְעֲךָ',t:'zarʿăḵā',g:'+ sufiks 2 os. r.m. lp.'},
+   {h:'זַרְעֲכֶם',t:'zarʿăḵem',g:'+ sufiks 2 os. r.m. lmn.'},
+   {h:'זְרָעִים',t:'zərāʿîm',g:'l.mn. absolutus'},
+   {h:'זַרְעֵי',t:'zarʿê',g:'l.mn. constructus'},
+   {h:'זְרָעַי',t:'zərāʿay',g:'l.mn. + sufiks 1 os. lp.'}
+ ]},
+ // ===== LEKCJA 26 =====
+ {lesson:26,title:'Wolitivus a imperfectum — pary',meta:'§106 · ta sama forma vs wola — sedno lekcji',rows:[
+   {h:'יִשְׁלַח',t:'yišlaḥ',g:'„pośle" (impf.) = „niech pośle" (juss. 3 os.)'},
+   {h:'נִשְׁלַח',t:'nišlaḥ',g:'poślemy (imperfectum 1 os. lmn.)'},
+   {h:'נִשְׁלְחָה',t:'nišləḥāh',g:'poślijmy (cohortativus 1 os. lmn.)'},
+   {h:'אֶשְׁלַח',t:'ʾešlaḥ',g:'poślę (imperfectum 1 os. lp.)'},
+   {h:'אֶשְׁלְחָה',t:'ʾešləḥāh',g:'niech poślę (cohortativus 1 os. lp.)'},
+   {h:'יֹאבַד',t:'yōʾḇaḏ',g:'zginie (imperfectum 3 os. r.m. lp.)'},
+   {h:'תֹּאבַד',t:'tōʾḇaḏ',g:'niech zginie (jussivus 3 os. r.ż. lp.)'}
+ ]},
+ {lesson:26,title:'Imperfectum I-alef — pięć czasowników z ō w prefiksie',meta:'§108 · spółgłoska א niewymawiana',rows:[
+   {h:'יֹאכַל',t:'yōʾḵal',g:'אָכַל — będzie jadł'},
+   {h:'יֹאמַר',t:'yōʾmar',g:'אָמַר — powie'},
+   {h:'יֹאבַד',t:'yōʾḇaḏ',g:'אָבַד — zginie'},
+   {h:'(אָפָה, אָבָה)',t:'',g:'piec, chcieć — omówione przy III-He'}
+ ]},
+ {lesson:26,title:'Imperfectum qal — czasownik I-alef',meta:'§108 · wzór אָכַל „jeść"',rows:[
+   {h:'יֹאכַל',t:'yōʾḵal',g:'3 os. r.m. lp.'},
+   {h:'תֹּאכַל',t:'tōʾḵal',g:'3 os. r.ż. lp.'},
+   {h:'תֹּאכַל',t:'tōʾḵal',g:'2 os. r.m. lp.'},
+   {h:'תֹּאכְלִי',t:'tōʾḵəlî',g:'2 os. r.ż. lp.'},
+   {h:'אֹכַל',t:'ʾōḵal',g:'1 os. lp. (tylko jedno א)'},
+   {h:'יֹאכְלוּ',t:'yōʾḵəlû',g:'3 os. r.m. lmn.'},
+   {h:'תֹּאכַלְנָה',t:'tōʾḵálnāh',g:'3 os. r.ż. lmn.'},
+   {h:'תֹּאכְלוּ',t:'tōʾḵəlû',g:'2 os. r.m. lmn.'},
+   {h:'תֹּאכַלְנָה',t:'tōʾḵálnāh',g:'2 os. r.ż. lmn.'},
+   {h:'נֹאכַל',t:'nōʾḵal',g:'1 os. lmn.'}
+ ]},
+ {lesson:26,title:'Waw consecutivum — I-alef',meta:'§108 · ō→e + cofnięcie akcentu',rows:[
+   {h:'וַיֹּאמֶר',t:'wayyṓmer',g:'i powiedział'},
+   {h:'וַתֹּאמֶר',t:'wattṓmer',g:'i powiedziała'},
+   {h:'וַנֹּאמֶר',t:'wannṓmer',g:'i powiedzieliśmy'}
+ ]},
+ // ===== LEKCJA 27 =====
+ {lesson:27,title:'Konstrukcja czasowa — וַיְהִי / וְהָיָה',meta:'§110 · rama narracyjna (nie pojedyncza forma)',rows:[
+   {h:'וַיְהִי',t:'wayhî',g:'narracja o przeszłości: „i stało się…"'},
+   {h:'וְהָיָה',t:'wəhāyāh',g:'narracja o przyszłości: „i stanie się…"'},
+   {h:'יְהִי',t:'yəhî',g:'krótka forma (jussivus) czasownika הָיָה'},
+   {h:'וַיְהִי כַּאֲשֶׁר …',t:'wayhî kaʾăšer…',g:'„i stało się, gdy …" + waw-consec.'},
+   {h:'וְהָיָה כִּי …',t:'wəhāyāh kî…',g:'„i stanie się, że kiedy …" + weqatal'},
+   {h:'וַיְהִי בַבֹּקֶר',t:'wayhî ḇabbṓqer',g:'wyrażenie czasowe: „rano stało się…"'}
+ ]},
+ {lesson:27,title:'Rzeczowniki ż. na -et / -at + sufiks',meta:'§111 · deklinacja jak segolaty',rows:[
+   {h:'גְּבֶרֶת',t:'gəḇéreṯ',g:'pani (st. abs.)'},
+   {h:'גְּבִרְתִּי',t:'gəḇirtî',g:'moja pani (+1 os. lp.)'},
+   {h:'דַּעַת',t:'dáʿaṯ',g:'wiedza'},
+   {h:'דַּעְתִּי',t:'daʿtî',g:'moja wiedza'},
+   {h:'בֹּשֶׁת',t:'bṓšeṯ',g:'wstyd'},
+   {h:'בָּשְׁתִּי',t:'boštî',g:'mój wstyd'},
+   {h:'מִלְחֶמֶת',t:'milḥémeṯ',g:'st. constr. „wojna" (od מִלְחָמָה)'},
+   {h:'מִלְחַמְתִּי',t:'milḥamtî',g:'moja wojna (+1 os. lp.)'},
+   {h:'מְלֶאכֶת',t:'məléʾḵeṯ',g:'st. constr. „dzieło" (od מְלָאכָה)'},
+   {h:'מְלַאכְתִּי',t:'məlaʾḵtî',g:'moje dzieło (+1 os. lp.)'},
+   {h:'בִּתִּי',t:'bittî',g:'moja córka (od בַּת)'},
+   {h:'אִשְׁתִּי',t:'ʾištî',g:'moja żona (od אִשָּׁה)'}
+ ]},
+ {lesson:27,title:'Rzeczowniki typu פְּרִי',meta:'§112 · końcowe -î → -y- przed sufiksem (formy nieregularne)',rows:[
+   {h:'פְּרִי',t:'pərî',g:'owoc (st. abs.)'},
+   {h:'פִּרְיוֹ',t:'piryô',g:'jego owoc'},
+   {h:'עֳנִי',t:'ʿŏnî',g:'ucisk'},
+   {h:'עָנְיֶךָ',t:'ʿānyéḵā',g:'twój ucisk'},
+   {h:'חֳלִי',t:'ḥŏlî',g:'choroba'},
+   {h:'חָלְיוֹ',t:'ḥolyô',g:'jego choroba'},
+   {h:'חֲצִי',t:'ḥăṣî',g:'połowa'},
+   {h:'חֶצְיוֹ',t:'ḥeṣyô',g:'jego połowa'},
+   {h:'כְּלִי',t:'kəlî',g:'naczynie; l.mn. כֵּלִים kēlîm'}
+ ]},
+ // ===== LEKCJA 28 =====
+ {lesson:28,title:'Infinitivus constructus — wg klas',meta:'§114 · 1. sylaba ə (gardłowe ă/ĕ), 2. sylaba ō',rows:[
+   {h:'כְּתֹב',t:'kəṯōḇ',g:'mocny (כָּתַב)'},
+   {h:'עֲמֹד',t:'ʿămōḏ',g:'I-gardłowa (עָמַד)'},
+   {h:'בְּחֹר',t:'bəḥōr',g:'II-gardłowa (בָּחַר)'},
+   {h:'שְׁמֹעַ',t:'šəmōaʿ',g:'III-gardłowa (שָׁמַע)'},
+   {h:'אֱכֹל',t:'ʾĕḵōl',g:'I-alef (אָכַל)'},
+   {h:'מְצֹא',t:'məṣōʾ',g:'III-alef (מָצָא)'}
+ ]},
+ {lesson:28,title:'Infinitivus constructus + sufiks',meta:'§115 · wzór כָּתַב „pisanie"',rows:[
+   {h:'כָּתְבִי',t:'koṯḇî',g:'moje pisanie (1 os. lp.)'},
+   {h:'כָּתְבְךָ',t:'koṯḇəḵā',g:'twoje pisanie (2 os. r.m. lp.)'},
+   {h:'כָּתְבֵךְ',t:'koṯḇēḵ',g:'twoje pisanie (2 os. r.ż. lp.)'},
+   {h:'כָּתְבוֹ',t:'koṯḇô',g:'jego pisanie (3 os. r.m. lp.)'},
+   {h:'כָּתְבָהּ',t:'koṯḇāh',g:'jej pisanie (3 os. r.ż. lp.)'},
+   {h:'כָּתְבֵנוּ',t:'koṯḇēnû',g:'nasze pisanie (1 os. lmn.)'},
+   {h:'כָּתְבְכֶם',t:'koṯḇəḵem',g:'wasze pisanie (2 os. r.m. lmn.)'},
+   {h:'כָּתְבָם',t:'koṯḇām',g:'ich pisanie (3 os. r.m. lmn.)'}
+ ]},
+ {lesson:28,title:'Infinitivus constructus z przyimkami',meta:'§115 · funkcje składniowe',rows:[
+   {h:'לִשְׁמֹעַ',t:'lišmōaʿ',g:'לְ — cel: „aby słuchać"'},
+   {h:'בְּשָׁמְעוֹ',t:'bəšomʿô',g:'בְּ — czas: „gdy usłyszał"'},
+   {h:'כְּשָׁמְעוֹ',t:'kəšomʿô',g:'כְּ — czas: „kiedy usłyszał"'},
+   {h:'עַד־מָצְאֲךָ',t:'ʿaḏ-māṣʾăḵā',g:'עַד — „dopóki nie znajdziesz"'},
+   {h:'לְבִלְתִּי אֲכֹל',t:'ləḇiltî ʾăḵōl',g:'בִּלְתִּי — negacja: „aby nie jeść"'},
+   {h:'עָלַי לִמְצֹא',t:'ʿālay limṣōʾ',g:'עַל…לְ — obowiązek: „muszę znaleźć"'},
+   {h:'אֵין לָבוֹא',t:'ʾên lāḇôʾ',g:'אֵין…לְ — zakaz: „nie wolno wejść"'}
+ ]},
+ // ===== LEKCJA 29 =====
+ {lesson:29,title:'Imperfectum qal — czasownik I-Nun',meta:'§118 · wzór נָפַל „upaść"; nun asymiluje (dagesz)',rows:[
+   {h:'יִפֹּל',t:'yippōl',g:'3 os. r.m. lp.'},
+   {h:'תִּפֹּל',t:'tippōl',g:'3 os. r.ż. lp.'},
+   {h:'תִּפֹּל',t:'tippōl',g:'2 os. r.m. lp.'},
+   {h:'תִּפְּלִי',t:'tippəlî',g:'2 os. r.ż. lp.'},
+   {h:'אֶפֹּל',t:'ʾeppōl',g:'1 os. lp.'},
+   {h:'יִפְּלוּ',t:'yippəlû',g:'3 os. r.m. lmn.'},
+   {h:'תִּפֹּלְנָה',t:'tippṓlnāh',g:'3 os. r.ż. lmn.'},
+   {h:'תִּפְּלוּ',t:'tippəlû',g:'2 os. r.m. lmn.'},
+   {h:'תִּפֹּלְנָה',t:'tippṓlnāh',g:'2 os. r.ż. lmn.'},
+   {h:'נִפֹּל',t:'nippōl',g:'1 os. lmn.'}
+ ]},
+ {lesson:29,title:'I-Nun — tryb rozkazujący i inf. constructus',meta:'§118 · formy skrócone (typ a traci nun)',rows:[
+   {h:'נְפֹל',t:'nəp̄ōl',g:'imperat. „upadnij" (typ ō zachowuje nun)'},
+   {h:'סַע',t:'saʿ',g:'imperat. „wyrusz" (נסע, typ a)'},
+   {h:'גַּשׁ',t:'gaš',g:'imperat. „zbliż się" (נגשׁ)'},
+   {h:'תֵּן',t:'tēn',g:'imperat. „daj" (נתן)'},
+   {h:'קַח',t:'qaḥ',g:'imperat. „weź" (לקח)'},
+   {h:'שָׂא',t:'śāʾ',g:'imperat. „podnieś" (נשׂא)'},
+   {h:'גֶּשֶׁת',t:'géšeṯ',g:'inf. constr. „zbliżenie" (z -t)'},
+   {h:'תֵּת',t:'tēṯ',g:'inf. constr. „danie" (נתן)'},
+   {h:'קַחַת',t:'qáḥaṯ',g:'inf. constr. „wzięcie" (לקח)'},
+   {h:'שְׂאֵת',t:'śəʾēṯ',g:'inf. constr. „niesienie" (נשׂא)'}
+ ]},
+ // ===== LEKCJA 30 =====
+ {lesson:30,title:'Imperfectum qal — czasownik I-Yod',meta:'§120 · wzór יָשַׁב „siedzieć"; ē w prefiksie',rows:[
+   {h:'יֵשֵׁב',t:'yēšēḇ',g:'3 os. r.m. lp.'},
+   {h:'תֵּשֵׁב',t:'tēšēḇ',g:'3 os. r.ż. / 2 os. r.m. lp.'},
+   {h:'תֵּשְׁבִי',t:'tēšəḇî',g:'2 os. r.ż. lp.'},
+   {h:'אֵשֵׁב',t:'ʾēšēḇ',g:'1 os. lp.'},
+   {h:'יֵשְׁבוּ',t:'yēšəḇû',g:'3 os. r.m. lmn.'},
+   {h:'תֵּשַׁבְנָה',t:'tēšáḇnāh',g:'3 / 2 os. r.ż. lmn.'},
+   {h:'תֵּשְׁבוּ',t:'tēšəḇû',g:'2 os. r.m. lmn.'},
+   {h:'נֵשֵׁב',t:'nēšēḇ',g:'1 os. lmn.'}
+ ]},
+ {lesson:30,title:'I-Yod — tryb rozkazujący i inf. constructus',meta:'§120 · formy skrócone (jod znika)',rows:[
+   {h:'שֵׁב',t:'šēḇ',g:'imperat. „siedź" (ישׁב)'},
+   {h:'רֵד',t:'rēḏ',g:'imperat. „zejdź" (ירד)'},
+   {h:'לֵךְ',t:'lēḵ',g:'imperat. „idź" (הלך)'},
+   {h:'צֵא',t:'ṣēʾ',g:'imperat. „wyjdź" (יצא)'},
+   {h:'דַּע',t:'daʿ',g:'imperat. „wiedz" (ידע)'},
+   {h:'שֶׁבֶת',t:'šéḇeṯ',g:'inf. constr. „siedzenie" (z -t)'},
+   {h:'לֶדֶת',t:'léḏeṯ',g:'inf. constr. „urodzenie" (ילד)'},
+   {h:'לֶכֶת',t:'léḵeṯ',g:'inf. constr. „pójście" (הלך)'},
+   {h:'דַּעַת',t:'dáʿaṯ',g:'inf. constr. „wiedza" (ידע)'}
+ ]},
+ {lesson:30,title:'Wayyiqtol — I-Yod',meta:'§120 · cofnięcie akcentu, ē→e (wyjątki: יצא, ידע)',rows:[
+   {h:'וַיֵּשֶׁב',t:'wayyḗšeḇ',g:'i usiadł, zamieszkał'},
+   {h:'וַתֵּלֶד',t:'wattḗleḏ',g:'i urodziła'},
+   {h:'וַיֵּרֶד',t:'wayyḗreḏ',g:'i zszedł'},
+   {h:'וַיֵּלֶךְ',t:'wayyḗleḵ',g:'i poszedł'},
+   {h:'וַיֵּצֵא',t:'wayyēṣēʾ',g:'i wyszedł (wyjątek: bez cofnięcia)'},
+   {h:'וַיֵּדַע',t:'wayyḗḏaʿ',g:'i poznał (wyjątek w grupie a)'}
+ ]},
+ // ===== LEKCJA 31 =====
+ {lesson:31,title:'Imperfectum qal — czasownik III-Hē',meta:'§122 · wzór בָּנָה „budować"; końcówka -eh',rows:[
+   {h:'יִבְנֶה',t:'yiḇneh',g:'3 os. r.m. lp.'},
+   {h:'תִּבְנֶה',t:'tiḇneh',g:'3 os. r.ż. / 2 os. r.m. lp.'},
+   {h:'תִּבְנִי',t:'tiḇnî',g:'2 os. r.ż. lp.'},
+   {h:'אֶבְנֶה',t:'ʾeḇneh',g:'1 os. lp.'},
+   {h:'יִבְנוּ',t:'yiḇnû',g:'3 os. r.m. lmn.'},
+   {h:'תִּבְנֶינָה',t:'tiḇnéynāh',g:'3 / 2 os. r.ż. lmn.'},
+   {h:'תִּבְנוּ',t:'tiḇnû',g:'2 os. r.m. lmn.'},
+   {h:'נִבְנֶה',t:'niḇneh',g:'1 os. lmn.'}
+ ]},
+ {lesson:31,title:'III-Hē — imperatyw, inf. constr. i jussivus',meta:'§122 · imperat. -ēh, inf. -ôṯ, jussivus apokopowany',rows:[
+   {h:'בְּנֵה',t:'bənēh',g:'imperat. „zbuduj" (-ēh)'},
+   {h:'עֲלֵה',t:'ʿălēh',g:'imperat. „wstąp" (עלה)'},
+   {h:'בְּנוֹת',t:'bənôṯ',g:'inf. constr. „budowanie" (-ôṯ)'},
+   {h:'עֲלוֹת',t:'ʿălôṯ',g:'inf. constr. „wstąpienie"'},
+   {h:'יִבֶן',t:'yíḇen',g:'jussivus „niech zbuduje" (apokop.)'},
+   {h:'יַעַל',t:'yáʿal',g:'jussivus „niech wstąpi" (עלה)'},
+   {h:'יֵט',t:'yēṭ',g:'jussivus „niech wyciągnie" (נטה)'},
+   {h:'יְהִי',t:'yəhî',g:'jussivus „niech będzie" (היה)'}
+ ]},
+ {lesson:31,title:'Wayyiqtol — III-Hē (apokopowany)',meta:'§122 · skrócona forma w narracji przeszłej',rows:[
+   {h:'וַיַּעַשׂ',t:'wayyáʿaś',g:'i uczynił (עשׂה)'},
+   {h:'וַיַּעַן',t:'wayyáʿan',g:'i odpowiedział (ענה)'},
+   {h:'וַיַּעַל',t:'wayyáʿal',g:'i wstąpił (עלה)'},
+   {h:'וַיֵּט',t:'wayyēṭ',g:'i wyciągnął (נטה)'},
+   {h:'וַיִּחַר',t:'wayyíḥar',g:'i rozgniewał się (חרה)'},
+   {h:'וַיַּרְא',t:'wayyarʾ',g:'i zobaczył (ראה; ≠ jussivus יֵרֶא)'}
+ ]},
+ // ===== LEKCJA 32 =====
+ {lesson:32,title:'Imperfectum qal — czasownik pusty (II-Waw)',meta:'§124 · wzór קָם „wstać"; û w temacie',rows:[
+   {h:'יָקוּם',t:'yāqûm',g:'3 os. r.m. lp.'},
+   {h:'תָּקוּם',t:'tāqûm',g:'3 os. r.ż. / 2 os. r.m. lp.'},
+   {h:'תָּקוּמִי',t:'tāqûmî',g:'2 os. r.ż. lp.'},
+   {h:'אָקוּם',t:'ʾāqûm',g:'1 os. lp.'},
+   {h:'יָקוּמוּ',t:'yāqûmû',g:'3 os. r.m. lmn.'},
+   {h:'תָּקֹמְנָה',t:'tāqōmnāh',g:'3 / 2 os. r.ż. lmn.'},
+   {h:'תָּקוּמוּ',t:'tāqûmû',g:'2 os. r.m. lmn.'},
+   {h:'נָקוּם',t:'nāqûm',g:'1 os. lmn.'}
+ ]},
+ {lesson:32,title:'Czasownik pusty — formy skrócone i pochodne',meta:'§124 · jussivus, wayyiqtol, cohortativus, imperat., inf.',rows:[
+   {h:'יָקֹם',t:'yāqōm',g:'jussivus „niech wstanie" (קום)'},
+   {h:'יָשֵׂם',t:'yāśēm',g:'jussivus „niech położy" (שׂים)'},
+   {h:'וַיָּקָם',t:'wayyā́qom',g:'wayyiqtol „i wstał" (cofnięcie akcentu)'},
+   {h:'וַיָּשֶׂם',t:'wayyā́śem',g:'wayyiqtol „i położył"'},
+   {h:'נָקוּמָה',t:'nāqûmāh',g:'cohortativus „powstańmy"'},
+   {h:'קוּם',t:'qûm',g:'imperat. „wstań"'},
+   {h:'שִׂים',t:'śîm',g:'imperat. „połóż"'},
+   {h:'קוּם',t:'qûm',g:'inf. constr. „wstanie"'},
+   {h:'בּוֹא',t:'bôʾ',g:'inf. constr. „przyjście" (בוא)'}
+ ]},
+ // ===== LEKCJA 33 =====
+ {lesson:33,title:'Imperfectum qal — czasownik geminowany (ע״ע)',meta:'§126 · wzór סָבַב „otaczać"; podwojenie wraca przed sufiksem',rows:[
+   {h:'יָסֹב',t:'yāsōḇ',g:'3 os. r.m. lp.'},
+   {h:'תָּסֹב',t:'tāsōḇ',g:'3 os. r.ż. / 2 os. r.m. lp.'},
+   {h:'תָּסֹבִּי',t:'tāsṓbbî',g:'2 os. r.ż. lp.'},
+   {h:'אָסֹב',t:'ʾāsōḇ',g:'1 os. lp.'},
+   {h:'יָסֹבּוּ',t:'yāsṓbbû',g:'3 os. r.m. lmn.'},
+   {h:'תְּסֻבֶּינָה',t:'təsubbéynāh',g:'3 / 2 os. r.ż. lmn.'},
+   {h:'תָּסֹבּוּ',t:'tāsṓbbû',g:'2 os. r.m. lmn.'},
+   {h:'נָסֹב',t:'nāsōḇ',g:'1 os. lmn.'}
+ ]},
+ {lesson:33,title:'Geminowany — formy skrócone, drugi typ i pochodne',meta:'§126 · wayyiqtol, imperat., inf., typ jak I-Nun',rows:[
+   {h:'וַיָּסָב',t:'wayyā́soḇ',g:'wayyiqtol „i otoczył" (cofnięcie akcentu)'},
+   {h:'סֹב',t:'sōḇ',g:'imperat. „otocz"'},
+   {h:'סֹב',t:'sōḇ',g:'inf. constr. „otoczenie"'},
+   {h:'יֵקַל',t:'yēqal',g:'typ a: „będzie lekki" (קלל)'},
+   {h:'יֵקַלּוּ',t:'yēqállû',g:'typ a, 3 os. lmn.'},
+   {h:'יִסֹּב',t:'yissōḇ',g:'drugi typ (jak I-Nun): „otoczy"'},
+   {h:'יִסֹּבּוּ',t:'yissṓbbû',g:'drugi typ, 3 os. lmn.'},
+   {h:'חֹן',t:'ḥōn',g:'imperat. „zmiłuj się" (חנן)'}
+ ]},
+ // ===== LEKCJA 34 =====
+ {lesson:34,title:'Imiesłów bierny (qal)',meta:'§128 · wzór qāṭûl; przymiotnik odczasownikowy',rows:[
+   {h:'כָּתוּב',t:'kāṯûḇ',g:'napisany (כתב)'},
+   {h:'עָזוּב',t:'ʿāzûḇ',g:'porzucony (עזב)'},
+   {h:'בָּחוּר',t:'bāḥûr',g:'wybrany (בחר)'},
+   {h:'שָׁלוּחַ',t:'šālûaḥ',g:'posłany — pátaḥ furtivum (שׁלח)'},
+   {h:'נָשׂוּא',t:'nāśûʾ',g:'podniesiony (נשׂא, III-alef)'},
+   {h:'בָּנוּי',t:'bānûy',g:'zbudowany (בנה, III-he)'},
+   {h:'סָבוּב',t:'sāḇûḇ',g:'otoczony (סבב, podwojony)'}
+ ]},
+ {lesson:34,title:'Infinitivus absolutus (qal)',meta:'§129 · nieodmienny; wzór qāṭôl; rola przysłówkowa',rows:[
+   {h:'כָּתוֹב',t:'kāṯôḇ',g:'pisać (כתב)'},
+   {h:'עָזוֹב',t:'ʿāzôḇ',g:'porzucać (עזב)'},
+   {h:'שָׁלוֹחַ',t:'šālôaḥ',g:'posyłać (שׁלח)'},
+   {h:'נָתוֹן',t:'nāṯôn',g:'dawać (נתן)'},
+   {h:'בָּנֹה',t:'bānōh',g:'budować (בנה)'},
+   {h:'קוֹם',t:'qôm',g:'wstawać (קום, pusty)'},
+   {h:'שָׁמוֹר תִּשְׁמֹר',t:'šāmôr tišmōr',g:'„na pewno będziesz strzec" (wzmocnienie)'}
+ ]},
+ {lesson:34,title:'Liczebniki 3–10',meta:'§130 · forma ż. (-āh) z rzecz. r.m.; forma bez końcówki z rzecz. r.ż.',rows:[
+   {h:'שְׁלֹשָׁה / שָׁלֹשׁ',t:'šəlōšāh / šālōš',g:'trzy (r.m. / r.ż.); constr. שְׁלֹשֶׁת'},
+   {h:'אַרְבָּעָה / אַרְבַּע',t:'ʾarbāʿāh / ʾarbaʿ',g:'cztery'},
+   {h:'חֲמִשָּׁה / חָמֵשׁ',t:'ḥămiššāh / ḥāmēš',g:'pięć; constr. חֲמֵשֶׁת'},
+   {h:'שִׁשָּׁה / שֵׁשׁ',t:'šiššāh / šēš',g:'sześć'},
+   {h:'שִׁבְעָה / שֶׁבַע',t:'šiḇʿāh / šéḇaʿ',g:'siedem'},
+   {h:'שְׁמֹנָה / שְׁמֹנֶה',t:'šəmōnāh / šəmōneh',g:'osiem'},
+   {h:'תִּשְׁעָה / תֵּשַׁע',t:'tišʿāh / tēšaʿ',g:'dziewięć'},
+   {h:'עֲשָׂרָה / עֶשֶׂר',t:'ʿăśārāh / ʿeśer',g:'dziesięć'}
+ ]},
+ // ===== LEKCJA 35 =====
+ {lesson:35,title:'Sekwencje zdań z wə- (składnia)',meta:'§132 · wə- + czasownik = zdanie łączne; wə- + nie-czasownik = rozłączne',rows:[
+   {h:'…וַיֹּאמֶר',t:'perf. + wa- + (krótkie) impf.',g:'sekwencja narracyjna — przeszłość punktowa (wayyiqtol)'},
+   {h:'…וְאָמַר',t:'impf. + wə- + perf.',g:'sekwencja — przyszłość / czynność ciągła (weqatal)'},
+   {h:'שְׁמַע וְאָמַרְתָּ',t:'imperat. + wə- + perf.',g:'sekwencja po trybie rozkazującym'},
+   {h:'שְׁמַע וְיֹאמַר',t:'imperat. + wə- + impf./juss.',g:'rozkaz + cel / życzenie'},
+   {h:'וְהַנָּחָשׁ הָיָה',t:'wə- + rzeczownik',g:'zdanie rozłączne — nowy epizod / tło'},
+   {h:'וְהוּא יֹשֵׁב',t:'wə- + zaimek + imiesłów',g:'rozłączne okolicznikowe (równoczesność)'},
+   {h:'לֹא שָׁמַע',t:'lōʾ + czasownik',g:'zdanie zaprzeczone — zawsze rozłączne'}
+ ]},
+ {lesson:35,title:'יֵשׁ / אֵין z sufiksami zaimkowymi',meta:'§133 · orzeczniki istnienia/nieistnienia; אֵין neguje też orzeczenie imiesłowowe',rows:[
+   {h:'אֵינֶנִּי',t:'ʾênénnî',g:'„nie ma mnie / nie jestem" (1 os. lp.)'},
+   {h:'אֵינְךָ',t:'ʾênəḵā',g:'2 os. r.m. lp.'},
+   {h:'אֵינֵךְ',t:'ʾênēḵ',g:'2 os. r.ż. lp.'},
+   {h:'אֵינֶנּוּ',t:'ʾênénnû',g:'3 os. r.m. lp. / 1 os. lmn.'},
+   {h:'אֵינֶנָּה',t:'ʾênénnāh',g:'3 os. r.ż. lp.'},
+   {h:'אֵינָם',t:'ʾênām',g:'3 os. r.m. lmn.'},
+   {h:'אֵינֶנִּי כֹתֵב',t:'ʾênénnî ḵōṯēḇ',g:'„nie piszę" (negacja imiesłowu)'},
+   {h:'יֶשְׁךָ / יֶשְׁנוֹ',t:'yeškā / yešnô',g:'יֵשׁ z sufiksem (2 os. r.m. / 3 os. r.m.)'}
+ ]},
+ // ===== LEKCJA 36 =====
+ {lesson:36,title:'הִנֵּה z sufiksami zaimkowymi',meta:'§135 · „oto" — podkreśla teraźniejszość/natychmiastowość; wprowadza zdanie bazowe',rows:[
+   {h:'הִנְנִי / הִנֶּנִּי',t:'hinənî / hinnénnî',g:'1 os. lp. — „oto jestem"'},
+   {h:'הִנְּךָ',t:'hinnəḵā',g:'2 os. r.m. lp.'},
+   {h:'הִנֵּךְ',t:'hinnēḵ',g:'2 os. r.ż. lp.'},
+   {h:'הִנּוֹ',t:'hinnô',g:'3 os. r.m. lp.'},
+   {h:'הִנֶּנּוּ / הִנְנוּ',t:'hinnénnû / hinənû',g:'1 os. lmn.'},
+   {h:'הִנָּם',t:'hinnām',g:'3 os. r.m. lmn.'},
+   {h:'הִנֵּה־נָא',t:'hinnēh-nāʾ',g:'z partykułą נָא — łagodzi/wprowadza prośbę'}
+ ]},
+ {lesson:36,title:'עוֹד z sufiksami zaimkowymi',meta:'§137 · „jeszcze, nadal" jako orzecznik istnienia',rows:[
+   {h:'עוֹדִי / עוֹדֶנִּי',t:'ʿôḏî / ʿôḏénnî',g:'1 os. lp. — „jeszcze jestem/żyję"'},
+   {h:'עוֹדְךָ',t:'ʿôḏəḵā',g:'2 os. r.m. lp.'},
+   {h:'עוֹדֶנּוּ',t:'ʿôḏénnû',g:'3 os. r.m. lp. — „on jeszcze jest"'},
+   {h:'עוֹדֶנָּה',t:'ʿôḏénnāh',g:'3 os. r.ż. lp.'},
+   {h:'עוֹדָם',t:'ʿôḏām',g:'3 os. r.m. lmn.'},
+   {h:'בְּעוֹד הַיֶּלֶד חַי',t:'bəʿôḏ hayyeleḏ ḥay',g:'„gdy chłopiec jeszcze żył" (בְּעוֹד = gdy jeszcze)'}
+ ]},
+ {lesson:36,title:'כָּל־ z sufiksami; partykuły נָא / אַיֵּה / przysięga',meta:'§137–138 · „cały/wszyscy"; partykuły dyskursu',rows:[
+   {h:'כֻּלּוֹ / כֻּלָּהּ',t:'kullô / kullāh',g:'„cały on / cała ona" (3 os. lp.)'},
+   {h:'כֻּלָּם',t:'kullām',g:'„wszyscy oni" (הָאֲנָשִׁים כֻּלָּם)'},
+   {h:'כֻּלְּכֶם / כֻּלָּנוּ',t:'kulləḵem / kullā́nû',g:'„wy wszyscy / my wszyscy"'},
+   {h:'אַיֶּכָּה / אַיּוֹ',t:'ʾayyekkāh / ʾayyô',g:'אַיֵּה „gdzie?" z sufiksem (2 / 3 os. r.m.)'},
+   {h:'בֹּא־נָא',t:'bōʾ-nāʾ',g:'נָא przy rozkazie — „wejdź, proszę"'},
+   {h:'חֵי פַרְעֹה אִם…',t:'ḥê parʿōh ʾim…',g:'formuła przysięgi: ḥay/ḥê X + אִם + impf. (אִם = przeczenie)'}
+ ]},
+ // ===== LEKCJA 37 =====
+ {lesson:37,title:'Nifal — perfectum (wzór כתב)',meta:'§141 · pierwszy binian pochodny; przedrostek n-; znaczenie medio-pasywne',rows:[
+   {h:'נִכְתַּב',t:'niḵtaḇ',g:'3 os. r.m. lp. — „został napisany"'},
+   {h:'נִכְתְּבָה',t:'niḵtəḇāh',g:'3 os. r.ż. lp.'},
+   {h:'נִכְתַּבְתָּ',t:'niḵtáḇtā',g:'2 os. r.m. lp.'},
+   {h:'נִכְתַּבְתְּ',t:'niḵtáḇt',g:'2 os. r.ż. lp.'},
+   {h:'נִכְתַּבְתִּי',t:'niḵtáḇtî',g:'1 os. lp.'},
+   {h:'נִכְתְּבוּ',t:'niḵtəḇû',g:'3 os. lmn.'},
+   {h:'נִכְתַּבְתֶּם',t:'niḵtaḇtém',g:'2 os. r.m. lmn.'},
+   {h:'נִכְתַּבְנוּ',t:'niḵtáḇnû',g:'1 os. lmn.'}
+ ]},
+ {lesson:37,title:'Nifal — imperfectum, imperativus, imiesłów',meta:'§141 · impf./impv./inf.: podwojenie 1. spółgłoski; imiesłów: temat perfectum',rows:[
+   {h:'יִכָּתֵב',t:'yikkāṯēḇ',g:'imperf. 3 os. r.m. lp.'},
+   {h:'תִּכָּתֵב',t:'tikkāṯēḇ',g:'imperf. 3 os. r.ż. / 2 os. r.m. lp.'},
+   {h:'יִכָּתְבוּ',t:'yikkāṯəḇû',g:'imperf. 3 os. r.m. lmn.'},
+   {h:'נִכָּתֵב',t:'nikkāṯēḇ',g:'imperf. 1 os. lmn.'},
+   {h:'הִכָּתֵב',t:'hikkāṯēḇ',g:'imperat. 2 os. r.m. lp. (= inf. constr.)'},
+   {h:'הִשָּׁמֵר',t:'hiššāmēr',g:'imperat. „strzeż się!" (bardzo częste)'},
+   {h:'נִכְתָּב',t:'niḵtāḇ',g:'imiesłów r.m. lp. „napisany"'},
+   {h:'נִכְתָּבָה',t:'niḵtāḇāh',g:'imiesłów r.ż. (≠ perf. נִכְתְּבָה)'}
+ ]},
+ {lesson:37,title:'Nifal — znaczenie i typy rdzenia',meta:'§140–141 · medio-pasywny, medialny, zwrotny, rezultatywny',rows:[
+   {h:'נִשְׁבַּר הַכְּלִי',t:'nišbar hakkəlî',g:'medialny: „naczynie się rozbiło"'},
+   {h:'נִמְכַּר',t:'nimkar',g:'zwrotny: „sprzedał się"'},
+   {h:'נִמְצָא',t:'nimṣāʾ',g:'rezultatywny: „istnieje, znajduje się"'},
+   {h:'יִשָּׁלַח',t:'yiššālaḥ',g:'III-gardłowa: ē→a w imperfectum'},
+   {h:'יֵאָמֵן',t:'yēʾāmēn',g:'I-gardłowa: wydłużenie zastępcze i→ē'},
+   {h:'נִלְחַם / נִמְלַט',t:'nilḥam / nimlaṭ',g:'nifale bez odpowiednika w Qalu'}
+ ]}
+];
+
+/* ============ słowniki etykiet ============ */
+const FORM_LABEL={impv:'tryb rozkazujący',juss:'jussivus',coh:'cohortativus',impf:'imperfectum',perf:'perfectum',ptcp:'imiesłów czynny',ptcpPass:'imiesłów bierny',wayyiqtol:'waw consec. + impf.',weqatal:'waw consec. + perf.',inf:'bezokolicznik (constr.)',infAbs:'infinitivus absolutus'};
+const FORM_SHORT={impv:'imperat.',juss:'jussivus',coh:'cohortat.',impf:'imperf.',perf:'perf.',ptcp:'imiesłów',ptcpPass:'im. bierny',wayyiqtol:'waw+impf',weqatal:'waw+perf',inf:'inf. constr.',infAbs:'inf. abs.'};
+const STATE_LABEL={abs:'status absolutus',constr:'status constructus',suf:'forma z sufiksem'};
+const SUF_LABEL={'1cs':'1 os. lp.','1cp':'1 os. lmn.','2ms':'2 os. r.m. lp.','2fs':'2 os. r.ż. lp.','3ms':'3 os. r.m. lp.','3fs':'3 os. r.ż. lp.','2mp':'2 os. r.m. lmn.','3mp':'3 os. r.m. lmn.'};
+function gnum(n){return n==='pl'?'lmn.':'lp.'}
+function grod(g){return g==='m'?'r.m.':g==='f'?'r.ż.':'r.wsp.'}
+function lessOf(id){const m=String(id).match(/(\d+)-/);return m?+m[1]:0;}
+
+/* ---- klasa rdzenia (liczona w locie z rdzenia) ---- */
+const CLS_LABEL={mocny:'mocny',Igard:'I-gardłowa',IIgard:'II-gardłowa',IIIgard:'III-gardłowa',Ialef:'I-alef',IIIalef:'III-alef',Ijod:'I-jod',Inun:'I-nun',IIIhe:'III-he',pusty:'pusty',podw:'podwojony'};
+const ROOTCLS={
+ 'דרשׁ':['mocny'],'קבץ':['mocny'],'לכד':['mocny'],'קבר':['mocny'],'רכב':['mocny'],
+ 'עבר':['Igard'],'שׁוב':['pusty'],'שׁלח':['IIIgard'],'כרת':['mocny'],'עזב':['Igard'],
+ 'עמד':['Igard'],'שׁמע':['IIIgard'],'הרג':['Igard'],'קרא':['IIIalef'],'חטא':['Igard','IIIalef'],
+ 'שׁכב':['mocny'],'ילד':['Ijod'],'נתן':['Inun'],'בוא':['pusty'],'הרה':['IIIhe'],
+ 'חרה':['Igard','IIIhe'],'ראה':['IIIhe'],'ירא':['Ijod','IIIalef'],'מצא':['IIIalef'],'אמר':['Ialef'],
+ 'הלך':['Ijod'],'ברח':['IIIgard'],'ישׁב':['Ijod'],'חלם':['Igard'],'אבד':['Ialef'],
+ 'אחז':['Ialef'],'אסר':['Ialef'],'אהב':['Ialef'],'אכל':['Ialef'],'סגר':['mocny'],
+ 'פתח':['IIIgard'],'קרע':['IIIgard'],'שׁמר':['mocny'],'נגף':['Inun'],'היה':['IIIhe'],
+ 'שׂמח':['IIIgard'],'זכר':['mocny'],'רעה':['IIIhe'],'לקח':['IIIgard','Inun'],'סבב':['podw'],
+ 'ארר':['podw'],'פקד':['mocny'],'גרשׁ':['mocny'],'שׂים':['pusty'],'רעע':['podw'],
+ 'תעה':['IIIhe'],'כלה':['IIIhe'],'בכה':['IIIhe'],'שׁכח':['IIIgard'],'גדל':['mocny'],
+ 'כתב':['mocny'],'עשׂה':['IIIhe'],'ברא':['IIIalef'],'צעק':['IIIgard'],'שׂרף':['mocny'],
+ 'חדל':['Igard'],'תמם':['podw'],'אסף':['Ialef'],'חפץ':['Igard'],'גאל':['IIgard'],
+ 'יכל':['Ijod'],'בחר':['IIgard'],
+ 'נפל':['Inun'],'נסע':['Inun'],'נגע':['Inun'],'נטע':['Inun'],'נגשׁ':['Inun'],
+ 'נשׂא':['Inun','IIIalef'],'נדר':['Inun'],'גער':['IIgard'],'שׂנא':['IIIalef'],'יהב':['Ijod'],
+ 'ירד':['Ijod'],'ידע':['Ijod'],'יצא':['Ijod','IIIalef'],'ירשׁ':['Ijod'],'ישׁן':['Ijod'],
+ 'קרב':['mocny'],'שׁאל':['IIgard'],'ענה':['IIIhe'],'מלא':['IIIalef'],'רמה':['IIIhe'],'עבד':['Igard'],
+ 'דבר':['mocny'],'נגד':['Inun'],'חוה':['IIIhe'],
+ 'בנה':['IIIhe'],'עלה':['Igard','IIIhe'],'הגה':['Igard','IIIhe'],'נטה':['Inun','IIIhe'],
+ 'פנה':['IIIhe'],'קנה':['IIIhe'],'רבה':['IIIhe'],'שׁתה':['IIIhe'],'זנה':['IIIhe'],'גלה':['IIIhe'],
+ 'חנה':['Igard','IIIhe'],'שׁפך':['mocny'],'תפשׂ':['mocny'],'שׁחט':['IIgard'],'בושׁ':['pusty'],
+ 'שׁלך':['mocny'],'פשׁט':['mocny'],
+ 'קום':['pusty'],'רוץ':['pusty'],'נוס':['pusty'],'מות':['pusty'],'גור':['pusty'],
+ 'צום':['pusty'],'שׁיר':['pusty'],'שׁית':['pusty'],'סור':['pusty'],'רדף':['mocny'],
+ 'מכר':['mocny'],'צלח':['IIIgard'],
+ 'קלל':['podw'],'דמם':['podw'],'חנן':['podw'],'מדד':['podw'],'שׁמם':['podw'],'חשׂך':['Igard'],
+ 'מאן':['IIgard'],'שׁבר':['mocny'],'שׁבת':['mocny'],
+ 'פתר':['mocny'],'עמד':['Igard'],'רעב':['IIgard'],'יטב':['Ijod'],'קרה':['IIIhe'],'חיה':['IIIhe'],'יקץ':['Ijod'],
+ 'בחן':['mocny'],'צעק':['IIgard'],
+ 'נכר':['mocny'],'שׁאר':['mocny'],'אמן':['Ialef'],'לחם':['mocny'],'מלט':['mocny'],'סתר':['mocny'],'רדם':['mocny']
+};
+function clsOf(f){ if(f.cat!=='verb') return []; return ROOTCLS[f.p.root]||['mocny']; }
+
+/* zwraca tablicę „tagów" do plakietek */
+function parseTags(f){
+  const p=f.p, out=[];
+  if(f.cat==='verb'){
+    out.push({k:'binyan',v:p.binyan});
+    out.push({k:'form',v:FORM_LABEL[p.form]});
+    if(p.pers) out.push({k:'',v:p.pers+' os.'});
+    if(p.gen && p.form!=='ptcp' || (p.form==='ptcp'&&p.gen)) out.push({k:'',v:grod(p.gen)});
+    if(p.num) out.push({k:'',v:gnum(p.num)});
+    clsOf(f).forEach(c=>out.push({k:'cls',v:CLS_LABEL[c]}));
+  }else{
+    out.push({k:'binyan',v:'rzeczownik'});
+    out.push({k:'form',v:STATE_LABEL[p.state]});
+    if(p.gen) out.push({k:'',v:grod(p.gen)});
+    if(p.num) out.push({k:'',v:gnum(p.num)});
+    if(p.suf) out.push({k:'',v:'sufiks '+SUF_LABEL[p.suf]});
+  }
+  return out;
+}
+/* jednowierszowa etykieta (do listy i quizu) */
+function parseLine(f){
+  const p=f.p;
+  if(f.cat==='verb'){
+    let s=p.binyan+' · '+FORM_LABEL[p.form];
+    if(p.pers) s+=' · '+p.pers+' os.';
+    if(p.gen) s+=' '+grod(p.gen);
+    if(p.num) s+=' '+gnum(p.num);
+    return s;
+  }
+  let s='rzeczownik · '+STATE_LABEL[p.state];
+  if(p.gen) s+=' · '+grod(p.gen)+' '+gnum(p.num);
+  if(p.suf) s+=' · suf. '+SUF_LABEL[p.suf];
+  return s;
+}
+
+/* ============ stan ============ */
+let mode='parse', pmode='flash', catFilter='all', formFilter='all', lessonFilter='all', clsFilter='all', binyanFilter='all';
+let idx=0, known={};
+const KEY='lambdin:adv:known:v1';
+
+async function loadKnown(){
+  try{const r=await window.storage.get(KEY); if(r&&r.value) known=JSON.parse(r.value);}catch(e){known={};}
+}
+async function saveKnown(){
+  try{await window.storage.set(KEY,JSON.stringify(known));}catch(e){}
+}
+
+function filtered(){
+  return FORMS.filter(f=>{
+    if(lessonFilter!=='all' && lessOf(f.id)!==+lessonFilter) return false;
+    if(catFilter!=='all' && f.cat!==catFilter) return false;
+    if(formFilter!=='all'){
+      if(f.cat!=='verb') return false;
+      if(f.p.form!==formFilter) return false;
+    }
+    if(clsFilter!=='all'){
+      if(f.cat!=='verb') return false;
+      if(!clsOf(f).includes(clsFilter)) return false;
+    }
+    if(binyanFilter!=='all'){
+      if(f.cat!=='verb') return false;
+      if(f.p.binyan!==binyanFilter) return false;
+    }
+    return true;
+  });
+}
+
+/* ============ przełączniki ============ */
+document.getElementById('modes').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mode]'); if(!b)return;
+  mode=b.dataset.mode;
+  [...document.querySelectorAll('#modes .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  syncRows(); idx=0; render();
+});
+document.getElementById('parseToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pmode]'); if(!b)return;
+  pmode=b.dataset.pmode;
+  [...document.querySelectorAll('#parseToggle .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  idx=0; render();
+});
+document.getElementById('lessonRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-lesson]'); if(!b)return;
+  lessonFilter=b.dataset.lesson;
+  [...document.querySelectorAll('#lessonRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  idx=0; render();
+});
+document.getElementById('catRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-cat]'); if(!b)return;
+  catFilter=b.dataset.cat;
+  [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(catFilter==='noun'){
+    formFilter='all'; [...document.querySelectorAll('#formRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.form==='all'));
+    clsFilter='all'; [...document.querySelectorAll('#clsRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cls==='all'));
+  }
+  idx=0; render();
+});
+document.getElementById('formRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-form]'); if(!b)return;
+  formFilter=b.dataset.form;
+  [...document.querySelectorAll('#formRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(formFilter!=='all' && catFilter==='noun'){ catFilter='all'; [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat==='all')); }
+  idx=0; render();
+});
+document.getElementById('clsRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-cls]'); if(!b)return;
+  clsFilter=b.dataset.cls;
+  [...document.querySelectorAll('#clsRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(clsFilter!=='all' && catFilter==='noun'){ catFilter='all'; [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat==='all')); }
+  idx=0; render();
+});
+document.getElementById('binyanRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-binyan]'); if(!b)return;
+  binyanFilter=b.dataset.binyan;
+  [...document.querySelectorAll('#binyanRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(binyanFilter!=='all' && catFilter==='noun'){ catFilter='all'; [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat==='all')); }
+  idx=0; render();
+});
+document.getElementById('resetBtn').addEventListener('click',async()=>{
+  known={}; await saveKnown(); if(mode==='parse'&&pmode==='flash') render();
+});
+
+function syncRows(){
+  const showToggle = mode==='parse';
+  document.getElementById('parseToggle').style.display = showToggle?'':'none';
+  document.getElementById('lessonRow').style.display = '';
+  const visForFilters = mode==='parse'||mode==='list';
+  document.getElementById('catRow').style.display = visForFilters?'':'none';
+  document.getElementById('formRow').style.display = visForFilters?'':'none';
+  document.getElementById('clsRow').style.display = visForFilters?'':'none';
+  document.getElementById('binyanRow').style.display = visForFilters?'':'none';
+}
+
+/* ============ render główny ============ */
+function render(){
+  const s=document.getElementById('stage');
+  if(mode==='parse'){ pmode==='flash'?renderFlash(s):renderQuiz(s); }
+  else if(mode==='lex'){ renderLex(s); }
+  else if(mode==='para'){ renderPara(s); }
+  else { renderList(s); }
+}
+
+/* ---- ROZBIÓR: fiszka ---- */
+function renderFlash(s){
+  const list=filtered();
+  if(!list.length){ s.innerHTML='<div class="empty">Brak form dla wybranych filtrów.</div>'; return; }
+  if(idx>=list.length) idx=0;
+  const f=list[idx];
+  const total=list.length, kn=list.filter(x=>known[x.id]).length;
+  const tags=parseTags(f).map(t=>`<span class="tag ${t.k}">${t.v}</span>`).join('');
+  const isKnown=!!known[f.id];
+  s.innerHTML=`
+    <div class="deckbar"><span>${idx+1} / ${total}</span><span class="meter"><i style="width:${total?kn/total*100:0}%"></i></span><span>${kn} opanowane</span></div>
+    <div class="card ${isKnown?'is-known':''}" id="card">
+      <span class="corner l">lekcja ${lessOf(f.id)}</span>
+      <span class="corner r"><span class="cat">${f.cat==='verb'?'czasownik':'rzeczownik'}</span></span>
+      <div class="he">${f.heb}</div>
+      <div class="lemma-hint" id="hint">dotknij, aby zobaczyć rozbiór</div>
+      <div class="back" id="back" style="display:none">
+        <div class="translit">${f.tr}</div>
+        <div class="parsebar"><span class="tag root">√${f.p.root}</span>${tags}</div>
+        <div class="lemma-line">leksem: <b>${f.lemma}</b> · <i>${f.lemmaTr}</i></div>
+        <div class="pl">${f.pl}</div>
+        ${f.p.note?`<div class="note-wrap">${f.p.note}</div>`:''}
+      </div>
+      <div class="known-flag">opanowane</div>
+    </div>
+    <div class="deck-actions" id="acts" style="display:none">
+      <button class="btn again" id="again">Jeszcze raz</button>
+      <button class="btn know" id="know">${isKnown?'Opanowane ✓':'Umiem'}</button>
+    </div>
+    <div class="navmini">
+      <button id="prev" ${idx===0?'disabled':''}>‹ poprzednia</button>
+      <button id="next" ${idx>=total-1?'disabled':''}>następna ›</button>
+    </div>`;
+  let flipped=false;
+  const card=document.getElementById('card');
+  function flip(){flipped=true;document.getElementById('back').style.display='';document.getElementById('hint').style.display='none';document.getElementById('acts').style.display='';}
+  card.onclick=()=>{if(!flipped)flip();};
+  document.getElementById('again').onclick=e=>{e.stopPropagation();step(1);};
+  document.getElementById('know').onclick=async e=>{e.stopPropagation();known[f.id]=true;await saveKnown();step(1);};
+  document.getElementById('prev').onclick=e=>{e.stopPropagation();step(-1);};
+  document.getElementById('next').onclick=e=>{e.stopPropagation();step(1);};
+  function step(d){idx=(idx+d+total)%total;renderFlash(s);}
+}
+
+/* ---- ROZBIÓR: quiz (rozpoznaj formę) ---- */
+let QLEN=10;
+let qs=null, qsig='';
+const QSTATS_KEY='lambdin:adv:quizstats:v1';
+let qstats={sessions:0,asked:0,correct:0,best:0};
+(async function(){ try{ const r=await window.storage.get(QSTATS_KEY); if(r&&r.value) qstats=Object.assign(qstats,JSON.parse(r.value)); }catch(e){} })();
+async function saveQStats(){ try{ await window.storage.set(QSTATS_KEY, JSON.stringify(qstats)); }catch(e){} }
+
+function startQuizSession(subset){
+  const isSub = !!(subset && subset.length);
+  const list = isSub ? subset : filtered();
+  if(!isSub && list.length < 4){ qs=null; return; }
+  const items = shuffle([...list]).slice(0, Math.min(QLEN, list.length));
+  qs = {items, i:0, ok:0, wrong:[], answered:false, done:false};
+}
+function quizLenBar(){
+  return '<div class="qlen"><span>Długość sesji</span>' +
+    [10,20,30].map(n => '<button data-len="'+n+'" class="'+(QLEN===n?'on':'')+'">'+n+'</button>').join('') + '</div>';
+}
+function finishQuiz(){
+  qs.done = true;
+  qstats.sessions++; qstats.asked += qs.items.length; qstats.correct += qs.ok;
+  const p = Math.round(qs.ok / qs.items.length * 100);
+  if(p > (qstats.best||0)) qstats.best = p;
+  saveQStats();
+}
+function renderQuiz(s){
+  const list = filtered();
+  if(list.length < 4){ s.innerHTML='<div class="empty">Za mało form w tym filtrze na quiz (potrzeba ≥4). Zmień filtr.</div>'; return; }
+  const sig = JSON.stringify([lessonFilter,catFilter,formFilter,clsFilter,binyanFilter,list.length,QLEN]);
+  if(!qs || qsig !== sig){ qsig = sig; startQuizSession(); }
+  if(!qs){ s.innerHTML='<div class="empty">Za mało form na quiz.</div>'; return; }
+  if(qs.done){ renderQuizSummary(s); return; }
+  if(qs.answered){ // powrót do pytania już rozstrzygniętego (np. po zmianie trybu) — przejdź dalej
+    if(qs.i >= qs.items.length - 1){ finishQuiz(); renderQuizSummary(s); return; }
+    qs.i++; qs.answered = false;
+  }
+
+  const f = qs.items[qs.i];
+  const correct = parseLine(f);
+  const pool = [...new Set(FORMS.map(parseLine))].filter(l => l!==correct);
+  shuffle(pool);
+  const opts = shuffle([correct, ...pool.slice(0,3)]);
+  const pct = Math.round(qs.i / qs.items.length * 100);
+  s.innerHTML = `
+    ${quizLenBar()}
+    <div class="deckbar"><span>Pytanie ${qs.i+1} / ${qs.items.length}</span><span class="meter"><i style="width:${pct}%"></i></span><span>${qs.ok} poprawnych</span></div>
+    <div class="q-card quiz">
+      <div class="q-prompt">Jaki to rozbiór?</div>
+      <div class="he">${f.heb}</div>
+      <div class="translit" style="margin-top:6px">${f.tr}</div>
+      <div class="options" id="opts">
+        ${opts.map(o=>`<button class="opt" data-v="${encodeURIComponent(o)}">${o}</button>`).join('')}
+      </div>
+    </div>
+    <div class="next-q" id="nextWrap" style="display:none"><button class="btn know" id="nextQ" style="max-width:240px;margin:0 auto"></button></div>`;
+  const bar = s.querySelector('.qlen');
+  if(bar) bar.addEventListener('click', e => {
+    const b = e.target.closest('button[data-len]'); if(!b) return;
+    QLEN = +b.dataset.len; startQuizSession(); renderQuiz(s);
+  });
+  document.getElementById('opts').addEventListener('click', e => {
+    const b = e.target.closest('.opt'); if(!b || qs.answered) return;
+    qs.answered = true;
+    const chosen = decodeURIComponent(b.dataset.v);
+    [...document.querySelectorAll('.opt')].forEach(o => { o.disabled = true;
+      const v = decodeURIComponent(o.dataset.v);
+      if(v===correct) o.classList.add('correct'); else if(o===b) o.classList.add('wrong'); });
+    if(chosen===correct) qs.ok++;
+    else qs.wrong.push({heb:f.heb, tr:f.tr, correct, chosen, id:f.id});
+    const last = qs.i >= qs.items.length - 1;
+    const nb = document.getElementById('nextQ');
+    nb.textContent = last ? 'Podsumowanie →' : 'Następna ›';
+    document.getElementById('nextWrap').style.display = '';
+    nb.onclick = () => {
+      if(last){ finishQuiz(); } else { qs.i++; qs.answered = false; }
+      renderQuiz(s);
+    };
+  });
+}
+
+function renderQuizSummary(s){
+  const n = qs.items.length, ok = qs.ok, bad = n - ok;
+  const pct = Math.round(ok / n * 100);
+  const verdict = pct===100 ? 'Komplet — bezbłędnie!' : pct>=80 ? 'Bardzo dobrze' : pct>=60 ? 'Nieźle, warto powtórzyć' : 'Ten materiał wymaga powtórki';
+  const masteredPct = Math.round(Object.values(known).filter(Boolean).length / FORMS.length * 100);
+  const lifePct = qstats.asked ? Math.round(qstats.correct / qstats.asked * 100) : 0;
+  const misses = qs.wrong.map(w => `
+    <div class="miss">
+      <div class="mhe">${w.heb}</div>
+      <div class="mtr">${w.tr}</div>
+      <div class="mrow">poprawnie: <span class="good">${w.correct}</span></div>
+      <div class="mrow">Twoja odpowiedź: <span class="bad">${w.chosen}</span></div>
+    </div>`).join('');
+  s.innerHTML = `
+    <div class="qsum">
+      <div class="ring">
+        <div class="big">${pct}<small>%</small></div>
+        <div>
+          <div class="verdict">${verdict}</div>
+          <div style="font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:4px">Sesja: ${n} pytań</div>
+        </div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><b>${ok}</b><span>poprawnie</span></div>
+        <div class="tile"><b>${bad}</b><span>błędów</span></div>
+        <div class="tile"><b>${masteredPct}%</b><span>opanowane formy</span></div>
+      </div>
+      ${bad ? '<h4>Do powtórki</h4><div class="misses">'+misses+'</div>'
+            : '<div class="allgood">Wszystkie odpowiedzi poprawne — świetna sesja.</div>'}
+      <div class="acts">
+        <button class="btn know" id="qnew" style="max-width:220px">Nowa sesja (${QLEN})</button>
+        ${bad ? '<button class="btn" id="qredo" style="max-width:220px">Powtórz błędy ('+bad+')</button>' : ''}
+        ${ok ? '<button class="btn" id="qmark" style="max-width:260px">Dodaj poprawne do „opanowanych”</button>' : ''}
+      </div>
+      <div class="lifetime">Łącznie: ${qstats.sessions} ${qstats.sessions===1?'sesja':(qstats.sessions%10>=2&&qstats.sessions%10<=4&&(qstats.sessions%100<10||qstats.sessions%100>=20))?'sesje':'sesji'} · ${qstats.correct}/${qstats.asked} poprawnych (${lifePct}%) · najlepszy wynik: ${qstats.best||0}%</div>
+    </div>`;
+  document.getElementById('qnew').onclick = () => { startQuizSession(); renderQuiz(s); };
+  const redo = document.getElementById('qredo');
+  if(redo) redo.onclick = () => {
+    const ids = new Set(qs.wrong.map(w => w.id));
+    startQuizSession(FORMS.filter(f => ids.has(f.id)));
+    renderQuiz(s);
+  };
+  const mark = document.getElementById('qmark');
+  if(mark) mark.onclick = async () => {
+    const wrongIds = new Set(qs.wrong.map(w => w.id));
+    qs.items.filter(f => !wrongIds.has(f.id)).forEach(f => { known[f.id] = true; });
+    await saveKnown();
+    mark.textContent = 'Dodano ✓'; mark.disabled = true;
+  };
+}
+
+
+/* ---- SŁOWNIK (leksemy) ---- */
+function renderLex(s){
+  const roman={25:'XXV',26:'XXVI',27:'XXVII',28:'XXVIII',29:'XXIX',30:'XXX',31:'XXXI',32:'XXXII',33:'XXXIII',34:'XXXIV',35:'XXXV',36:'XXXVI',37:'XXXVII'};
+  const lessons=[25,26,27,28,29,30,31,32,33,34,35,36,37].filter(L=>lessonFilter==='all'||+lessonFilter===L);
+  let h='';
+  lessons.forEach(L=>{
+    const items=LEX.filter(x=>lessOf(x.id)===L);
+    h+=`<div class="lemgroup"><div class="lh"><span class="lhe">Słowniczek ${roman[L]}</span><span class="ltr">${items.length} haseł</span></div>`;
+    items.forEach(x=>{
+      h+=`<div class="lrow"><span class="lhe2">${x.heb}</span><span class="ltr2">${x.tr}</span><span class="lpl2">${x.pl}${x.note?` <span style="color:var(--muted)">— ${x.note}</span>`:''}</span><span class="lpar">${x.pos}</span></div>`;
+    });
+    h+='</div>';
+  });
+  s.innerHTML=h;
+}
+
+/* ---- PARADYGMATY ---- */
+function renderPara(s){
+  const list=PARADIGMS.filter(P=>lessonFilter==='all'||(P.lesson||25)===+lessonFilter);
+  s.innerHTML=list.map(P=>`
+    <div class="para">
+      <h3>${P.title} <span style="font-family:var(--sans);font-size:11px;color:var(--gold);letter-spacing:.1em">L${P.lesson||25}</span></h3>
+      <div class="meta">${P.meta}</div>
+      <table><tbody>
+        ${P.rows.map(r=>`<tr><td class="h">${r.h}</td><td class="t">${r.t}</td><td class="g">${r.g}</td></tr>`).join('')}
+      </tbody></table>
+    </div>`).join('');
+}
+
+/* ---- LISTA (formy zgrupowane wg leksemu) ---- */
+function renderList(s){
+  const list=filtered();
+  if(!list.length){ s.innerHTML='<div class="empty">Brak form dla wybranych filtrów.</div>'; return; }
+  const groups={};
+  list.forEach(f=>{(groups[f.lemma]=groups[f.lemma]||[]).push(f);});
+  const order=Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length);
+  let h='';
+  order.forEach(lem=>{
+    const arr=groups[lem]; const first=arr[0];
+    h+=`<div class="lemgroup"><div class="lh"><span class="lhe">${lem}</span><span class="ltr">${first.lemmaTr}</span><span class="lpl">${arr.length} ${arr.length===1?'forma':'formy/form'}</span></div>`;
+    arr.forEach(f=>{
+      const cls=f.cat==='verb'?' · '+clsOf(f).map(c=>CLS_LABEL[c]).join(', '):'';
+      h+=`<div class="lrow"><span class="lhe2">${f.heb}</span><span class="ltr2">${f.tr}</span><span class="lpl2">${f.pl}</span><span class="lpar"><span style="color:var(--gold)">L${lessOf(f.id)}</span> · ${parseLine(f)}${cls}</span></div>`;
+    });
+    h+='</div>';
+  });
+  s.innerHTML=h;
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ============ start ============ */
+(async function(){ await loadKnown(); syncRows(); render(); })();
+</script>

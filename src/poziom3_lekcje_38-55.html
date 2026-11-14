@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lambdin — trener zaawansowany (morfologia, lekcje 38–42)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EBDD;--surface:#FBF7EE;--surface-2:#F6F0E3;
+    --ink:#22262F;--indigo:#2A3450;--verdigris:#2C6E63;--verdigris-soft:#E1EDE9;
+    --gold:#A9803A;--muted:#8A8270;--line:#DCD3BF;
+    --shadow:0 1px 2px rgba(40,30,10,.05),0 12px 30px -18px rgba(40,30,10,.35);
+    --he:'Frank Ruhl Libre',serif;--serif:'Spectral',Georgia,serif;--sans:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(120% 80% at 50% -10%, #F7F2E7 0%, var(--paper) 55%) fixed;color:var(--ink);font-family:var(--serif);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:780px;margin:0 auto;padding:26px 18px 60px}
+  header.masthead{text-align:center;margin-bottom:18px}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--verdigris);font-weight:600}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,5vw,30px);margin:.18em 0 .1em;letter-spacing:-.01em}
+  .sub{font-family:var(--sans);font-size:13px;color:var(--muted)}
+  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--line) 18%,var(--line) 82%,transparent);margin:18px 0}
+  .controls{display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
+  .label{font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-right:4px;align-self:center}
+  .chip{font-family:var(--sans);font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 13px;border-radius:999px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--verdigris)}
+  .chip[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+  .modes .chip[aria-pressed="true"]{background:var(--verdigris);border-color:var(--verdigris)}
+  .sub-toggle .chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#F6F2E7}
+  .chip:disabled{opacity:.35;cursor:default}
+  .stage{margin-top:18px;min-height:300px}
+  .deckbar{display:flex;justify-content:space-between;align-items:center;font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:10px}
+  .deckbar .meter{height:5px;flex:1;margin:0 12px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .deckbar .meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--verdigris),var(--gold));width:0;transition:width .3s}
+  /* parsing card */
+  .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:30px 24px 24px;text-align:center;cursor:pointer;min-height:280px;display:flex;flex-direction:column;justify-content:center;gap:12px;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+  .corner{position:absolute;top:14px;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .corner.l{left:18px}.corner.r{right:18px}.corner.r .cat{color:var(--verdigris)}
+  .he{font-family:var(--he);direction:rtl;unicode-bidi:isolate;font-size:clamp(52px,14vw,78px);line-height:1.18;font-weight:500;color:var(--ink);padding-top:4px}
+  .lemma-hint{font-family:var(--sans);font-size:12px;color:var(--muted)}
+  .lemma-hint b{font-family:var(--he);font-weight:400;font-size:17px;color:var(--gold)}
+  .hint{font-family:var(--sans);font-size:12px;color:var(--muted)}
+  .back{border-top:1px dashed var(--line);margin-top:4px;padding-top:14px}
+  .translit{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--verdigris)}
+  .pl{font-family:var(--serif);font-size:22px;font-weight:600;margin-top:4px;color:var(--ink)}
+  .parsebar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
+  .tag{font-family:var(--sans);font-size:12px;font-weight:500;border-radius:7px;padding:4px 9px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink)}
+  .tag.binyan{background:var(--verdigris);border-color:var(--verdigris);color:#F6F2E7}
+  .tag.form{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+  .tag.root{font-family:var(--he);font-size:15px;direction:rtl;background:#F4ECD8;border-color:var(--gold);color:var(--ink)}
+  .tag.cls{background:#EAEFE0;border-color:#9DAE7E;color:#4C5A36}
+  .lemma-line{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:10px}
+  .lemma-line b{font-family:var(--he);font-weight:400;font-size:17px;color:var(--ink)}
+  .lemma-line i{font-style:italic;color:var(--verdigris)}
+  .note-wrap{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:8px;font-style:italic}
+  .known-flag{position:absolute;bottom:10px;left:0;right:0;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);opacity:0}
+  .card.is-known .known-flag{opacity:1}
+  .deck-actions{display:flex;gap:10px;margin-top:14px}
+  .btn{flex:1;font-family:var(--sans);font-size:14px;font-weight:600;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:.15s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.again{color:var(--indigo)}
+  .btn.know{background:var(--verdigris);border-color:var(--verdigris);color:#F6F2E7}
+  .navmini{display:flex;justify-content:center;gap:18px;margin-top:12px;font-family:var(--sans);font-size:13px}
+  .navmini button{background:none;border:none;color:var(--verdigris);cursor:pointer;font-weight:600;font-family:var(--sans);font-size:13px;padding:6px}
+  .navmini button:disabled{color:var(--line);cursor:default}
+  /* quiz */
+  .quiz .he{font-size:clamp(48px,12vw,68px)}
+  .q-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:26px 20px;text-align:center}
+  .q-prompt{font-family:var(--sans);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .options{display:flex;flex-direction:column;gap:9px;margin-top:18px}
+  .opt{font-family:var(--sans);font-size:15px;text-align:left;padding:12px 15px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;transition:.12s}
+  .opt:hover{border-color:var(--verdigris)}
+  .opt.correct{background:var(--verdigris-soft);border-color:var(--verdigris);color:#1d4d45;font-weight:600}
+  .opt.wrong{background:#F6E5DF;border-color:#C77B5E;color:#8a3d22}
+  .opt:disabled{cursor:default}
+  .score{font-family:var(--sans);font-size:13px;color:var(--muted);text-align:center;margin-top:16px}
+  .next-q{margin-top:14px;text-align:center}
+  /* paradigms */
+  .empty{text-align:center;font-family:var(--sans);font-size:14px;color:var(--muted);padding:40px 10px}
+  .para{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px 18px 8px;margin-bottom:20px}
+  .para h3{font-family:var(--serif);font-weight:600;font-size:18px;margin:0 0 2px}
+  .para .meta{font-family:var(--sans);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--verdigris);margin-bottom:12px}
+  .para table{width:100%;border-collapse:collapse}
+  .para td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:baseline}
+  .para td.h{font-family:var(--he);direction:rtl;font-size:26px;width:30%;white-space:nowrap;line-height:1.25}
+  .para td.t{font-family:var(--serif);font-style:italic;color:var(--verdigris);font-size:14px;width:30%}
+  .para td.g{font-family:var(--sans);font-size:12.5px;color:var(--muted)}
+  .para .twocol{display:grid;grid-template-columns:1fr 1fr;gap:6px 22px}
+  @media(max-width:560px){.para .twocol{grid-template-columns:1fr}}
+  .para .colhead{font-family:var(--sans);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);padding:4px 6px 2px;border-bottom:1px solid var(--gold)}
+  /* list */
+  .lemgroup{margin-bottom:22px}
+  .lemgroup .lh{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:4px}
+  .lemgroup .lh .lhe{font-family:var(--he);direction:rtl;font-size:26px;color:var(--ink)}
+  .lemgroup .lh .ltr{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--verdigris)}
+  .lemgroup .lh .lpl{font-family:var(--sans);font-size:12px;color:var(--muted);margin-left:auto;text-align:right}
+  .lrow{display:flex;align-items:baseline;gap:10px;padding:7px 4px;border-bottom:1px solid var(--line)}
+  .lrow .lhe2{font-family:var(--he);direction:rtl;font-size:24px;min-width:34%;line-height:1.3}
+  .lrow .ltr2{font-family:var(--serif);font-style:italic;color:var(--verdigris);font-size:13.5px;min-width:24%}
+  .lrow .lpl2{font-family:var(--sans);font-size:13px;color:var(--ink);flex:1}
+  .lrow .lpar{font-family:var(--sans);font-size:11px;color:var(--muted);text-align:right;min-width:30%}
+  footer{text-align:center;font-family:var(--sans);font-size:11.5px;color:var(--muted);margin-top:34px;line-height:1.7}
+  .reset{background:none;border:none;color:var(--verdigris);cursor:pointer;font-family:var(--sans);font-size:11.5px;text-decoration:underline}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* --- sesje quizu: podsumowanie --- */
+.qsum{max-width:620px;margin:0 auto}
+.qsum .ring{display:flex;align-items:center;justify-content:center;gap:18px;margin:6px 0 16px;flex-wrap:wrap}
+.qsum .big{font-family:var(--serif);font-size:54px;font-weight:600;line-height:1;color:var(--ink)}
+.qsum .big small{font-size:20px;color:var(--muted);font-weight:400}
+.qsum .verdict{font-family:var(--sans);font-size:13px;color:var(--verdigris);font-weight:600;letter-spacing:.06em}
+.qsum .tiles{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.qsum .tile{flex:1 1 130px;min-width:120px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+.qsum .tile b{display:block;font-family:var(--serif);font-size:23px;font-weight:600;color:var(--ink)}
+.qsum .tile span{font-family:var(--sans);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.qsum h4{font-family:var(--sans);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--verdigris);
+  font-weight:600;margin:18px 0 8px;text-align:left}
+.qsum .misses{display:flex;flex-direction:column;gap:8px;text-align:left}
+.qsum .miss{background:var(--surface);border:1px solid var(--line);border-left:3px solid #B4553F;border-radius:10px;padding:10px 12px}
+.qsum .miss .mhe{font-family:var(--he);font-size:26px;direction:rtl;unicode-bidi:isolate;line-height:1.3}
+.qsum .miss .mtr{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted)}
+.qsum .miss .mrow{font-family:var(--sans);font-size:12.5px;margin-top:4px;line-height:1.5}
+.qsum .miss .good{color:var(--verdigris);font-weight:600}
+.qsum .miss .bad{color:#B4553F;text-decoration:line-through}
+.qsum .allgood{font-family:var(--sans);font-size:13px;color:var(--verdigris);background:var(--surface);
+  border:1px dashed var(--line);border-radius:10px;padding:14px;text-align:center}
+.qsum .acts{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.qsum .lifetime{font-family:var(--sans);font-size:11.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+.qlen{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.qlen span{font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.qlen button{font-family:var(--sans);font-size:12px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.qlen button.on{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Lambdin · Hebrajszczyzna biblijna · wariant zaawansowany</div>
+    <h1>Trener morfologiczny — lekcje 38–55</h1>
+    <div class="sub">Hebrajski → polski · pełny system binianów (L38–51) + przyrostki dopełnienia bliższego i składnia warunkowa (L52–55) · NIFAL · PIEL · PUAL · HIFIL · HOFAL · HITPAEL · POLEL · czasownik + przyrostek dopełnienia · zdania warunkowe · filtry: klasa rdzenia, binian, forma</div>
+  </header>
+
+  <div class="rule"></div>
+
+  <div class="controls">
+    <div class="row modes" id="modes">
+      <span class="label">Tryb</span>
+      <button class="chip" data-mode="parse" aria-pressed="true">Rozbiór</button>
+      <button class="chip" data-mode="lex" aria-pressed="false">Słownik</button>
+      <button class="chip" data-mode="para" aria-pressed="false">Paradygmaty</button>
+      <button class="chip" data-mode="list" aria-pressed="false">Lista</button>
+    </div>
+
+    <div class="row sub-toggle" id="parseToggle">
+      <span class="label">Rozbiór jako</span>
+      <button class="chip" data-pmode="flash" aria-pressed="true">Fiszka</button>
+      <button class="chip" data-pmode="quiz" aria-pressed="false">Quiz</button>
+    </div>
+
+    <div class="row" id="lessonRow">
+      <span class="label">Lekcja</span>
+      <button class="chip" data-lesson="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-lesson="38">38</button>
+      <button class="chip" data-lesson="39">39</button>
+      <button class="chip" data-lesson="40">40</button>
+      <button class="chip" data-lesson="41">41</button>
+      <button class="chip" data-lesson="42">42</button>
+      <button class="chip" data-lesson="43">43</button>
+      <button class="chip" data-lesson="44">44</button>
+      <button class="chip" data-lesson="45">45</button>
+      <button class="chip" data-lesson="46">46</button>
+      <button class="chip" data-lesson="47">47</button>
+      <button class="chip" data-lesson="48">48</button>
+      <button class="chip" data-lesson="49">49</button>
+      <button class="chip" data-lesson="50">50</button>
+      <button class="chip" data-lesson="51">51</button>
+      <button class="chip" data-lesson="52">52</button>
+      <button class="chip" data-lesson="53">53</button>
+      <button class="chip" data-lesson="54">54</button>
+      <button class="chip" data-lesson="55">55</button>
+    </div>
+
+    <div class="row" id="catRow">
+      <span class="label">Kategoria</span>
+      <button class="chip" data-cat="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-cat="verb">Czasowniki</button>
+      <button class="chip" data-cat="noun">Rzeczowniki</button>
+    </div>
+
+    <div class="row" id="formRow">
+      <span class="label">Forma</span>
+      <button class="chip" data-form="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-form="impv">imperat.</button>
+      <button class="chip" data-form="juss">jussivus</button>
+      <button class="chip" data-form="coh">cohortat.</button>
+      <button class="chip" data-form="impf">imperf.</button>
+      <button class="chip" data-form="perf">perf.</button>
+      <button class="chip" data-form="ptcp">imiesłów</button>
+      <button class="chip" data-form="ptcpPass">im. bierny</button>
+      <button class="chip" data-form="inf">bezokol.</button>
+      <button class="chip" data-form="infAbs">inf. abs.</button>
+      <button class="chip" data-form="wayyiqtol">waw+impf</button>
+      <button class="chip" data-form="weqatal">waw+perf</button>
+    </div>
+
+    <div class="row" id="binyanRow">
+      <span class="label">Binian</span>
+      <button class="chip" data-binyan="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-binyan="qal">qal</button>
+      <button class="chip" data-binyan="niphal">nifal</button>
+      <button class="chip" data-binyan="piel">piel</button>
+      <button class="chip" data-binyan="pual">pual</button>
+      <button class="chip" data-binyan="hifil">hifil</button>
+      <button class="chip" data-binyan="hofal">hofal</button>
+      <button class="chip" data-binyan="hitpael">hitpael</button>
+      <button class="chip" data-binyan="polel">polel</button>
+      <button class="chip" data-binyan="polal">polal</button>
+      <button class="chip" data-binyan="hitpolel">hitpolel</button>
+      <button class="chip" data-binyan="hishtaphel">hishtaphel</button>
+    </div>
+
+    <div class="row" id="clsRow">
+      <span class="label">Klasa rdzenia</span>
+      <button class="chip" data-cls="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-cls="mocny">mocny</button>
+      <button class="chip" data-cls="Igard">I-gardł.</button>
+      <button class="chip" data-cls="IIgard">II-gardł.</button>
+      <button class="chip" data-cls="IIIgard">III-gardł.</button>
+      <button class="chip" data-cls="Ialef">I-alef</button>
+      <button class="chip" data-cls="IIIalef">III-alef</button>
+      <button class="chip" data-cls="Ijod">I-jod</button>
+      <button class="chip" data-cls="Inun">I-nun</button>
+      <button class="chip" data-cls="IIIhe">III-he</button>
+      <button class="chip" data-cls="pusty">pusty</button>
+      <button class="chip" data-cls="podw">podwojony</button>
+    </div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <footer>
+    Wariant zaawansowany trenera do <i>Wprowadzenia do hebrajskiego biblijnego</i> T. O. Lambdina (wyd. polskie).<br>
+    Lekcje 38–42 · kierunek He→Pl · pełna wokalizacja · biniany pochodne: Nifal (klasy słabe), Piel, Pual.<br>
+    Ciąg dalszy trenera zaawansowanego (25–37); słownictwo i formy nie powtarzają się z poprzednią częścią.<br>
+    <button class="reset" id="resetBtn">Wyzeruj postęp fiszek</button>
+  </footer>
+</div>
+
+<script>
+/* ============ LEKSEMY (Słowniczki XXXVIII–LV) ============ */
+const LEX = [
+ // ---- Słowniczek XXXVIII (L38) ----
+ {id:'38-1',heb:'רֹאשׁ',tr:'rō(ʾ)š',pl:'głowa; przywódca; szczyt',pos:'rzeczownik',note:'l.mn. nieregularna רָאשִׁים (§34)'},
+ {id:'38-2',heb:'פֶּתַח',tr:'péṯaḥ',pl:'otwarcie, wejście (do namiotu, domu); wyłom w murze',pos:'rzeczownik',note:'+przyr. פִּתְחִי; l.mn. -îm; też przyimek: u wejścia do…'},
+ {id:'38-3',heb:'טַף',tr:'ṭap̄',pl:'dzieci (rzecz. zbiorowy)',pos:'rzeczownik',note:'brak l.mn.; nie występuje w st. constructus'},
+ {id:'38-4',heb:'מְעַט',tr:'məʿaṭ',pl:'mało, trochę, niewiele',pos:'rzeczownik',note:'idiomy: מְעַט מַיִם trochę wody; מְעַט מְעַט stopniowo; בְּעוֹד מְעַט wnet, wkrótce'},
+ {id:'38-5',heb:'עוֹלָם',tr:'ʿôlām',pl:'(długi czas) wieczność, odwieczność',pos:'rzeczownik',note:'l.mn. -îm; עַד־עוֹלָם / לְעוֹלָם na zawsze; יְמֵי עוֹלָם dawne dni; בְּרִית עוֹלָם wieczne przymierze'},
+ {id:'38-6',heb:'נוֹתַר',tr:'nôṯar',pl:'być pozostawionym, pozostać, ocaleć',pos:'czasownik',note:'nifal od √יתר; impf. יִוָּתֵר yiwwāṯēr'},
+ {id:'38-7',heb:'נִחַם',tr:'niḥam',pl:'żałować, czuć skruchę; być pocieszonym',pos:'czasownik',note:'nifal (I-Nun + II-gardł.); impf. יִנָּחֵם yinnāḥēm; homograf z piel (L42)'},
+ {id:'38-8',heb:'נִגַּשׁ',tr:'niggaš',pl:'zbliżyć się (+ אֶל)',pos:'czasownik',note:'nifal perf.; imperf. używa Qalu יִגַּשׁ (por. L29)'},
+ {id:'38-9',heb:'נִצַּב',tr:'niṣṣaḇ',pl:'stanąć, zająć pozycję; być postawionym',pos:'czasownik',note:'nifal (I-Nun); brak imperfectum'},
+ {id:'38-10',heb:'נִפְלָא',tr:'nip̄lāʾ',pl:'być wspaniałym, cudownym',pos:'czasownik',note:'nifal (III-alef); impf. יִפָּלֵא yippālēʾ'},
+ // ---- Słowniczek XXXIX (L39) ----
+ {id:'39-1',heb:'טֶבַח',tr:'ṭéḇaḥ',pl:'rzeź, ubój',pos:'rzeczownik'},
+ {id:'39-2',heb:'תְּחִלָּה',tr:'təḥillāh',pl:'początek, pierwszy przypadek (czegoś)',pos:'rzeczownik',note:'בַּתְּחִלָּה — na początku, najpierw'},
+ {id:'39-3',heb:'צֵל',tr:'ṣēl',pl:'cień; (przen.) ochrona',pos:'rzeczownik',note:'+przyr. צִלִּי; l.mn. nieregularna צְלָלִים'},
+ {id:'39-4',heb:'יָמִין',tr:'yāmîn',pl:'prawica, prawa ręka; prawa strona',pos:'rzeczownik',note:'rodzaj żeński'},
+ {id:'39-5',heb:'שְׂמֹאל',tr:'śəmōʾl',pl:'lewica; lewa ręka; lewa strona',pos:'rzeczownik',note:'rodzaj męski'},
+ {id:'39-6',heb:'לֵב',tr:'lēḇ',pl:'serce',pos:'rzeczownik',note:'+przyr. לִבִּי; l.mn. -ôṯ; też לֵבָב'},
+ {id:'39-7',heb:'נָם',tr:'nām',pl:'spać',pos:'czasownik',note:'czasownik pusty; impf. יָנוּם yānûm'},
+ {id:'39-8',heb:'טָבַח',tr:'ṭāḇaḥ',pl:'zarżnąć (zwierzę na pożywienie)',pos:'czasownik',note:'III-gardł.; impf. יִטְבַּח yiṭbaḥ'},
+ {id:'39-9',heb:'רָחַץ',tr:'rāḥaṣ',pl:'myć, myć się',pos:'czasownik',note:'II-gardł.; impf. יִרְחַץ yirḥaṣ'},
+ {id:'39-10',heb:'נָמֵס',tr:'nāmēs',pl:'rozpuścić się, topnieć',pos:'czasownik',note:'nifal od √מסס; impf. יִמַּס yimmas'},
+ {id:'39-11',heb:'נָכוֹן',tr:'nāḵôn',pl:'być stałym, niezmiennym, pewnym, ustanowionym',pos:'czasownik',note:'nifal od √כון (pusty); impf. יִכּוֹן yikkôn'},
+ {id:'39-12',heb:'יוֹמָם',tr:'yômām',pl:'za dnia, w ciągu dnia',pos:'przysłówek'},
+ // ---- Słowniczek XL (L40) ----
+ {id:'40-1',heb:'קִדֵּשׁ',tr:'qiddēš',pl:'uświęcić',pos:'czasownik',note:'piel; impf. יְקַדֵּשׁ; por. קָדוֹשׁ'},
+ {id:'40-2',heb:'בָּעַר',tr:'bāʿar',pl:'płonąć, palić, palić się',pos:'czasownik',note:'qal; impf. יִבְעַר yiḇʿar'},
+ {id:'40-3',heb:'בִּעֵר',tr:'biʿēr',pl:'(przech.) spalić, strawić; zniszczyć, usunąć',pos:'czasownik',note:'piel (II-gardł.); impf. יְבַעֵר'},
+ {id:'40-4',heb:'דִּבֶּר',tr:'dibber',pl:'mówić, rozmawiać',pos:'czasownik',note:'piel; impf. יְדַבֵּר; por. דָּבָר; forma z e w 3 os. perf.'},
+ {id:'40-5',heb:'בֵּרֵךְ',tr:'bērēḵ',pl:'błogosławić',pos:'czasownik',note:'piel; impf. יְבָרֵךְ; por. בְּרָכָה; wayyiqtol וַיְבָרֶךְ'},
+ {id:'40-6',heb:'בִּקֵּשׁ',tr:'biqqēš',pl:'szukać',pos:'czasownik',note:'piel; impf. יְבַקֵּשׁ'},
+ {id:'40-7',heb:'שִׁלַּח',tr:'šillaḥ',pl:'wypędzić, odesłać, pozwolić odejść',pos:'czasownik',note:'piel (III-gardł.); impf. יְשַׁלַּח; por. L25'},
+ {id:'40-8',heb:'גֵּרֵשׁ',tr:'gērēš',pl:'wypędzić, odpędzić, wygnać',pos:'czasownik',note:'piel; impf. יְגָרֵשׁ; wayyiqtol וַיְגָרֶשׁ'},
+ {id:'40-9',heb:'נִאֵץ',tr:'niʾēṣ',pl:'gardzić',pos:'czasownik',note:'piel (II-gardł.); impf. יְנָאֵץ'},
+ {id:'40-10',heb:'מֵאֵן',tr:'mēʾēn',pl:'odmówić, odrzucić',pos:'czasownik',note:'piel (II-gardł., wydłuż. zastępcze); impf. יְמָאֵן; por. L33'},
+ {id:'40-11',heb:'שֵׁרֵת',tr:'šērēṯ',pl:'służyć, posługiwać',pos:'czasownik',note:'piel; impf. יְשָׁרֵת; wayyiqtol וַיְשָׁרֶת'},
+ {id:'40-12',heb:'אוֹ',tr:'ʾô',pl:'lub, albo',pos:'spójnik'},
+ {id:'40-13',heb:'כְּ…כְּ',tr:'kə…kə',pl:'taki jak…, równy… (porównanie równości)',pos:'idiom',note:'כָּמוֹךָ כְּפַרְעֹה — jesteś równy faraonowi; כָּמוֹךָ כָּמוֹנִי — ty i ja jesteśmy równi'},
+ // ---- Słowniczek XLI (L41) ----
+ {id:'41-1',heb:'צִוָּה',tr:'ṣiwwāh',pl:'rozkazać, nakazać; przekazać pod opiekę; ustanowić',pos:'czasownik',note:'piel (III-he); impf. יְצַוֶּה, juss. יְצַו'},
+ {id:'41-2',heb:'הִלֵּל',tr:'hillēl',pl:'chwalić',pos:'czasownik',note:'piel (geminowany); impf. יְהַלֵּל; הַלְלוּ־יָהּ Alleluja'},
+ {id:'41-3',heb:'כִּסָּה',tr:'kissāh',pl:'przykryć, pokryć',pos:'czasownik',note:'piel (III-he); impf. יְכַסֶּה, juss. יְכַס'},
+ {id:'41-4',heb:'עִנָּה',tr:'ʿinnāh',pl:'uciskać',pos:'czasownik',note:'piel (III-he); impf. יְעַנֶּה, juss. יְעַן; por. עֳנִי (L27)'},
+ {id:'41-5',heb:'סִפֵּר',tr:'sippēr',pl:'opowiadać, głosić',pos:'czasownik',note:'piel; impf. יְסַפֵּר; por. סֵפֶר'},
+ {id:'41-6',heb:'קִלֵּל',tr:'qillēl',pl:'przeklinać',pos:'czasownik',note:'piel (geminowany); impf. יְקַלֵּל'},
+ {id:'41-7',heb:'עָרַב',tr:'ʿāraḇ',pl:'być zastawem; ręczyć, gwarantować; odpowiadać za kogoś',pos:'czasownik',note:'qal (I-gardł.); impf. יַעֲרֹב yaʿărōḇ'},
+ {id:'41-8',heb:'קָשַׁר',tr:'qāšar',pl:'wiązać (+ אֵת coś + בְּ z czymś); spiskować (+ עַל)',pos:'czasownik',note:'qal; impf. יִקְשֹׁר yiqšōr'},
+ {id:'41-9',heb:'שֵׂיבָה',tr:'śêḇāh',pl:'siwe włosy, siwizna; starość',pos:'rzeczownik'},
+ {id:'41-10',heb:'שְׁאוֹל',tr:'šəʾôl',pl:'Szeol, miejsce przebywania zmarłych',pos:'rzeczownik'},
+ {id:'41-11',heb:'אַךְ',tr:'ʾaḵ',pl:'z pewnością, bez wątpienia; ale, jednak, tylko',pos:'przysłówek'},
+ {id:'41-12',heb:'עַד־הֵנָּה',tr:'ʿaḏ-hēnnāh',pl:'aż do teraz, dotychczas',pos:'przysłówek'},
+ // ---- Słowniczek XLII (L42) ----
+ {id:'42-1',heb:'זָעַק',tr:'zāʿaq',pl:'wołać, krzyczeć',pos:'czasownik',note:'qal (II-gardł.); synonim/dublet czas. צָעַק; impf. יִזְעַק'},
+ {id:'42-2',heb:'סָר',tr:'sār',pl:'(nieprzech.) skręcić, zboczyć, odejść',pos:'czasownik',note:'pusty (√סור); impf. יָסוּר; por. L32'},
+ {id:'42-3',heb:'חִלֵּל',tr:'ḥillēl',pl:'skazić, znieważyć, zbezcześcić',pos:'czasownik',note:'piel (geminowany); impf. יְחַלֵּל'},
+ {id:'42-4',heb:'כִּפֶּר',tr:'kipper',pl:'dokonać przebłagania, zadośćuczynić',pos:'czasownik',note:'piel; impf. יְכַפֵּר; forma z e w 3 os. perf.'},
+ {id:'42-5',heb:'נִחַם',tr:'niḥam',pl:'pocieszyć',pos:'czasownik',note:'piel; impf. יְנַחֵם; homograf z nifal (L38)'},
+ {id:'42-6',heb:'שִׂמַּח',tr:'śimmaḥ',pl:'uradować, ucieszyć (kogoś)',pos:'czasownik',note:'piel (III-gardł.); impf. יְשַׂמַּח; por. שָׂמַח, שִׂמְחָה'},
+ {id:'42-7',heb:'חֹתֵן',tr:'ḥōṯēn',pl:'teść',pos:'rzeczownik'},
+ {id:'42-8',heb:'לֶהָבָה',tr:'lehāḇāh',pl:'płomień',pos:'rzeczownik',note:'st. constr. לַהֶבֶת / לַבַּת; l.mn. -ôṯ'},
+ {id:'42-9',heb:'נַעַל',tr:'náʿal',pl:'but, sandał',pos:'rzeczownik',note:'rodzaj żeński; l.mn. -îm'},
+ {id:'42-10',heb:'קֹדֶשׁ',tr:'qṓḏeš',pl:'świętość',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'42-11',heb:'עָוֹן',tr:'ʿāwōn',pl:'wina, grzech, kara',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'42-12',heb:'מַדּוּעַ',tr:'maddûaʿ',pl:'dlaczego? z jakiej przyczyny?',pos:'przysłówek',note:'pytajny'},
+ {id:'42-13',heb:'הֲלֹם',tr:'hălōm',pl:'aż dotąd',pos:'przysłówek',note:'rzadszy synonim הֵנָּה'},
+ {id:'42-14',heb:'מֹשֶׁה',tr:'mōšeh',pl:'Mojżesz',pos:'imię własne'},
+ {id:'42-15',heb:'מִדְיָן',tr:'miḏyān',pl:'Madian (kraina w płn.-zach. Arabii)',pos:'imię własne'},
+ {id:'42-16',heb:'יִתְרוֹ',tr:'yiṯrô',pl:'Jetro (teść Mojżesza)',pos:'imię własne'},
+ {id:'42-17',heb:'חֹרֵב',tr:'ḥōrēḇ',pl:'Horeb (inna nazwa góry Synaj)',pos:'imię własne'},
+ /* ===== SŁOWNICZEK XLIII (Lekcja 43) ===== */
+ // czasowniki w Hifilu (od rdzeni poznanych wcześniej)
+ {id:'43-1',heb:'הֶאֱבִיד',tr:'heʾĕḇîḏ',pl:'zniszczyć, zabić',pos:'czas. (Hifil)',note:'por. אָבַד „ginąć"'},
+ {id:'43-2',heb:'הֶאֱמִין',tr:'heʾĕmîn',pl:'wierzyć, ufać (B. lub לְ)',pos:'czas. (Hifil)',note:'por. נֶאֱמַן'},
+ {id:'43-3',heb:'הִגְדִּיל',tr:'higdîl',pl:'powiększać, czynić wielkim',pos:'czas. (Hifil)',note:'por. גָּדַל'},
+ {id:'43-4',heb:'הִזְכִּיר',tr:'hizkîr',pl:'przypomnieć, wspomnieć',pos:'czas. (Hifil)',note:'por. זָכַר'},
+ {id:'43-5',heb:'הֶחֱזִיק',tr:'heḥĕzîq',pl:'pochwycić, złapać (B.)',pos:'czas. (Hifil)',note:'por. חָזַק „być silnym"'},
+ {id:'43-6',heb:'הֶעֱבִיר',tr:'heʿĕḇîr',pl:'przeprowadzić (przez coś)',pos:'czas. (Hifil)',note:'por. עָבַר; I-gardł.'},
+ {id:'43-7',heb:'הֶעֱמִיד',tr:'heʿĕmîḏ',pl:'ustanowić, postawić',pos:'czas. (Hifil)',note:'por. עָמַד'},
+ {id:'43-8',heb:'הִקְרִיב',tr:'hiqrîḇ',pl:'przynieść, zbliżyć, składać w ofierze',pos:'czas. (Hifil)',note:'por. קָרַב'},
+ {id:'43-9',heb:'הִגִּישׁ',tr:'higgîš',pl:'przyprowadzać, przynosić',pos:'czas. (Hifil)',note:'rdzeń נגשׁ; por. L29'},
+ {id:'43-10',heb:'הִצִּיב',tr:'hiṣṣîḇ',pl:'ustawić, wyznaczyć miejsce',pos:'czas. (Hifil)',note:'rdzeń נצב'},
+ {id:'43-11',heb:'הִבִּיט',tr:'hibbîṭ',pl:'patrzeć na (אֶל, לְ), spoglądać',pos:'czas. (Hifil)',note:'rdzeń נבט'},
+ {id:'43-12',heb:'הִגִּיד',tr:'higgîḏ',pl:'powiedzieć (komuś: לְ)',pos:'czas. (Hifil)',note:'rdzeń נגד; w Qalu niepoświadczony'},
+ {id:'43-13',heb:'הִצִּיל',tr:'hiṣṣîl',pl:'wybawić, ocalić',pos:'czas. (Hifil)',note:'rdzeń נצל'},
+ {id:'43-14',heb:'הִשִּׂיג',tr:'hiśśîg',pl:'osiągnąć, dosięgnąć, dogonić',pos:'czas. (Hifil)',note:'rdzeń נשׂג'},
+ {id:'43-15',heb:'הִסְתִּיר',tr:'histîr',pl:'ukryć, schować (przechodnio)',pos:'czas. (Hifil)',note:'rdzeń סתר'},
+ // odpowiedniki w Nifalu
+ {id:'43-16',heb:'נִקְרָה',tr:'niqrāh',pl:'spotkać, przydarzyć się (impf. יִקָּרֶה)',pos:'czas. (Nifal)',note:'rdzeń קרה; wariant נִקְרָא + אֶל/עַל'},
+ {id:'43-17',heb:'נִצַּל',tr:'niṣṣal',pl:'być ocalonym',pos:'czas. (Nifal)',note:'rdzeń נצל; kontrast z הִצִּיל'},
+ {id:'43-18',heb:'נִסְתַּר',tr:'nistar',pl:'chować się, ukryć się',pos:'czas. (Nifal)',note:'rdzeń סתר; kontrast z הִסְתִּיר'},
+ // rzeczowniki
+ {id:'43-19',heb:'חָלָב',tr:'ḥālāḇ',pl:'mleko',pos:'rzecz. r.m.',note:'st. constr. niereg. חֲלֵב; brak l.mn.'},
+ {id:'43-20',heb:'דְּבַשׁ',tr:'dəḇaš',pl:'miód',pos:'rzecz. r.m.'},
+ {id:'43-21',heb:'זֵכֶר',tr:'zēḵer',pl:'pamięć, wspomnienie',pos:'rzecz. r.m.',note:'+ suf. זִכְרִי; brak l.mn.'},
+ {id:'43-22',heb:'אוֹת',tr:'ʾôṯ',pl:'znak, omen',pos:'rzecz. r.m.',note:'l.mn. -ôṯ'},
+ {id:'43-23',heb:'דּוֹר',tr:'dôr',pl:'pokolenie; okres jednego pokolenia',pos:'rzecz. r.m.',note:'l.mn. -îm lub -ôṯ'},
+ {id:'43-24',heb:'רָחָב',tr:'rāḥāḇ',pl:'szeroki, rozległy',pos:'przymiotnik'},
+
+ /* ===== SŁOWNICZEK XLIV (Lekcja 44) ===== */
+ {id:'44-1',heb:'הִשְׁמִיעַ',tr:'hišmîaʿ',pl:'sprawić by usłyszano; obwieszczać, ogłaszać',pos:'czas. (Hifil)',note:'por. שָׁמַע; III-gardł.'},
+ {id:'44-2',heb:'הִמְצִיא',tr:'himṣîʾ',pl:'sprawić by znaleziono; podać, przekazać',pos:'czas. (Hifil)',note:'por. מָצָא; III-Alef'},
+ {id:'44-3',heb:'הֶחֱטִיא',tr:'heḥĕṭîʾ',pl:'doprowadzić do grzechu',pos:'czas. (Hifil)',note:'por. חָטָא; I-gardł. + III-Alef'},
+ {id:'44-4',heb:'הִצְלִיחַ',tr:'hiṣlîaḥ',pl:'powodować powodzenie; pomyślnie dokonać',pos:'czas. (Hifil)',note:'rdzeń צלח'},
+ {id:'44-5',heb:'הִשְׁלִיךְ',tr:'hišlîḵ',pl:'rzucać, wrzucać, wyrzucać',pos:'czas. (Hifil)',note:'rdzeń שׁלך'},
+ {id:'44-6',heb:'הִשְׁמִיד',tr:'hišmîḏ',pl:'zniszczyć',pos:'czas. (Hifil)',note:'rdzeń שׁמד; wzór regularny'},
+ {id:'44-7',heb:'הֶאֱרִיךְ',tr:'heʾĕrîḵ',pl:'wydłużyć (przech.); być długim (nieprzech.)',pos:'czas. (Hifil)',note:'rdzeń ארך'},
+ {id:'44-8',heb:'זָבַח',tr:'zāḇaḥ',pl:'składać w ofierze',pos:'czas. (Qal)',note:'impf. יִזְבַּח'},
+ {id:'44-9',heb:'גָּנַב',tr:'gānaḇ',pl:'ukraść',pos:'czas. (Qal)',note:'impf. יִגְנֹב'},
+ {id:'44-10',heb:'רָצַח',tr:'rāṣaḥ',pl:'zabić (z premedytacją lub bez)',pos:'czas. (Qal)',note:'impf. יִרְצַח'},
+ {id:'44-11',heb:'מַטֶּה',tr:'maṭṭeh',pl:'kij, laska; plemię',pos:'rzecz. r.m.',note:'l.mn. -ôṯ'},
+ {id:'44-12',heb:'כַּף',tr:'kap̄',pl:'wewnętrzna część dłoni; podeszwa',pos:'rzecz. r.ż.',note:'+ suf. כַּפִּי; l.podw. כַּפַּיִם; l.mn. -ôṯ'},
+ {id:'44-13',heb:'הֵן',tr:'hēn',pl:'oto; jeśli',pos:'partykuła',note:'synonim הִנֵּה'},
+
+ /* ===== SŁOWNICZEK XLV (Lekcja 45) ===== */
+ {id:'45-1',heb:'הוֹשִׁיב',tr:'hôšîḇ',pl:'osiedlić, posadzić; sprawić że ktoś zamieszka',pos:'czas. (Hifil)',note:'por. יָשַׁב; I-Jod'},
+ {id:'45-2',heb:'הוֹרִיד',tr:'hôrîḏ',pl:'sprowadzić, poprowadzić w dół',pos:'czas. (Hifil)',note:'por. יָרַד'},
+ {id:'45-3',heb:'הוֹלִיד',tr:'hôlîḏ',pl:'spłodzić, zrodzić',pos:'czas. (Hifil)',note:'por. יָלַד'},
+ {id:'45-4',heb:'הוֹדִיעַ',tr:'hôḏîaʿ',pl:'powiadomić; uczyć; ogłosić, proklamować',pos:'czas. (Hifil)',note:'por. יָדַע; I-Jod + III-gardł.'},
+ {id:'45-5',heb:'הוֹצִיא',tr:'hôṣîʾ',pl:'wyprowadzić',pos:'czas. (Hifil)',note:'por. יָצָא; I-Jod + III-Alef'},
+ {id:'45-6',heb:'הוֹלִיךְ',tr:'hôlîḵ',pl:'prowadzić; sprawić że ktoś idzie',pos:'czas. (Hifil)',note:'por. הָלַךְ (jakby rdzeń ילך)'},
+ {id:'45-7',heb:'הוֹסִיף',tr:'hôsîp̄',pl:'robić ponownie; kontynuować; dodać',pos:'czas. (Hifil)',note:'rdzeń יסף'},
+ {id:'45-8',heb:'הוֹשִׁיעַ',tr:'hôšîaʿ',pl:'wybawić, wyzwolić',pos:'czas. (Hifil)',note:'rdzeń ישׁע'},
+ {id:'45-9',heb:'הוֹכִיחַ',tr:'hôḵîaḥ',pl:'ukarać, skarcić, upomnieć; podjąć decyzję',pos:'czas. (Hifil)',note:'rdzeń יכח'},
+ {id:'45-10',heb:'קִנֵּא',tr:'qinnēʾ',pl:'być zazdrosnym (אֶת / בְּ + osoba); być gorliwym',pos:'czas. (Piel)',note:'rdzeń קנא'},
+ {id:'45-11',heb:'פֶּסֶל',tr:'pesel',pl:'bożek, obraz bóstwa',pos:'rzecz. r.m.',note:'l.mn. niereg. פְּסִילִים'},
+ {id:'45-12',heb:'אֵל',tr:'ʾēl',pl:'bóg, Bóg',pos:'rzecz. r.m.',note:'l.mn. -îm'},
+ {id:'45-13',heb:'שָׁוְא',tr:'šāwʾ',pl:'pustka, nicość; לַשָּׁוְא — na próżno',pos:'rzecz. r.m.'},
+ {id:'45-14',heb:'גֵּר',tr:'gēr',pl:'obcokrajowiec, przybysz',pos:'rzecz. r.m.',note:'l.mn. -îm'},
+ {id:'45-15',heb:'שׁוֹר',tr:'šôr',pl:'wół, sztuka bydła',pos:'rzecz. r.m.',note:'zbiorowo odpowiada בָּקָר'},
+ {id:'45-16',heb:'מִמַּעַל',tr:'mimmaʿal',pl:'w górze; + לְ — powyżej, ponad',pos:'przysłówek/przyimek'},
+ {id:'45-17',heb:'מִתַּחַת',tr:'mittaḥaṯ',pl:'w dole; + לְ — poniżej, pod',pos:'przysłówek/przyimek'},
+
+ /* ===== SŁOWNICZEK XLVI (Lekcja 46) ===== */
+ {id:'46-1',heb:'הֶרְאָה',tr:'herʾāh',pl:'pokazać, spowodować widzenie',pos:'czas. (Hifil)',note:'por. רָאָה; III-He'},
+ {id:'46-2',heb:'הִכָּה',tr:'hikkāh',pl:'uderzyć, pokonać, pobić, zabić',pos:'czas. (Hifil)',note:'rdzeń נכה; I-Nun + III-He'},
+ {id:'46-3',heb:'הוֹדָה',tr:'hôḏāh',pl:'dziękować',pos:'czas. (Hifil)',note:'rdzeń ידה; impf. czasem יוֹדֶה'},
+ {id:'46-4',heb:'הִשְׁקָה',tr:'hišqāh',pl:'dać pić, napoić',pos:'czas. (Hifil)',note:'rdzeń שׁקה; sprawczo dla שָׁתָה'},
+ {id:'46-5',heb:'הוֹרָה',tr:'hôrāh',pl:'strzelać; kierować, uczyć',pos:'czas. (Hifil)',note:'rdzeń ירה; I-Jod + III-He'},
+ {id:'46-6',heb:'הֶעֱלָה',tr:'heʿĕlāh',pl:'prowadzić w górę, wyprowadzić; złożyć ofiarę',pos:'czas. (Hifil)',note:'por. עָלָה; I-gardł. + III-He'},
+ {id:'46-7',heb:'גָּלָה',tr:'gālāh',pl:'odsłonić, wyjawić; iść na wygnanie',pos:'czas. (Qal)',note:'impf. יִגְלֶה; גָּלָה אֶת־אֹזֶן „poinformować"'},
+ {id:'46-8',heb:'הִגְלָה',tr:'heglāh',pl:'prowadzić na wygnanie',pos:'czas. (Hifil)',note:'rdzeń גלה'},
+ {id:'46-9',heb:'לִמֵּד',tr:'limmēḏ',pl:'uczyć, nauczać',pos:'czas. (Piel)',note:'por. לָמַד „uczyć się"'},
+ {id:'46-10',heb:'הִרְבָּה',tr:'hirbāh',pl:'powiększać; czynić licznym',pos:'czas. (Hifil)',note:'por. רָבָה „być licznym"'},
+ {id:'46-11',heb:'חֹק',tr:'ḥōq',pl:'nakaz prawny, ustawa',pos:'rzecz. r.m.',note:'+ suf. חֻקִּי; l.mn. -îm'},
+ {id:'46-12',heb:'חֻקָּה',tr:'ḥuqqāh',pl:'nakaz prawny, ustawa',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'46-13',heb:'מִשְׁפָּט',tr:'mišpāṭ',pl:'sąd; wyrok sądowy',pos:'rzecz. r.m.',note:'l.mn. -îm'},
+ {id:'46-14',heb:'לֵבָב',tr:'lēḇāḇ',pl:'serce',pos:'rzecz. r.m.',note:'synonim לֵב; l.mn. -ôṯ'},
+
+ /* ===== SŁOWNICZEK XLVII (Lekcja 47) ===== */
+ {id:'47-1',heb:'זָנָה',tr:'zānāh',pl:'uprawiać nierząd; זוֹנָה — nierządnica',pos:'czas. (Qal)',note:'impf. יִזְנֶה'},
+ {id:'47-2',heb:'מִהַר',tr:'mihar',pl:'śpieszyć się; inf. abs. מַהֵר jako przysł. „szybko"',pos:'czas. (Piel)',note:'impf. יְמַהֵר'},
+ {id:'47-3',heb:'עָרַךְ',tr:'ʿāraḵ',pl:'przygotować, uporządkować; ustawiać się w szyku',pos:'czas. (Qal)',note:'impf. יַעֲרֹךְ'},
+ {id:'47-4',heb:'הֶחֱרִים',tr:'heḥĕrîm',pl:'zniszczyć, wyniszczyć (akt klątwy religijnej)',pos:'czas. (Hifil)',note:'rdzeń חרם'},
+ {id:'47-5',heb:'הֵכִין',tr:'hēḵîn',pl:'przygotować; ustanowić',pos:'czas. (Hifil)',note:'rdzeń כון; por. נָכוֹן'},
+ {id:'47-6',heb:'הֵבִין',tr:'hēḇîn',pl:'zrozumieć, rozważyć; pouczyć, wyjaśnić',pos:'czas. (Hifil)',note:'rdzeń בין; por. בִּינָה'},
+ {id:'47-7',heb:'הֵסִיר',tr:'hēsîr',pl:'usunąć, zabrać, odwrócić (przechodnio)',pos:'czas. (Hifil)',note:'rdzeń סור; por. סָר'},
+ {id:'47-8',heb:'נָח',tr:'nāḥ',pl:'odpocząć; osiąść',pos:'czas. (Qal)',note:'rdzeń נוח; impf. יָנוּחַ'},
+ {id:'47-9',heb:'הֵנִיחַ',tr:'hēnîaḥ',pl:'dać odpocząć, dać wytchnienie',pos:'czas. (Hifil)',note:'rdzeń נוח; impf. יָנִיחַ'},
+ {id:'47-10',heb:'הִנִּיחַ',tr:'hinnîaḥ',pl:'położyć, złożyć, pozostawić',pos:'czas. (Hifil)',note:'rdzeń נוח; impf. יַנִּיחַ'},
+ {id:'47-11',heb:'הֵרִים',tr:'hērîm',pl:'podnieść, unieść',pos:'czas. (Hifil)',note:'rdzeń רום; por. רָם „być wysokim"'},
+ {id:'47-12',heb:'הֵשִׁיב',tr:'hēšîḇ',pl:'przyprowadzić z powrotem; odpłacić; zmusić do odwrotu',pos:'czas. (Hifil)',note:'rdzeń שׁוב; por. שָׁב'},
+ {id:'47-13',heb:'הֵבִיא',tr:'hēḇîʾ',pl:'przyprowadzić; przynieść',pos:'czas. (Hifil)',note:'rdzeń בוא; por. בָּא'},
+ {id:'47-14',heb:'גָּג',tr:'gāḡ',pl:'dach',pos:'rzecz. r.m.',note:'+ suf. גַּגִּי; l.mn. -ôṯ'},
+ /* ===== SŁOWNICZEK XLVIII (Lekcja 48) ===== */
+ {id:'48-1',heb:'הֵרַע',tr:'hēraʿ',pl:'skrzywdzić, zranić; postępować źle, przewrotnie',pos:'czas. (Hifil)',note:'rdzeń רעע (geminowany)'},
+ {id:'48-2',heb:'הֵסֵב',tr:'hēsēḇ',pl:'odwracać, zawracać (przech.); poprowadzić naokoło',pos:'czas. (Hifil)',note:'rdzeń סבב (geminowany)'},
+ {id:'48-3',heb:'הֵחֵל',tr:'hēḥēl',pl:'rozpocząć (zwykle z bezokolicznikiem)',pos:'czas. (Hifil)',note:'rdzeń חלל (geminowany)'},
+ {id:'48-4',heb:'הֵפֵר',tr:'hēp̄ēr',pl:'złamać, zniszczyć, unieważnić',pos:'czas. (Hifil)',note:'rdzeń פרר (geminowany)'},
+ {id:'48-5',heb:'הִשְׁכִּים',tr:'hiškîm',pl:'zrobić coś wczesnym rankiem',pos:'czas. (Hifil)',note:'rdzeń שׁכם; w hendiadys (§173)'},
+ {id:'48-6',heb:'הוֹאִיל',tr:'hôʾîl',pl:'być chętnym, zadowolonym ze zrobienia czegoś',pos:'czas. (Hifil)',note:'rdzeń יאל; w hendiadys (§173)'},
+ {id:'48-7',heb:'נִשְׁבַּע',tr:'nišbaʿ',pl:'przysięgać; obiecywać pod przysięgą',pos:'czas. (Nifal)',note:'rdzeń שׁבע'},
+ {id:'48-8',heb:'הִשְׁבִּיעַ',tr:'hišbîaʿ',pl:'sprawić, że ktoś złoży przysięgę',pos:'czas. (Hifil)',note:'rdzeń שׁבע; kontrast z נִשְׁבַּע'},
+ {id:'48-9',heb:'חִיָּה',tr:'ḥiyyāh',pl:'pozwolić żyć; ożywić, przywrócić do życia',pos:'czas. (Piel)',note:'rdzeń חיה'},
+ {id:'48-10',heb:'הֶחֱיָה',tr:'heḥĕyāh',pl:'pozwolić żyć; ożywić (nieużywane w impf.)',pos:'czas. (Hifil)',note:'rdzeń חיה; kontrast z חִיָּה'},
+ {id:'48-11',heb:'פָּגַע',tr:'pāḡaʿ',pl:'spotkać, napotkać (+ dop. bliższe lub בְּ)',pos:'czas. (Qal)',note:'impf. יִפְגַּע'},
+ {id:'48-12',heb:'שְׁבוּעָה',tr:'šəḇûʿāh',pl:'przysięga',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'48-13',heb:'חוֹמָה',tr:'ḥômāh',pl:'mur miasta',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'48-14',heb:'דֶּלֶת',tr:'deleṯ',pl:'drzwi (domu lub pokoju)',pos:'rzecz. r.ż.',note:'+ suf. דַּלְתִּי; l.podw. דְּלָתַיִם; l.mn. דְּלָתוֹת'},
+ {id:'48-15',heb:'בְּעַד',tr:'bəʿaḏ',pl:'przez, za pomocą; dla, za, na korzyść; wokoło',pos:'przyimek'},
+ {id:'48-16',heb:'עַל־יַד',tr:'ʿal-yaḏ',pl:'obok, z boku, przy, w towarzystwie',pos:'przyimek'},
+
+ /* ===== SŁOWNICZEK XLIX (Lekcja 49) ===== */
+ {id:'49-1',heb:'מָשַׁל',tr:'māšal',pl:'rządzić, panować nad (dop. z בְּ)',pos:'czas. (Qal)',note:'impf. יִמְשֹׁל'},
+ {id:'49-2',heb:'יָשַׁר',tr:'yāšar',pl:'być prostym; być słusznym, podobać się',pos:'czas. (Qal)',note:'impf. יִישַׁר'},
+ {id:'49-3',heb:'קָצַף',tr:'qāṣap̄',pl:'rozgniewać się (עַל na)',pos:'czas. (Qal)',note:'impf. יִקְצֹף'},
+ {id:'49-4',heb:'שָׁכַן',tr:'šāḵan',pl:'osiąść, spocząć; mieszkać, przebywać',pos:'czas. (Qal)',note:'impf. יִשְׁכֹּן'},
+ {id:'49-5',heb:'חָזַק',tr:'ḥāzaq',pl:'być / stać się silnym, solidnym, twardym',pos:'czas. (Qal)',note:'impf. יֶחֱזַק'},
+ {id:'49-6',heb:'הָגָה',tr:'hāḡāh',pl:'pomrukiwać, jęczeć; medytować, rozważać; głosić',pos:'czas. (Qal)',note:'impf. יֶהְגֶּה; III-He'},
+ {id:'49-7',heb:'אַרְיֵה',tr:'ʾaryēh',pl:'lew',pos:'rzecz. r.m.',note:'wariant אֲרִי, l.mn. אֲרָיוֹת'},
+ {id:'49-8',heb:'עֵת',tr:'ʿēṯ',pl:'czas, wyznaczona pora',pos:'rzecz. r.ż.',note:'+ suf. עִתִּי; l.mn. -îm lub -ôṯ'},
+ {id:'49-9',heb:'גְּדִי',tr:'gəḏî',pl:'koźlę',pos:'rzecz. r.m.',note:'l.mn. גְּדָיִים; st. constr. גְּדָיֵי'},
+ {id:'49-10',heb:'עֵדָה',tr:'ʿēḏāh',pl:'zgromadzenie, zebranie',pos:'rzecz. r.ż.',note:'brak l.mn.'},
+ {id:'49-11',heb:'בָּחוּר',tr:'bāḥûr',pl:'młody mężczyzna, młodzieniec',pos:'rzecz. r.m.',note:'niereg. l.mn. בַּחוּרִים'},
+ {id:'49-12',heb:'עָרֵל',tr:'ʿārēl',pl:'nieobrzezany; (przen.) nieumiejętny, niezręczny',pos:'przymiotnik'},
+ {id:'49-13',heb:'עַל־כֵּן',tr:'ʿal-kēn',pl:'dlatego, z tego powodu',pos:'przysłówek'},
+
+ /* ===== SŁOWNICZEK L (Lekcja 50) ===== */
+ {id:'50-1',heb:'הִתְפַּלֵּל',tr:'hiṯpallēl',pl:'modlić się',pos:'czas. (Hitpael)',note:'rdzeń פלל; pośrednio zwrotne'},
+ {id:'50-2',heb:'הִתְחַנֵּן',tr:'hiṯḥannēn',pl:'prosić, błagać o przysługę lub łaskę',pos:'czas. (Hitpael)',note:'rdzeń חנן (geminowany)'},
+ {id:'50-3',heb:'הִתְחַבֵּא',tr:'hiṯḥabbēʾ',pl:'ukryć się',pos:'czas. (Hitpael)',note:'rdzeń חבא; zwrotne'},
+ {id:'50-4',heb:'נֶחְבָּא',tr:'neḥbāʾ',pl:'ukryć się',pos:'czas. (Nifal)',note:'rdzeń חבא; impf. יֵחָבֵא'},
+ {id:'50-5',heb:'הִתְהַלֵּךְ',tr:'hiṯhallēḵ',pl:'przechadzać się; chodzić tam i z powrotem',pos:'czas. (Hitpael)',note:'rdzeń הלך; iteratywne'},
+ {id:'50-6',heb:'הִתְנַבֵּא',tr:'hiṯnabbēʾ',pl:'prorokować',pos:'czas. (Hitpael)',note:'rdzeń נבא; denominatywne (por. נָבִיא)'},
+ {id:'50-7',heb:'נִבָּא',tr:'nibbāʾ',pl:'prorokować',pos:'czas. (Nifal)',note:'rdzeń נבא; impf. יִנָּבֵא'},
+ {id:'50-8',heb:'חָרַשׁ',tr:'ḥāraš',pl:'orać; wyryć',pos:'czas. (Qal)',note:'impf. יַחֲרֹשׁ'},
+ {id:'50-9',heb:'פָּרַשׂ',tr:'pāraś',pl:'rozkładać (przech.); rozciągać się',pos:'czas. (Qal)',note:'impf. יִפְרֹשׂ'},
+ {id:'50-10',heb:'סָפַר',tr:'sāp̄ar',pl:'liczyć',pos:'czas. (Qal)',note:'impf. יִסְפֹּר'},
+ {id:'50-11',heb:'מַאֲכָל',tr:'maʾăḵāl',pl:'pożywienie, pokarm',pos:'rzecz. r.m.',note:'brak l.mn.'},
+ {id:'50-12',heb:'מָשִׁיחַ',tr:'māšîaḥ',pl:'namaszczony, Mesjasz',pos:'rzecz. r.m.'},
+ {id:'50-13',heb:'עֹז',tr:'ʿōz',pl:'siła, moc',pos:'rzecz. r.m.',note:'+ suf. עֻזִּי lub עָזִּי'},
+ {id:'50-14',heb:'תְּפִלָּה',tr:'təp̄illāh',pl:'modlitwa',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ; por. הִתְפַּלֵּל'},
+ {id:'50-15',heb:'עֵגֶל',tr:'ʿēḡel',pl:'cielę',pos:'rzecz. r.m.',note:'+ suf. עֶגְלִי; l.mn. -îm'},
+ {id:'50-16',heb:'עֶגְלָה',tr:'ʿeḡlāh',pl:'jałówka',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'50-17',heb:'עַז',tr:'ʿaz',pl:'silny, potężny',pos:'przymiotnik',note:'zob. §22'},
+ {id:'50-18',heb:'לוּלֵא',tr:'lûlēʾ',pl:'jeśli nie, o ile nie',pos:'spójnik'},
+ {id:'50-19',heb:'כֹּה',tr:'kōh',pl:'tak, w ten sposób (zwykle do dalszego kontekstu)',pos:'przysłówek'},
+
+ /* ===== SŁOWNICZEK LI (Lekcja 51) ===== */
+ {id:'51-1',heb:'מוֹתֵת',tr:'môṯēṯ',pl:'zabijać, mordować',pos:'czas. (Polel)',note:'rdzeń מות (pusty); §180'},
+ {id:'51-2',heb:'כּוֹנֵן',tr:'kônēn',pl:'ustanowić, utwierdzić, utrwalić',pos:'czas. (Polel)',note:'rdzeń כון (pusty); §180'},
+ {id:'51-3',heb:'עוֹרֵר',tr:'ʿôrēr',pl:'wzbudzić, pobudzić',pos:'czas. (Polel)',note:'rdzeń עור (pusty); §180'},
+ {id:'51-4',heb:'רוֹמֵם',tr:'rômēm',pl:'unieść, podnieść; wywyższać, wychowywać',pos:'czas. (Polel)',note:'rdzeń רום (pusty); §180'},
+ {id:'51-5',heb:'הִשְׁתַּחֲוָה',tr:'hištaḥăwāh',pl:'oddać pokłon, kłaniać się, padać na twarz',pos:'czas. (Hishtaphel)',note:'rdzeń חוה; odmiana wg III-He; §181'},
+ {id:'51-6',heb:'הִתְיַצֵּב',tr:'hiṯyaṣṣēḇ',pl:'ustawić się, zająć stanowisko',pos:'czas. (Hitpael)',note:'rdzeń יצב'},
+ {id:'51-7',heb:'שָׁפַט',tr:'šāp̄aṭ',pl:'sądzić',pos:'czas. (Qal)',note:'impf. יִשְׁפֹּט'},
+ {id:'51-8',heb:'כִּחֵד',tr:'kiḥēḏ',pl:'ukrywać, chować',pos:'czas. (Piel)',note:'impf. יְכַחֵד'},
+ {id:'51-9',heb:'פָּרַץ',tr:'pāraṣ',pl:'zburzyć, dokonać wyłomu; rozprzestrzenić się',pos:'czas. (Qal)',note:'impf. יִפְרֹץ'},
+ {id:'51-10',heb:'אֲרוֹן',tr:'ʾărôn',pl:'arka przymierza',pos:'rzecz. r.m.',note:'z rodzajnikiem הָאָרוֹן'},
+ {id:'51-11',heb:'זֶבַח',tr:'zeḇaḥ',pl:'ofiara',pos:'rzecz. r.m.',note:'+ suf. זִבְחִי; l.mn. -îm'},
+ {id:'51-12',heb:'מֵאָה',tr:'mēʾāh',pl:'sto',pos:'liczebnik',note:'r.ż.; §182'},
+ {id:'51-13',heb:'אֶלֶף',tr:'ʾelep̄',pl:'tysiąc',pos:'liczebnik',note:'r.m.; §182'},
+ {id:'51-14',heb:'לָכֵן',tr:'lāḵēn',pl:'dlatego (wprowadza wyrok lub obwieszczenie)',pos:'przysłówek'},
+ /* ===== SŁOWNICZEK LII (Lekcja 52) ===== */
+ {id:'52-1',heb:'מָאַס',tr:'māʾas',pl:'odmówić, odrzucić, wzgardzić',pos:'czas. (Qal)',note:'impf. יִמְאַס'},
+ {id:'52-2',heb:'מָלַךְ',tr:'mālaḵ',pl:'rządzić, panować (בְּ / עַל nad); być / stać się królem',pos:'czas. (Qal)',note:'impf. יִמְלֹךְ'},
+ {id:'52-3',heb:'קָצַר',tr:'qāṣar',pl:'zbierać plon, żąć',pos:'czas. (Qal)',note:'impf. יִקְצֹר'},
+ {id:'52-4',heb:'בָּלַע',tr:'bālaʿ',pl:'połknąć',pos:'czas. (Qal)',note:'impf. יִבְלַע'},
+ {id:'52-5',heb:'סָלַח',tr:'sālaḥ',pl:'przebaczyć, wybaczyć (+ לְ)',pos:'czas. (Qal)',note:'impf. יִסְלַח'},
+ {id:'52-6',heb:'מָרַד',tr:'māraḏ',pl:'zbuntować się (בְּ / עַל przeciwko)',pos:'czas. (Qal)',note:'impf. יִמְרֹד'},
+ {id:'52-7',heb:'כָּשַׁל',tr:'kāšal',pl:'potknąć się, zachwiać się',pos:'czas. (Qal)',note:'impf. יִכָּשֵׁל / יִכְשֹׁל'},
+ {id:'52-8',heb:'הֵעִיד',tr:'hēʿîḏ',pl:'ostrzegać, przestrzegać (בְּ)',pos:'czas. (Hifil)',note:'rdzeń עוד (pusty)'},
+ {id:'52-9',heb:'מַעֲשֶׂה',tr:'maʿăśeh',pl:'czyn, dzieło, praca',pos:'rzecz. r.m.',note:'l.mn. -îm'},
+ {id:'52-10',heb:'זַיִת',tr:'zayiṯ',pl:'drzewo oliwne, oliwka',pos:'rzecz. r.m.',note:'l.mn. -îm'},
+ {id:'52-11',heb:'שַׂר',tr:'śar',pl:'urzędnik, przywódca, nadzorca, wódz',pos:'rzecz. r.m.',note:'l.mn. -îm'},
+ {id:'52-12',heb:'קָצִיר',tr:'qāṣîr',pl:'żniwa, zbiory; pora żniw',pos:'rzecz. r.m.',note:'brak l.mn.'},
+ {id:'52-13',heb:'גּוֹי',tr:'gôy',pl:'naród, lud',pos:'rzecz. r.m.',note:'l.mn. -îm; częściej o innych narodach'},
+
+ /* ===== SŁOWNICZEK LIII (Lekcja 53) ===== */
+ {id:'53-1',heb:'חָמַל',tr:'ḥāmal',pl:'oszczędzić; litować się (nad עַל)',pos:'czas. (Qal)',note:'impf. יַחְמֹל'},
+ {id:'53-2',heb:'שִׁלֵּם',tr:'šillēm',pl:'oddać, zwrócić, wynagrodzić',pos:'czas. (Piel)',note:'impf. יְשַׁלֵּם'},
+ {id:'53-3',heb:'מָשַׁח',tr:'māšaḥ',pl:'namaścić',pos:'czas. (Qal)',note:'impf. יִמְשַׁח; por. מָשִׁיחַ'},
+ {id:'53-4',heb:'בָּזָה',tr:'bāzāh',pl:'wzgardzić',pos:'czas. (Qal)',note:'impf. יִבְזֶה; III-He'},
+ {id:'53-5',heb:'בָּקַע',tr:'bāqaʿ',pl:'rozdzielić, rozszczepić',pos:'czas. (Qal)',note:'impf. יִבְקַע'},
+ {id:'53-6',heb:'עָזַר',tr:'ʿāzar',pl:'pomagać',pos:'czas. (Qal)',note:'impf. יַעְזֹר'},
+ {id:'53-7',heb:'רָפָא',tr:'rāp̄āʾ',pl:'leczyć, uzdrawiać; Piel רִפֵּא — uzdrawiać',pos:'czas. (Qal)',note:'impf. יִרְפָּא; III-Alef'},
+ {id:'53-8',heb:'כֶּבֶשׂ',tr:'keḇeś',pl:'młody baran, baranek',pos:'rzecz. r.m.',note:'l.mn. -îm'},
+ {id:'53-9',heb:'כִּבְשָׂה',tr:'kiḇśāh',pl:'młoda owca, jagnię',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'53-10',heb:'חֵיק',tr:'ḥêq',pl:'łono',pos:'rzecz. r.m.'},
+ {id:'53-11',heb:'חֶרֶב',tr:'ḥereḇ',pl:'miecz',pos:'rzecz. r.ż.',note:'+ suf. חַרְבִּי; l.mn. -ôṯ'},
+ {id:'53-12',heb:'יַחְדָּו',tr:'yaḥdāw',pl:'razem, wspólnie',pos:'przysłówek',note:'wariant יַחַד'},
+ {id:'53-13',heb:'נֶגֶד',tr:'neḡeḏ',pl:'przed, naprzeciw, wobec',pos:'przyimek',note:'+ suf. נֶגְדִּי; też לְנֶגֶד'},
+ {id:'53-14',heb:'אֶפֶס',tr:'ʾep̄es',pl:'nicość, nic; koniec, kraniec; אֶפֶס כִּי — pomimo że',pos:'rzecz. r.m.',note:'rzadki synonim אַיִן'},
+
+ /* ===== SŁOWNICZEK LIV (Lekcja 54) ===== */
+ {id:'54-1',heb:'הִטָּה',tr:'hiṭṭāh',pl:'wyciągnąć, rozciągnąć; skręcić, zboczyć, nachylić',pos:'czas. (Hifil)',note:'rdzeń נטה; I-Nun + III-He'},
+ {id:'54-2',heb:'פָּנָה',tr:'pānāh',pl:'zwrócić (się), skierować (się)',pos:'czas. (Qal)',note:'impf. יִפְנֶה; III-He'},
+ {id:'54-3',heb:'נָטַשׁ',tr:'nāṭaš',pl:'opuścić, zapomnieć, porzucić',pos:'czas. (Qal)',note:'impf. יִטֹּשׁ; I-Nun'},
+ {id:'54-4',heb:'חָשַׁב',tr:'ḥāšaḇ',pl:'myśleć, planować, policzyć, uważać za',pos:'czas. (Qal)',note:'impf. יַחְשֹׁב'},
+ {id:'54-5',heb:'תְּחִנָּה',tr:'təḥinnāh',pl:'błaganie',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'54-6',heb:'צְדָקָה',tr:'ṣəḏāqāh',pl:'sprawiedliwość, sprawiedliwy czyn',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'54-7',heb:'מָטָר',tr:'māṭār',pl:'deszcz',pos:'rzecz. r.m.',note:'l.mn. -ôṯ'},
+ {id:'54-8',heb:'נַחֲלָה',tr:'naḥălāh',pl:'własność, dziedzictwo, dział, należna część',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'54-9',heb:'זְרוֹעַ',tr:'zərôaʿ',pl:'ramię; (przen.) siła',pos:'rzecz. (zwykle r.ż.)',note:'l.mn. -îm lub -ôṯ'},
+ {id:'54-10',heb:'יִרְאָה',tr:'yirʾāh',pl:'strach, bojaźń',pos:'rzecz. r.ż.',note:'inf. constr. czas. יָרֵא; st.constr. יִרְאַת'},
+ {id:'54-11',heb:'אָמְנָם',tr:'ʾomnām',pl:'naprawdę, na pewno',pos:'przysłówek',note:'wariant אֻמְנָם'},
+ {id:'54-12',heb:'נָכְרִי',tr:'noḵrî',pl:'obcy, odmiennej narodowości',pos:'przymiotnik',note:'r.ż. נָכְרִיָּה'},
+
+ /* ===== SŁOWNICZEK LV (Lekcja 55) ===== */
+ {id:'55-1',heb:'כִּלְכֵּל',tr:'kilkēl',pl:'pomieścić; znosić; wspierać, wspomagać (pożywieniem)',pos:'czas. (Pilpel)',note:'rdzeń כול (pusty)'},
+ {id:'55-2',heb:'שָׁבָה',tr:'šāḇāh',pl:'uprowadzić na wygnanie',pos:'czas. (Qal)',note:'impf. יִשְׁבֶּה; III-He'},
+ {id:'55-3',heb:'רִחֵם',tr:'riḥēm',pl:'okazać miłosierdzie, współczucie',pos:'czas. (Piel)',note:'impf. יְרַחֵם'},
+ {id:'55-4',heb:'הִבְדִּיל',tr:'hiḇdîl',pl:'podzielić, rozłączyć, oddzielić',pos:'czas. (Hifil)',note:'rdzeń בדל'},
+ {id:'55-5',heb:'כִּלָּה',tr:'killāh',pl:'skończyć, dokończyć; ukończyć (czynność)',pos:'czas. (Piel)',note:'rdzeń כלה; III-He'},
+ {id:'55-6',heb:'כָּרַע',tr:'kāraʿ',pl:'pokłonić się; uklęknąć',pos:'czas. (Qal)',note:'impf. יִכְרַע'},
+ {id:'55-7',heb:'אָנַף',tr:'ʾānap̄',pl:'rozgniewać się, być złym',pos:'czas. (Qal)',note:'impf. יֶאֱנַף'},
+ {id:'55-8',heb:'פָּשַׁע',tr:'pāšaʿ',pl:'zbuntować się, wystąpić (בְּ przeciwko)',pos:'czas. (Qal)',note:'impf. יִפְשַׁע'},
+ {id:'55-9',heb:'רִנָּה',tr:'rinnāh',pl:'krzyk radości (rzadziej błagania)',pos:'rzecz. r.ż.',note:'brak l.mn.'},
+ {id:'55-10',heb:'בַּרְזֶל',tr:'barzel',pl:'żelazo',pos:'rzecz. r.m.',note:'brak l.mn.'},
+ {id:'55-11',heb:'פֶּשַׁע',tr:'pešaʿ',pl:'wykroczenie, grzech',pos:'rzecz. r.m.',note:'+ suf. פִּשְׁעִי; l.mn. -îm'},
+ {id:'55-12',heb:'מְנוּחָה',tr:'mənûḥāh',pl:'odpoczynek, miejsce odpoczynku',pos:'rzecz. r.ż.',note:'l.mn. -ôṯ'},
+ {id:'55-13',heb:'בָּרוּךְ',tr:'bārûḵ',pl:'błogosławiony',pos:'przymiotnik'},
+ {id:'55-14',heb:'אִם',tr:'ʾim',pl:'jeśli (warunek rzeczywisty); w formule przysięgi — partykuła przecząca',pos:'spójnik',note:'§196'},
+ {id:'55-15',heb:'לוּ',tr:'lû',pl:'gdyby (warunek nierzeczywisty); oby',pos:'spójnik',note:'przeczenie: לוּלֵא; §196'}
+];
+
+const FORMS = [
+ /* ===== LEKCJA 38: NIFAL — klasy słabe (§143) + mieszane (§144) ===== */
+ // ---- I-Nun (asymilacja w perfectum / imiesłowie) ----
+ {id:'F38-01',heb:'נִתַּן',tr:'nittan',pl:'został dany',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'נתן',note:'I-nun; *nintan > nittan (asymilacja)'}},
+ {id:'F38-02',heb:'יִנָּתֵן',tr:'yinnāṯēn',pl:'zostanie dany',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'נתן',note:'I-nun; podwojenie z asymilacji'}},
+ {id:'F38-03',heb:'נִגַּשׁ',tr:'niggaš',pl:'zbliżył się',lemma:'נִגַּשׁ',lemmaTr:'niggaš',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'נגשׁ',note:'I-nun; imperf. używa Qalu יִגַּשׁ (L29)'}},
+ {id:'F38-04',heb:'נִגַּשְׁתִּי',tr:'niggaštî',pl:'zbliżyłem się',lemma:'נִגַּשׁ',lemmaTr:'niggaš',cat:'verb',p:{binyan:'niphal',form:'perf',pers:1,gen:'c',num:'sg',root:'נגשׁ'}},
+ {id:'F38-05',heb:'נִצַּב',tr:'niṣṣaḇ',pl:'stanął, został postawiony',lemma:'נִצַּב',lemmaTr:'niṣṣaḇ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'נצב',note:'I-nun; brak imperfectum'}},
+ {id:'F38-06',heb:'נִצָּבִים',tr:'niṣṣāḇîm',pl:'postawieni, stojący',lemma:'נִצַּב',lemmaTr:'niṣṣaḇ',cat:'verb',p:{binyan:'niphal',form:'ptcp',gen:'m',num:'pl',root:'נצב'}},
+ // ---- I-Jod (pierwotne Waw powraca) ----
+ {id:'F38-07',heb:'נוֹלַד',tr:'nôlaḏ',pl:'narodził się, został zrodzony',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'ילד',note:'I-jod (<*nawlad); pierwotne -w-'}},
+ {id:'F38-08',heb:'יִוָּלֵד',tr:'yiwwālēḏ',pl:'narodzi się',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'ילד',note:'I-jod; n asymiluje do -w- (podwojenie)'}},
+ {id:'F38-09',heb:'נוֹתַר',tr:'nôṯar',pl:'pozostał, ocalał',lemma:'נוֹתַר',lemmaTr:'nôṯar',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'יתר',note:'I-jod (<I-waw)'}},
+ {id:'F38-10',heb:'יִוָּתֵר',tr:'yiwwāṯēr',pl:'pozostanie',lemma:'נוֹתַר',lemmaTr:'nôṯar',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'יתר'}},
+ {id:'F38-11',heb:'נוֹדַע',tr:'nôḏaʿ',pl:'stał się znany, dał się poznać',lemma:'יָדַע',lemmaTr:'yāḏaʿ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'ידע',note:'I-jod + III-gardł. (§144)'}},
+ {id:'F38-12',heb:'יִוָּדַע',tr:'yiwwāḏaʿ',pl:'będzie znany',lemma:'יָדַע',lemmaTr:'yāḏaʿ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'ידע',note:'III-gardł.: ē→a'}},
+ // ---- III-Alef (samogłoska tematyczna ā / ē przed końcówkami) ----
+ {id:'F38-13',heb:'נִקְרָא',tr:'niqrāʾ',pl:'został nazwany, wezwany',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'קרא',note:'III-alef; ā przed milczącym א'}},
+ {id:'F38-14',heb:'נִקְרֵאתָ',tr:'niqrēʾṯā',pl:'zostałeś nazwany',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:2,gen:'m',num:'sg',root:'קרא',note:'III-alef; ē przed końcówkami 1/2 os.'}},
+ {id:'F38-15',heb:'יִקָּרֵא',tr:'yiqqārēʾ',pl:'zostanie nazwany, wezwany',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'קרא'}},
+ {id:'F38-16',heb:'יִקָּרְאוּ',tr:'yiqqārəʾû',pl:'zostaną wezwane, przeczytane',lemma:'קָרָא',lemmaTr:'qārāʾ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'pl',root:'קרא'}},
+ {id:'F38-17',heb:'נִשָּׂא',tr:'niśśāʾ',pl:'został podniesiony, uniesiony',lemma:'נָשָׂא',lemmaTr:'nāśāʾ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'נשׂא',note:'I-nun + III-alef (§144)'}},
+ // ---- III-Hē (perf. -āh, impf. -eh, jussivus apokop., inf. -ôṯ; przed końcówkami ê) ----
+ {id:'F38-18',heb:'נִבְנָה',tr:'niḇnāh',pl:'został zbudowany',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'בנה',note:'III-he'}},
+ {id:'F38-19',heb:'נִבְנֵיתִי',tr:'niḇnêṯî',pl:'zostałem zbudowany',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'niphal',form:'perf',pers:1,gen:'c',num:'sg',root:'בנה',note:'III-he; ê (nie î) przed końcówką'}},
+ {id:'F38-20',heb:'יִבָּנֶה',tr:'yibbāneh',pl:'zostanie zbudowany',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'בנה'}},
+ {id:'F38-21',heb:'הִבָּנוֹת',tr:'hibbānôṯ',pl:'być zbudowanym',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'niphal',form:'inf',root:'בנה',note:'III-he; inf. constr. na -ôṯ'}},
+ {id:'F38-22',heb:'נִרְאָה',tr:'nirʾāh',pl:'ukazał się, był widziany',lemma:'רָאָה',lemmaTr:'rāʾāh',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'ראה',note:'I-gardł. + III-he (§144)'}},
+ {id:'F38-23',heb:'וַיֵּרָא',tr:'wayyērāʾ',pl:'i ukazał się',lemma:'רָאָה',lemmaTr:'rāʾāh',cat:'verb',p:{binyan:'niphal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ראה',note:'I-gardł.: i→ē (wydłuż. zastępcze)'}},
+ {id:'F38-24',heb:'נַעֲשָׂה',tr:'naʿăśāh',pl:'został zrobiony, dokonany',lemma:'עָשָׂה',lemmaTr:'ʿāśāh',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'עשׂה',note:'I-gardł. + III-he (§144)'}},
+ {id:'F38-25',heb:'יֵעָשֶׂה',tr:'yēʿāśeh',pl:'zostanie zrobiony',lemma:'עָשָׂה',lemmaTr:'ʿāśāh',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'עשׂה'}},
+ // ---- nowe leksemy słowniczka jako Nifal mieszane ----
+ {id:'F38-26',heb:'נִחַם',tr:'niḥam',pl:'żałował, czuł skruchę',lemma:'נִחַם',lemmaTr:'niḥam',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'נחם',note:'I-nun + II-gardł.; podwojenie wirtualne'}},
+ {id:'F38-27',heb:'תִּנָּחֲמוּ',tr:'tinnāḥămû',pl:'pocieszcie się',lemma:'נִחַם',lemmaTr:'niḥam',cat:'verb',p:{binyan:'niphal',form:'impf',pers:2,gen:'m',num:'pl',root:'נחם'}},
+ {id:'F38-28',heb:'נִפְלָא',tr:'nip̄lāʾ',pl:'był wspaniały, cudowny',lemma:'נִפְלָא',lemmaTr:'nip̄lāʾ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'פלא',note:'III-alef'}},
+ {id:'F38-29',heb:'הַנִּפְלָאָה',tr:'hannip̄lāʾāh',pl:'(ta) cudowna',lemma:'נִפְלָא',lemmaTr:'nip̄lāʾ',cat:'verb',p:{binyan:'niphal',form:'ptcp',gen:'f',num:'sg',root:'פלא',note:'imiesłów z rodzajnikiem'}},
+
+ /* ===== LEKCJA 39: NIFAL — pusty i geminowany (zakończenie, §146) ===== */
+ // ---- pusty (כון): temat -ô- ----
+ {id:'F39-01',heb:'נָכוֹן',tr:'nāḵôn',pl:'był ustanowiony, pewny',lemma:'נָכוֹן',lemmaTr:'nāḵôn',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'כון',note:'pusty; temat -ô-'}},
+ {id:'F39-02',heb:'נְכוֹנוֹתָ',tr:'nəḵônôṯā',pl:'zostałeś ustanowiony',lemma:'נָכוֹן',lemmaTr:'nāḵôn',cat:'verb',p:{binyan:'niphal',form:'perf',pers:2,gen:'m',num:'sg',root:'כון',note:'pusty; wymiana ô/û w sylabie pretonicznej'}},
+ {id:'F39-03',heb:'יִכּוֹן',tr:'yikkôn',pl:'będzie ustanowiony, utwierdzony',lemma:'נָכוֹן',lemmaTr:'nāḵôn',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'כון'}},
+ {id:'F39-04',heb:'הִכּוֹן',tr:'hikkôn',pl:'przygotuj się, bądź gotowy',lemma:'נָכוֹן',lemmaTr:'nāḵôn',cat:'verb',p:{binyan:'niphal',form:'impv',pers:2,gen:'m',num:'sg',root:'כון',note:'= inf. constr. הִכּוֹן'}},
+ {id:'F39-05',heb:'נְכוֹנִים',tr:'nəḵônîm',pl:'pewni, niezawodni',lemma:'נָכוֹן',lemmaTr:'nāḵôn',cat:'verb',p:{binyan:'niphal',form:'ptcp',gen:'m',num:'pl',root:'כון'}},
+ {id:'F39-06',heb:'נָמֵס',tr:'nāmēs',pl:'rozpłynął się, stopniał',lemma:'נָמֵס',lemmaTr:'nāmēs',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'מסס',note:'geminowany (przez analogię do Qal statywnego)'}},
+ {id:'F39-07',heb:'יִמַּס',tr:'yimmas',pl:'stopnieje, rozpłynie się',lemma:'נָמֵס',lemmaTr:'nāmēs',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'מסס'}},
+ // ---- geminowany (סבב): podwojenie wraca przed samogłoską ----
+ {id:'F39-08',heb:'נָסַב',tr:'nāsaḇ',pl:'obrócił się, został otoczony',lemma:'נָסַב',lemmaTr:'nāsaḇ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'סבב',note:'geminowany (<*nasabb-); por. Qal'}},
+ {id:'F39-09',heb:'נְסַבּוֹתִי',tr:'nəsabbôṯî',pl:'zostałem otoczony',lemma:'נָסַב',lemmaTr:'nāsaḇ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:1,gen:'c',num:'sg',root:'סבב',note:'podwojenie wraca przed końcówką'}},
+ {id:'F39-10',heb:'יִסַּב',tr:'yissaḇ',pl:'zostanie otoczony, obróci się',lemma:'נָסַב',lemmaTr:'nāsaḇ',cat:'verb',p:{binyan:'niphal',form:'impf',pers:3,gen:'m',num:'sg',root:'סבב',note:'możliwy też wariant יִסֹּב'}},
+ {id:'F39-11',heb:'הִסֵּב',tr:'hissēḇ',pl:'otoczenie, obrócenie',lemma:'נָסַב',lemmaTr:'nāsaḇ',cat:'verb',p:{binyan:'niphal',form:'inf',root:'סבב',note:'inf. constr.'}},
+ {id:'F39-12',heb:'נָסָב',tr:'nāsāḇ',pl:'otoczony',lemma:'נָסַב',lemmaTr:'nāsaḇ',cat:'verb',p:{binyan:'niphal',form:'ptcp',gen:'m',num:'sg',root:'סבב'}},
+ // ---- Qal: leksemy słowniczka XXXIX ----
+ {id:'F39-13',heb:'נָם',tr:'nām',pl:'spał',lemma:'נָם',lemmaTr:'nām',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'נום',note:'pusty'}},
+ {id:'F39-14',heb:'וַיָּנָם',tr:'wayyā́nom',pl:'i zasnął',lemma:'נָם',lemmaTr:'nām',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נום',note:'pusty; cofnięcie akcentu'}},
+ {id:'F39-15',heb:'וַיִּטְבַּח',tr:'wayyiṭbaḥ',pl:'i zarżnął',lemma:'טָבַח',lemmaTr:'ṭāḇaḥ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'טבח',note:'III-gardł.'}},
+ {id:'F39-16',heb:'וַיִּרְחֲצוּ',tr:'wayyirḥăṣû',pl:'i umyli',lemma:'רָחַץ',lemmaTr:'rāḥaṣ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'רחץ',note:'II-gardł.'}},
+ {id:'F39-17',heb:'רָחֲצוּ',tr:'rāḥăṣû',pl:'umyli, umyli się',lemma:'רָחַץ',lemmaTr:'rāḥaṣ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'רחץ'}},
+
+ /* ===== LEKCJA 40: PIEL — wprowadzenie (§148–149): mocny, III-gardł., II-gardł. ===== */
+ // ---- perfectum ----
+ {id:'F40-01',heb:'גִּדֵּל',tr:'giddēl',pl:'wywyższył; wychował',lemma:'גִּדֵּל',lemmaTr:'giddēl',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'גדל',note:'wzór mocny; faktytywne'}},
+ {id:'F40-02',heb:'קִדֵּשׁ',tr:'qiddēš',pl:'uświęcił',lemma:'קִדֵּשׁ',lemmaTr:'qiddēš',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'קדשׁ'}},
+ {id:'F40-03',heb:'דִּבֶּר',tr:'dibber',pl:'mówił, rozmawiał',lemma:'דִּבֶּר',lemmaTr:'dibber',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'דבר',note:'forma z e w 3 os. r.m.'}},
+ {id:'F40-04',heb:'בֵּרֵךְ',tr:'bērēḵ',pl:'pobłogosławił',lemma:'בֵּרֵךְ',lemmaTr:'bērēḵ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'ברך',note:'denominatywne (por. בְּרָכָה)'}},
+ {id:'F40-05',heb:'בִּקֵּשׁ',tr:'biqqēš',pl:'szukał',lemma:'בִּקֵּשׁ',lemmaTr:'biqqēš',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'בקשׁ'}},
+ {id:'F40-06',heb:'שִׁלַּח',tr:'šillaḥ',pl:'odesłał, wypędził',lemma:'שִׁלַּח',lemmaTr:'šillaḥ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁלח',note:'III-gardł.: a w temacie'}},
+ {id:'F40-07',heb:'גֵּרֵשׁ',tr:'gērēš',pl:'wypędził, wygnał',lemma:'גֵּרֵשׁ',lemmaTr:'gērēš',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'גרשׁ'}},
+ {id:'F40-08',heb:'בִּעֵר',tr:'biʿēr',pl:'spalił, usunął',lemma:'בִּעֵר',lemmaTr:'biʿēr',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'בער',note:'II-gardł.; podwojenie wirtualne'}},
+ {id:'F40-09',heb:'מֵאֵן',tr:'mēʾēn',pl:'odmówił, odrzucił',lemma:'מֵאֵן',lemmaTr:'mēʾēn',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'מאן',note:'II-gardł.: wydłuż. zastępcze i→ē'}},
+ {id:'F40-10',heb:'שֵׁרֵת',tr:'šērēṯ',pl:'służył, posługiwał',lemma:'שֵׁרֵת',lemmaTr:'šērēṯ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁרת'}},
+ {id:'F40-11',heb:'נִאֵץ',tr:'niʾēṣ',pl:'wzgardził',lemma:'נִאֵץ',lemmaTr:'niʾēṣ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'נאץ',note:'II-gardł.'}},
+ // ---- imperfectum ----
+ {id:'F40-12',heb:'יְגַדֵּל',tr:'yəḡaddēl',pl:'wywyższy, wychowa',lemma:'גִּדֵּל',lemmaTr:'giddēl',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'sg',root:'גדל'}},
+ {id:'F40-13',heb:'יְדַבֵּר',tr:'yəḏabbēr',pl:'będzie mówił',lemma:'דִּבֶּר',lemmaTr:'dibber',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'sg',root:'דבר'}},
+ {id:'F40-14',heb:'יְבַקְשׁוּ',tr:'yəḇaqšû',pl:'będą szukać',lemma:'בִּקֵּשׁ',lemmaTr:'biqqēš',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'pl',root:'בקשׁ',note:'utrata podwojenia przed ə'}},
+ {id:'F40-15',heb:'יְבַעֵר',tr:'yəḇaʿēr',pl:'spali, usunie',lemma:'בִּעֵר',lemmaTr:'biʿēr',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'sg',root:'בער',note:'II-gardł.'}},
+ {id:'F40-16',heb:'אֲמָאֵן',tr:'ʾămāʾēn',pl:'odmówię',lemma:'מֵאֵן',lemmaTr:'mēʾēn',cat:'verb',p:{binyan:'piel',form:'impf',pers:1,gen:'c',num:'sg',root:'מאן'}},
+ // ---- wayyiqtol (waw bez podwojenia y; yə- traci samogłoskę) ----
+ {id:'F40-17',heb:'וַיְדַבֵּר',tr:'wayḏabbēr',pl:'i mówił, i powiedział',lemma:'דִּבֶּר',lemmaTr:'dibber',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'דבר',note:'way- bez podwojenia y'}},
+ {id:'F40-18',heb:'וַיְבָרֶךְ',tr:'wayḇāreḵ',pl:'i pobłogosławił',lemma:'בֵּרֵךְ',lemmaTr:'bērēḵ',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ברך'}},
+ {id:'F40-19',heb:'וַיְשַׁלַּח',tr:'wayšallaḥ',pl:'i odesłał, wypędził',lemma:'שִׁלַּח',lemmaTr:'šillaḥ',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׁלח'}},
+ {id:'F40-20',heb:'וַיְגָרֶשׁ',tr:'wayḡāreš',pl:'i wypędził',lemma:'גֵּרֵשׁ',lemmaTr:'gērēš',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'גרשׁ'}},
+ {id:'F40-21',heb:'וַיְקַדֵּשׁ',tr:'wayqaddēš',pl:'i uświęcił',lemma:'קִדֵּשׁ',lemmaTr:'qiddēš',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'קדשׁ'}},
+ {id:'F40-22',heb:'וַיְשָׁרֶת',tr:'wayšāreṯ',pl:'i służył',lemma:'שֵׁרֵת',lemmaTr:'šērēṯ',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׁרת'}},
+ // ---- imiesłów (prefiks mə-) ----
+ {id:'F40-23',heb:'מְגַדֵּל',tr:'məḡaddēl',pl:'wywyższający, wychowujący',lemma:'גִּדֵּל',lemmaTr:'giddēl',cat:'verb',p:{binyan:'piel',form:'ptcp',gen:'m',num:'sg',root:'גדל',note:'prefiks mə-'}},
+ {id:'F40-24',heb:'מְשָׁרֵת',tr:'məšārēṯ',pl:'sługa, posługujący',lemma:'שֵׁרֵת',lemmaTr:'šērēṯ',cat:'verb',p:{binyan:'piel',form:'ptcp',gen:'m',num:'sg',root:'שׁרת'}},
+
+ /* ===== LEKCJA 41: PIEL — III-Alef, III-Hē, geminowany (zakończenie, §151) ===== */
+ {id:'F41-01',heb:'מִלֵּא',tr:'millēʾ',pl:'napełnił',lemma:'מִלֵּא',lemmaTr:'millēʾ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'מלא',note:'III-alef'}},
+ {id:'F41-02',heb:'יְמַלֵּא',tr:'yəmallēʾ',pl:'napełni',lemma:'מִלֵּא',lemmaTr:'millēʾ',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'sg',root:'מלא'}},
+ {id:'F41-03',heb:'מְמַלֵּא',tr:'məmallēʾ',pl:'napełniający',lemma:'מִלֵּא',lemmaTr:'millēʾ',cat:'verb',p:{binyan:'piel',form:'ptcp',gen:'m',num:'sg',root:'מלא'}},
+ {id:'F41-04',heb:'עִנָּה',tr:'ʿinnāh',pl:'uciskał',lemma:'עִנָּה',lemmaTr:'ʿinnāh',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'ענה',note:'III-he; perf. -āh'}},
+ {id:'F41-05',heb:'יְעַנֶּה',tr:'yəʿanneh',pl:'będzie uciskał',lemma:'עִנָּה',lemmaTr:'ʿinnāh',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'sg',root:'ענה',note:'III-he; impf. -eh'}},
+ {id:'F41-06',heb:'עַנּוֹת',tr:'ʿannôṯ',pl:'uciskać',lemma:'עִנָּה',lemmaTr:'ʿinnāh',cat:'verb',p:{binyan:'piel',form:'inf',root:'ענה',note:'III-he; inf. constr. -ôṯ'}},
+ {id:'F41-07',heb:'כִּסָּה',tr:'kissāh',pl:'przykrył, pokrył',lemma:'כִּסָּה',lemmaTr:'kissāh',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'כסה',note:'III-he'}},
+ {id:'F41-08',heb:'וַיְכַס',tr:'wayḵas',pl:'i przykrył',lemma:'כִּסָּה',lemmaTr:'kissāh',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'כסה',note:'III-he; forma apokopowana (jussivus)'}},
+ {id:'F41-09',heb:'וַתְּכַס',tr:'wattəḵas',pl:'i przykryła',lemma:'כִּסָּה',lemmaTr:'kissāh',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'f',num:'sg',root:'כסה'}},
+ {id:'F41-10',heb:'צִוָּה',tr:'ṣiwwāh',pl:'rozkazał, nakazał; ustanowił',lemma:'צִוָּה',lemmaTr:'ṣiwwāh',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'צוה',note:'III-he'}},
+ {id:'F41-11',heb:'וַיְצַו',tr:'wayṣaw',pl:'i nakazał, rozkazał',lemma:'צִוָּה',lemmaTr:'ṣiwwāh',cat:'verb',p:{binyan:'piel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'צוה',note:'III-he; forma apokopowana'}},
+ {id:'F41-12',heb:'הִלֵּל',tr:'hillēl',pl:'chwalił',lemma:'הִלֵּל',lemmaTr:'hillēl',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'הלל',note:'geminowany'}},
+ {id:'F41-13',heb:'אֲהַלֵּל',tr:'ʾăhallēl',pl:'będę chwalił',lemma:'הִלֵּל',lemmaTr:'hillēl',cat:'verb',p:{binyan:'piel',form:'impf',pers:1,gen:'c',num:'sg',root:'הלל'}},
+ {id:'F41-14',heb:'קִלֵּל',tr:'qillēl',pl:'przeklinał',lemma:'קִלֵּל',lemmaTr:'qillēl',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'קלל',note:'geminowany'}},
+ {id:'F41-15',heb:'תְּקַלְלוּ',tr:'təqalləlû',pl:'będziecie przeklinać',lemma:'קִלֵּל',lemmaTr:'qillēl',cat:'verb',p:{binyan:'piel',form:'impf',pers:2,gen:'m',num:'pl',root:'קלל'}},
+ {id:'F41-16',heb:'סִפֵּר',tr:'sippēr',pl:'opowiadał, głosił',lemma:'סִפֵּר',lemmaTr:'sippēr',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'ספר'}},
+ {id:'F41-17',heb:'יְסַפְּרוּ',tr:'yəsappərû',pl:'będą opowiadać',lemma:'סִפֵּר',lemmaTr:'sippēr',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'pl',root:'ספר'}},
+ // ---- Qal: leksemy słowniczka XLI ----
+ {id:'F41-18',heb:'עָרַב',tr:'ʿāraḇ',pl:'ręczył, gwarantował',lemma:'עָרַב',lemmaTr:'ʿāraḇ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'ערב',note:'I-gardł.'}},
+ {id:'F41-19',heb:'לַעֲרֹב',tr:'laʿărōḇ',pl:'ręczyć, dawać pod zastaw',lemma:'עָרַב',lemmaTr:'ʿāraḇ',cat:'verb',p:{binyan:'qal',form:'inf',root:'ערב',note:'I-gardł.; inf. constr. + לְ'}},
+ {id:'F41-20',heb:'קָשְׁרוּ',tr:'qāšərû',pl:'spiskowali, zawiązali spisek',lemma:'קָשַׁר',lemmaTr:'qāšar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'קשׁר',note:'+ עַל przeciw'}},
+
+ /* ===== LEKCJA 42: PUAL — bierny odpowiednik Piel (§154) ===== */
+ // ---- Pual perfectum / imperfectum ----
+ {id:'F42-01',heb:'גֻּדַּל',tr:'guddal',pl:'był wywyższany',lemma:'גֻּדַּל',lemmaTr:'guddal',cat:'verb',p:{binyan:'pual',form:'perf',pers:3,gen:'m',num:'sg',root:'גדל',note:'wzór regularny; u–a'}},
+ {id:'F42-02',heb:'יְגֻדַּל',tr:'yəḡuddal',pl:'będzie wywyższany',lemma:'גֻּדַּל',lemmaTr:'guddal',cat:'verb',p:{binyan:'pual',form:'impf',pers:3,gen:'m',num:'sg',root:'גדל'}},
+ {id:'F42-03',heb:'מְגֻדָּל',tr:'məḡuddāl',pl:'wywyższany (imiesłów bierny)',lemma:'גֻּדַּל',lemmaTr:'guddal',cat:'verb',p:{binyan:'pual',form:'ptcp',gen:'m',num:'sg',root:'גדל',note:'prefiks mə-'}},
+ {id:'F42-04',heb:'בֻּקַּשׁ',tr:'buqqaš',pl:'był poszukiwany',lemma:'בֻּקַּשׁ',lemmaTr:'buqqaš',cat:'verb',p:{binyan:'pual',form:'perf',pers:3,gen:'m',num:'sg',root:'בקשׁ'}},
+ {id:'F42-05',heb:'בֻּקְּשׁוּ',tr:'buqqəšû',pl:'byli poszukiwani',lemma:'בֻּקַּשׁ',lemmaTr:'buqqaš',cat:'verb',p:{binyan:'pual',form:'perf',pers:3,gen:'c',num:'pl',root:'בקשׁ'}},
+ {id:'F42-06',heb:'בֹּרַךְ',tr:'bōraḵ',pl:'był błogosławiony',lemma:'בֹּרַךְ',lemmaTr:'bōraḵ',cat:'verb',p:{binyan:'pual',form:'perf',pers:3,gen:'m',num:'sg',root:'ברך',note:'II-gardł.: wydłuż. zastępcze u→ō'}},
+ {id:'F42-07',heb:'מְבֹרָךְ',tr:'məḇōrāḵ',pl:'błogosławiony',lemma:'בֹּרַךְ',lemmaTr:'bōraḵ',cat:'verb',p:{binyan:'pual',form:'ptcp',gen:'m',num:'sg',root:'ברך',note:'bierny odpowiednik מְבָרֵךְ'}},
+ {id:'F42-08',heb:'מְהֻלָּל',tr:'məhullāl',pl:'wysławiany, chwalony',lemma:'הֻלַּל',lemmaTr:'hullal',cat:'verb',p:{binyan:'pual',form:'ptcp',gen:'m',num:'sg',root:'הלל',note:'geminowany'}},
+ {id:'F42-09',heb:'מְכֻסִּים',tr:'məḵussîm',pl:'okryci, pokryci',lemma:'כֻּסָּה',lemmaTr:'kussāh',cat:'verb',p:{binyan:'pual',form:'ptcp',gen:'m',num:'pl',root:'כסה',note:'III-he'}},
+ {id:'F42-10',heb:'אֲכֻסֶּה',tr:'ʾăḵusseh',pl:'zostanę przykryty',lemma:'כֻּסָּה',lemmaTr:'kussāh',cat:'verb',p:{binyan:'pual',form:'impf',pers:1,gen:'c',num:'sg',root:'כסה',note:'III-he'}},
+ {id:'F42-11',heb:'עֻנֵּיתִי',tr:'ʿunnêṯî',pl:'byłem uciskany',lemma:'עֻנָּה',lemmaTr:'ʿunnāh',cat:'verb',p:{binyan:'pual',form:'perf',pers:1,gen:'c',num:'sg',root:'ענה',note:'III-he'}},
+ {id:'F42-12',heb:'סֻפַּר',tr:'suppar',pl:'zostało opowiedziane',lemma:'סֻפַּר',lemmaTr:'suppar',cat:'verb',p:{binyan:'pual',form:'perf',pers:3,gen:'m',num:'sg',root:'ספר',note:'strona bierna bez wykonawcy'}},
+ {id:'F42-13',heb:'יְכֻפַּר',tr:'yəḵuppar',pl:'zostanie przebłagane, odpuszczone',lemma:'כֻּפַּר',lemmaTr:'kuppar',cat:'verb',p:{binyan:'pual',form:'impf',pers:3,gen:'m',num:'sg',root:'כפר'}},
+ // ---- Piel: leksemy słowniczka XLII ----
+ {id:'F42-14',heb:'חִלֵּל',tr:'ḥillēl',pl:'zbezcześcił, skaził',lemma:'חִלֵּל',lemmaTr:'ḥillēl',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'חלל',note:'geminowany'}},
+ {id:'F42-15',heb:'חִלַּלְתָּ',tr:'ḥillaltā',pl:'zbezcześciłeś',lemma:'חִלֵּל',lemmaTr:'ḥillēl',cat:'verb',p:{binyan:'piel',form:'perf',pers:2,gen:'m',num:'sg',root:'חלל'}},
+ {id:'F42-16',heb:'כִּפֶּר',tr:'kipper',pl:'dokonał przebłagania',lemma:'כִּפֶּר',lemmaTr:'kipper',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'כפר',note:'forma z e w 3 os. r.m.'}},
+ {id:'F42-17',heb:'נִחַם',tr:'niḥam',pl:'pocieszył',lemma:'נִחַם',lemmaTr:'niḥam',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'נחם',note:'piel; homograf z nifal (L38)'}},
+ {id:'F42-18',heb:'אֲנַחֵם',tr:'ʾănaḥēm',pl:'pocieszę',lemma:'נִחַם',lemmaTr:'niḥam',cat:'verb',p:{binyan:'piel',form:'impf',pers:1,gen:'c',num:'sg',root:'נחם'}},
+ {id:'F42-19',heb:'שִׂמַּח',tr:'śimmaḥ',pl:'uradował, ucieszył',lemma:'שִׂמַּח',lemmaTr:'śimmaḥ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'שׂמח',note:'III-gardł.: a w temacie'}},
+ {id:'F42-20',heb:'יְשַׂמַּח',tr:'yəśammaḥ',pl:'uraduje, ucieszy',lemma:'שִׂמַּח',lemmaTr:'śimmaḥ',cat:'verb',p:{binyan:'piel',form:'impf',pers:3,gen:'m',num:'sg',root:'שׂמח'}},
+ // ---- Qal: leksemy słowniczka XLII ----
+ {id:'F42-21',heb:'וַיִּזְעֲקוּ',tr:'wayyizʿăqû',pl:'i wołali, krzyczeli',lemma:'זָעַק',lemmaTr:'zāʿaq',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'pl',root:'זעק',note:'II-gardł.'}},
+ {id:'F42-22',heb:'סָר',tr:'sār',pl:'zboczył, odszedł',lemma:'סָר',lemmaTr:'sār',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'סור',note:'pusty; por. L32'}},
+ {id:'F42-23',heb:'תָּסוּר',tr:'tāsûr',pl:'zboczysz, odejdziesz',lemma:'סָר',lemmaTr:'sār',cat:'verb',p:{binyan:'qal',form:'impf',pers:2,gen:'m',num:'sg',root:'סור',note:'pusty'}},
+ /* ===== LEKCJA 43: HIFIL — mocny, I-Nun, I-gardłowy (§158) ===== */
+ // ---- wzór regularny: הִשְׁמִיד (rdzeń שׁמד) ----
+ {id:'F43-01',heb:'הִשְׁמִיד',tr:'hišmîḏ',pl:'zniszczył, zgładził',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמד',note:'wzór; prefiks hi-, samogł. î'}},
+ {id:'F43-02',heb:'הִשְׁמִידָה',tr:'hišmîḏā',pl:'zniszczyła',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'f',num:'sg',root:'שׁמד'}},
+ {id:'F43-03',heb:'הִשְׁמַדְתָּ',tr:'hišmaḏtā',pl:'zniszczyłeś',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:2,gen:'m',num:'sg',root:'שׁמד',note:'î → a przed końcówką spółgł.'}},
+ {id:'F43-04',heb:'הִשְׁמַדְתִּי',tr:'hišmaḏtî',pl:'zniszczyłem',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:1,gen:'c',num:'sg',root:'שׁמד'}},
+ {id:'F43-05',heb:'יַשְׁמִיד',tr:'yašmîḏ',pl:'zniszczy',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמד',note:'prefiks ya-, î; brak h-'}},
+ {id:'F43-06',heb:'תַּשְׁמִידִי',tr:'tašmîḏî',pl:'zniszczysz',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:2,gen:'f',num:'sg',root:'שׁמד'}},
+ {id:'F43-07',heb:'יַשְׁמֵד',tr:'yašmēḏ',pl:'niech zniszczy',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'juss',pers:3,gen:'m',num:'sg',root:'שׁמד',note:'krótkie impf.: î → ē'}},
+ {id:'F43-08',heb:'וַיַּשְׁמֵד',tr:'wayyašmēḏ',pl:'i zniszczył',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'שׁמד'}},
+ {id:'F43-09',heb:'הַשְׁמֵד',tr:'hašmēḏ',pl:'zniszcz!',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'שׁמד',note:'imperatyw: prefiks ha-, ē'}},
+ {id:'F43-10',heb:'הַשְׁמִיד',tr:'hašmîḏ',pl:'(by) zniszczyć',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'inf',root:'שׁמד',note:'inf. constr.'}},
+ {id:'F43-11',heb:'מַשְׁמִיד',tr:'mašmîḏ',pl:'niszczący',lemma:'הִשְׁמִיד',lemmaTr:'hišmîḏ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'שׁמד',note:'prefiks ma-'}},
+ // ---- I-Nun: הִגִּיד (rdzeń נגד) — asymilacja נ ----
+ {id:'F43-12',heb:'הִגִּיד',tr:'higgîḏ',pl:'powiedział, oznajmił',lemma:'הִגִּיד',lemmaTr:'higgîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'נגד',note:'*hingîḏ → higgîḏ (asymilacja נ)'}},
+ {id:'F43-13',heb:'יַגִּיד',tr:'yaggîḏ',pl:'powie, oznajmi',lemma:'הִגִּיד',lemmaTr:'higgîḏ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'נגד'}},
+ {id:'F43-14',heb:'וַיַּגֵּד',tr:'wayyaggēḏ',pl:'i oznajmił',lemma:'הִגִּיד',lemmaTr:'higgîḏ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נגד'}},
+ {id:'F43-15',heb:'הַגֵּד',tr:'haggēḏ',pl:'oznajmij!',lemma:'הִגִּיד',lemmaTr:'higgîḏ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'נגד'}},
+ {id:'F43-16',heb:'מַגִּיד',tr:'maggîḏ',pl:'oznajmiający, zwiastun',lemma:'הִגִּיד',lemmaTr:'higgîḏ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'נגד'}},
+ // ---- I-gardłowy: הֶעֱמִיד (rdzeń עמד) ----
+ {id:'F43-17',heb:'הֶעֱמִיד',tr:'heʿĕmîḏ',pl:'ustanowił, postawił',lemma:'הֶעֱמִיד',lemmaTr:'heʿĕmîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'עמד',note:'prefiks he-; samogł. drugorzędna po gardł.'}},
+ {id:'F43-18',heb:'יַעֲמִיד',tr:'yaʿămîḏ',pl:'ustanowi, postawi',lemma:'הֶעֱמִיד',lemmaTr:'heʿĕmîḏ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'עמד'}},
+ {id:'F43-19',heb:'וַיַּעֲמֵד',tr:'wayyaʿămēḏ',pl:'i postawił',lemma:'הֶעֱמִיד',lemmaTr:'heʿĕmîḏ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'עמד'}},
+ {id:'F43-20',heb:'הַעֲמֵד',tr:'haʿămēḏ',pl:'postaw!',lemma:'הֶעֱמִיד',lemmaTr:'heʿĕmîḏ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'עמד'}},
+ {id:'F43-21',heb:'מַעֲמִיד',tr:'maʿămîḏ',pl:'ustanawiający',lemma:'הֶעֱמִיד',lemmaTr:'heʿĕmîḏ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'עמד'}},
+ {id:'F43-22',heb:'וְהֶעֱבַרְתָּ',tr:'wəheʿĕḇartā',pl:'i przeprowadzisz',lemma:'הֶעֱבִיר',lemmaTr:'heʿĕḇîr',cat:'verb',p:{binyan:'hifil',form:'weqatal',pers:2,gen:'m',num:'sg',root:'עבר',note:'I-gardł.: a w sylabie preformat. (§158)'}},
+ // ---- leksemy słowniczka XLIII ----
+ {id:'F43-23',heb:'הֶאֱמִין',tr:'heʾĕmîn',pl:'uwierzył, zaufał',lemma:'הֶאֱמִין',lemmaTr:'heʾĕmîn',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'אמן',note:'I-Alef'}},
+ {id:'F43-24',heb:'הִגְדִּיל',tr:'higdîl',pl:'powiększył, uczynił wielkim',lemma:'הִגְדִּיל',lemmaTr:'higdîl',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'גדל'}},
+ {id:'F43-25',heb:'הֶחֱזִיק',tr:'heḥĕzîq',pl:'pochwycił, złapał',lemma:'הֶחֱזִיק',lemmaTr:'heḥĕzîq',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'חזק',note:'I-gardł.'}},
+ {id:'F43-26',heb:'הִקְרִיב',tr:'hiqrîḇ',pl:'przyniósł, złożył w ofierze',lemma:'הִקְרִיב',lemmaTr:'hiqrîḇ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'קרב'}},
+ {id:'F43-27',heb:'הִצִּיל',tr:'hiṣṣîl',pl:'wybawił, ocalił',lemma:'הִצִּיל',lemmaTr:'hiṣṣîl',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'נצל',note:'I-Nun (asymilacja)'}},
+ {id:'F43-28',heb:'הִסְתִּיר',tr:'histîr',pl:'ukrył, schował',lemma:'הִסְתִּיר',lemmaTr:'histîr',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'סתר'}},
+ {id:'F43-29',heb:'הִבִּיט',tr:'hibbîṭ',pl:'spojrzał, popatrzył',lemma:'הִבִּיט',lemmaTr:'hibbîṭ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'נבט',note:'I-Nun (asymilacja)'}},
+ // ---- kontrast Nifal vs Hifil ----
+ {id:'F43-30',heb:'נִצַּל',tr:'niṣṣal',pl:'został ocalony',lemma:'נִצַּל',lemmaTr:'niṣṣal',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'נצל',note:'Nifal (bierny) ↔ Hifil הִצִּיל'}},
+ {id:'F43-31',heb:'נִסְתַּר',tr:'nistar',pl:'ukrył się, schował się',lemma:'נִסְתַּר',lemmaTr:'nistar',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'סתר',note:'Nifal (zwrotny) ↔ Hifil הִסְתִּיר'}},
+ {id:'F43-32',heb:'נִקְרָה',tr:'niqrāh',pl:'przydarzył się, spotkał',lemma:'נִקְרָה',lemmaTr:'niqrāh',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'קרה',note:'III-He'}},
+
+ /* ===== LEKCJA 44: HIFIL — III-gardłowy, III-Alef (§160) ===== */
+ // ---- III-gardłowy: הִשְׁמִיעַ (rdzeń שׁמע) ----
+ {id:'F44-01',heb:'הִשְׁמִיעַ',tr:'hišmîaʿ',pl:'dał usłyszeć, ogłosił',lemma:'הִשְׁמִיעַ',lemmaTr:'hišmîaʿ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמע',note:'III-gardł.: pataḥ furtivum'}},
+ {id:'F44-02',heb:'יַשְׁמִיעַ',tr:'yašmîaʿ',pl:'da usłyszeć, ogłosi',lemma:'הִשְׁמִיעַ',lemmaTr:'hišmîaʿ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמע'}},
+ {id:'F44-03',heb:'יַשְׁמַע',tr:'yašmaʿ',pl:'niech ogłosi',lemma:'הִשְׁמִיעַ',lemmaTr:'hišmîaʿ',cat:'verb',p:{binyan:'hifil',form:'juss',pers:3,gen:'m',num:'sg',root:'שׁמע',note:'III-gardł.: samogł. tem. a w jussiwie'}},
+ {id:'F44-04',heb:'הַשְׁמַע',tr:'hašmaʿ',pl:'ogłoś!',lemma:'הִשְׁמִיעַ',lemmaTr:'hišmîaʿ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'שׁמע'}},
+ {id:'F44-05',heb:'מַשְׁמִיעַ',tr:'mašmîaʿ',pl:'ogłaszający',lemma:'הִשְׁמִיעַ',lemmaTr:'hišmîaʿ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'שׁמע'}},
+ // ---- III-Alef: הִמְצִיא (rdzeń מצא) ----
+ {id:'F44-06',heb:'הִמְצִיא',tr:'himṣîʾ',pl:'sprawił by znaleziono, przekazał',lemma:'הִמְצִיא',lemmaTr:'himṣîʾ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'מצא',note:'III-Alef'}},
+ {id:'F44-07',heb:'הִמְצֵאתָ',tr:'himṣēʾṯā',pl:'przekazałeś',lemma:'הִמְצִיא',lemmaTr:'himṣîʾ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:2,gen:'m',num:'sg',root:'מצא',note:'ē przed końcówką spółgł. (jak Nifal/Piel/Pual)'}},
+ {id:'F44-08',heb:'יַמְצִיא',tr:'yamṣîʾ',pl:'sprawi by znaleziono',lemma:'הִמְצִיא',lemmaTr:'himṣîʾ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'מצא'}},
+ {id:'F44-09',heb:'תַּמְצֶאנָה',tr:'tamṣeʾnā',pl:'(one) przekażą',lemma:'הִמְצִיא',lemmaTr:'himṣîʾ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'f',num:'pl',root:'מצא',note:'l.mn. r.ż.: -ʾeʾnā'}},
+ {id:'F44-10',heb:'הַמְצֵא',tr:'hamṣēʾ',pl:'przekaż!',lemma:'הִמְצִיא',lemmaTr:'himṣîʾ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'מצא'}},
+ {id:'F44-11',heb:'מַמְצִיא',tr:'mamṣîʾ',pl:'przekazujący',lemma:'הִמְצִיא',lemmaTr:'himṣîʾ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'מצא'}},
+ // ---- leksemy słowniczka XLIV ----
+ {id:'F44-12',heb:'הֶחֱטִיא',tr:'heḥĕṭîʾ',pl:'doprowadził do grzechu',lemma:'הֶחֱטִיא',lemmaTr:'heḥĕṭîʾ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'חטא',note:'I-gardł. + III-Alef'}},
+ {id:'F44-13',heb:'הִצְלִיחַ',tr:'hiṣlîaḥ',pl:'sprawił powodzenie, powiodło się',lemma:'הִצְלִיחַ',lemmaTr:'hiṣlîaḥ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'צלח',note:'III-gardł.'}},
+ {id:'F44-14',heb:'וַיַּצְלַח',tr:'wayyaṣlaḥ',pl:'i powiodło mu się',lemma:'הִצְלִיחַ',lemmaTr:'hiṣlîaḥ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'צלח'}},
+ {id:'F44-15',heb:'הִשְׁלִיךְ',tr:'hišlîḵ',pl:'rzucił, wyrzucił',lemma:'הִשְׁלִיךְ',lemmaTr:'hišlîḵ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁלך'}},
+ {id:'F44-16',heb:'הֶאֱרִיךְ',tr:'heʾĕrîḵ',pl:'wydłużył; był długi',lemma:'הֶאֱרִיךְ',lemmaTr:'heʾĕrîḵ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ארך',note:'I-Alef'}},
+ // ---- Qal: leksemy słowniczka XLIV ----
+ {id:'F44-17',heb:'זָבַח',tr:'zāḇaḥ',pl:'złożył w ofierze',lemma:'זָבַח',lemmaTr:'zāḇaḥ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'זבח',note:'III-gardł.'}},
+ {id:'F44-18',heb:'וַיִּזְבַּח',tr:'wayyizbaḥ',pl:'i złożył w ofierze',lemma:'זָבַח',lemmaTr:'zāḇaḥ',cat:'verb',p:{binyan:'qal',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'זבח'}},
+ {id:'F44-19',heb:'גָּנַב',tr:'gānaḇ',pl:'ukradł',lemma:'גָּנַב',lemmaTr:'gānaḇ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'גנב'}},
+ {id:'F44-20',heb:'רָצַח',tr:'rāṣaḥ',pl:'zabił, zamordował',lemma:'רָצַח',lemmaTr:'rāṣaḥ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'רצח',note:'III-gardł.'}},
+
+ /* ===== LEKCJA 45: HIFIL — I-Jod / I-Waw (§163) ===== */
+ // ---- wzór: הוֹרִיד (rdzeń ירד) — kontrakcja do ô ----
+ {id:'F45-01',heb:'הוֹרִיד',tr:'hôrîḏ',pl:'sprowadził, poprowadził w dół',lemma:'הוֹרִיד',lemmaTr:'hôrîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ירד',note:'I-Jod: *haw → ô'}},
+ {id:'F45-02',heb:'יוֹרִיד',tr:'yôrîḏ',pl:'sprowadzi',lemma:'הוֹרִיד',lemmaTr:'hôrîḏ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'ירד'}},
+ {id:'F45-03',heb:'וַיּוֹרֶד',tr:'wayyôreḏ',pl:'i sprowadził',lemma:'הוֹרִיד',lemmaTr:'hôrîḏ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ירד',note:'retrakcja akcentu: î → e'}},
+ {id:'F45-04',heb:'הוֹרֵד',tr:'hôrēḏ',pl:'sprowadź!',lemma:'הוֹרִיד',lemmaTr:'hôrîḏ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'ירד'}},
+ {id:'F45-05',heb:'מוֹרִיד',tr:'môrîḏ',pl:'sprowadzający',lemma:'הוֹרִיד',lemmaTr:'hôrîḏ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'ירד'}},
+ // ---- leksemy słowniczka XLV ----
+ {id:'F45-06',heb:'הוֹשִׁיב',tr:'hôšîḇ',pl:'osiedlił, posadził',lemma:'הוֹשִׁיב',lemmaTr:'hôšîḇ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ישׁב'}},
+ {id:'F45-07',heb:'הוֹלִיד',tr:'hôlîḏ',pl:'spłodził, zrodził',lemma:'הוֹלִיד',lemmaTr:'hôlîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ילד'}},
+ {id:'F45-08',heb:'וַיּוֹלֶד',tr:'wayyôleḏ',pl:'i spłodził',lemma:'הוֹלִיד',lemmaTr:'hôlîḏ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ילד'}},
+ {id:'F45-09',heb:'הוֹדִיעַ',tr:'hôḏîaʿ',pl:'powiadomił, oznajmił',lemma:'הוֹדִיעַ',lemmaTr:'hôḏîaʿ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ידע',note:'I-Jod + III-gardł.'}},
+ {id:'F45-10',heb:'וַיּוֹדַע',tr:'wayyôḏaʿ',pl:'i oznajmił',lemma:'הוֹדִיעַ',lemmaTr:'hôḏîaʿ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ידע'}},
+ {id:'F45-11',heb:'הוֹצִיא',tr:'hôṣîʾ',pl:'wyprowadził',lemma:'הוֹצִיא',lemmaTr:'hôṣîʾ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'יצא',note:'I-Jod + III-Alef'}},
+ {id:'F45-12',heb:'וַיּוֹצֵא',tr:'wayyôṣēʾ',pl:'i wyprowadził',lemma:'הוֹצִיא',lemmaTr:'hôṣîʾ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'יצא'}},
+ {id:'F45-13',heb:'הוֹלִיךְ',tr:'hôlîḵ',pl:'prowadził',lemma:'הוֹלִיךְ',lemmaTr:'hôlîḵ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'הלך',note:'odmienia się jak rdzeń ילך'}},
+ {id:'F45-14',heb:'הוֹסִיף',tr:'hôsîp̄',pl:'zrobił ponownie, dodał',lemma:'הוֹסִיף',lemmaTr:'hôsîp̄',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'יסף'}},
+ {id:'F45-15',heb:'וְהוֹסַפְתִּי',tr:'wəhôsap̄tî',pl:'i dodam',lemma:'הוֹסִיף',lemmaTr:'hôsîp̄',cat:'verb',p:{binyan:'hifil',form:'weqatal',pers:1,gen:'c',num:'sg',root:'יסף'}},
+ {id:'F45-16',heb:'הוֹשִׁיעַ',tr:'hôšîaʿ',pl:'wybawił, wyzwolił',lemma:'הוֹשִׁיעַ',lemmaTr:'hôšîaʿ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ישׁע',note:'I-Jod + III-gardł.'}},
+ {id:'F45-17',heb:'וַיּוֹשַׁע',tr:'wayyôšaʿ',pl:'i wybawił',lemma:'הוֹשִׁיעַ',lemmaTr:'hôšîaʿ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'ישׁע'}},
+ {id:'F45-18',heb:'הוֹכִיחַ',tr:'hôḵîaḥ',pl:'skarcił, upomniał',lemma:'הוֹכִיחַ',lemmaTr:'hôḵîaḥ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'יכח',note:'I-Jod + III-gardł.'}},
+ {id:'F45-19',heb:'הֵיטִיב',tr:'hêṭîḇ',pl:'uczynił dobrze, postąpił dobrze',lemma:'הֵיטִיב',lemmaTr:'hêṭîḇ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'יטב',note:'I-Jod typu hêṭîḇ (ê nieredukowalne)'}},
+ {id:'F45-20',heb:'קִנֵּא',tr:'qinnēʾ',pl:'był zazdrosny, gorliwy',lemma:'קִנֵּא',lemmaTr:'qinnēʾ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'קנא',note:'III-Alef'}},
+
+ /* ===== LEKCJA 46: HIFIL — III-He (§166) ===== */
+ // ---- wzór: הִרְבָּה (rdzeń רבה) ----
+ {id:'F46-01',heb:'הִרְבָּה',tr:'hirbāh',pl:'powiększył, uczynił licznym',lemma:'הִרְבָּה',lemmaTr:'hirbāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'רבה',note:'III-He: brak długiej î'}},
+ {id:'F46-02',heb:'הִרְבֵּיתִי',tr:'hirbêṯî',pl:'powiększyłem',lemma:'הִרְבָּה',lemmaTr:'hirbāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:1,gen:'c',num:'sg',root:'רבה',note:'-êṯî przed końcówką'}},
+ {id:'F46-03',heb:'יַרְבֶּה',tr:'yarbeh',pl:'powiększy',lemma:'הִרְבָּה',lemmaTr:'hirbāh',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'רבה'}},
+ {id:'F46-04',heb:'יֶרֶב',tr:'yereḇ',pl:'niech powiększy',lemma:'הִרְבָּה',lemmaTr:'hirbāh',cat:'verb',p:{binyan:'hifil',form:'juss',pers:3,gen:'m',num:'sg',root:'רבה',note:'jussivus: utrata -eh; Hifil ma e (Qal i)'}},
+ {id:'F46-05',heb:'הַרְבֵּה',tr:'harbēh',pl:'pomnóż! / bardzo (przysł.)',lemma:'הִרְבָּה',lemmaTr:'hirbāh',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'רבה',note:'inf. abs. הַרְבֵּה bywa przysł. „bardzo"'}},
+ {id:'F46-06',heb:'הַרְבּוֹת',tr:'harbôṯ',pl:'(by) pomnożyć',lemma:'הִרְבָּה',lemmaTr:'hirbāh',cat:'verb',p:{binyan:'hifil',form:'inf',root:'רבה',note:'inf. constr.: -ôṯ'}},
+ {id:'F46-07',heb:'מַרְבֶּה',tr:'marbeh',pl:'pomnażający',lemma:'הִרְבָּה',lemmaTr:'hirbāh',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'רבה'}},
+ // ---- kombinacje III-He ----
+ {id:'F46-08',heb:'הֶעֱלָה',tr:'heʿĕlāh',pl:'wyprowadził w górę, złożył ofiarę',lemma:'הֶעֱלָה',lemmaTr:'heʿĕlāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'עלה',note:'I-gardł. + III-He'}},
+ {id:'F46-09',heb:'יַעֲלֶה',tr:'yaʿăleh',pl:'wyprowadzi w górę',lemma:'הֶעֱלָה',lemmaTr:'heʿĕlāh',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'עלה'}},
+ {id:'F46-10',heb:'וַיַּעַל',tr:'wayyaʿal',pl:'i wyprowadził w górę',lemma:'הֶעֱלָה',lemmaTr:'heʿĕlāh',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'עלה',note:'forma I-gardł. równa Qalowi'}},
+ {id:'F46-11',heb:'הַעֲלוֹת',tr:'haʿălôṯ',pl:'(by) wyprowadzić w górę',lemma:'הֶעֱלָה',lemmaTr:'heʿĕlāh',cat:'verb',p:{binyan:'hifil',form:'inf',root:'עלה'}},
+ {id:'F46-12',heb:'הִכָּה',tr:'hikkāh',pl:'uderzył, pobił, zabił',lemma:'הִכָּה',lemmaTr:'hikkāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'נכה',note:'I-Nun + III-He'}},
+ {id:'F46-13',heb:'יַכֶּה',tr:'yakkeh',pl:'uderzy, pobije',lemma:'הִכָּה',lemmaTr:'hikkāh',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'נכה'}},
+ {id:'F46-14',heb:'וַיַּךְ',tr:'wayyaḵ',pl:'i pobił, i zabił',lemma:'הִכָּה',lemmaTr:'hikkāh',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'נכה',note:'jussivus יַךְ: utrata podwojenia na końcu'}},
+ {id:'F46-15',heb:'הַכֵּה',tr:'hakkēh',pl:'uderz!',lemma:'הִכָּה',lemmaTr:'hikkāh',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'נכה'}},
+ // ---- leksemy słowniczka XLVI ----
+ {id:'F46-16',heb:'הֶרְאָה',tr:'herʾāh',pl:'pokazał',lemma:'הֶרְאָה',lemmaTr:'herʾāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ראה',note:'e w sylabie preformat.'}},
+ {id:'F46-17',heb:'הוֹדָה',tr:'hôḏāh',pl:'podziękował, wyznał',lemma:'הוֹדָה',lemmaTr:'hôḏāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ידה',note:'I-Jod + III-He'}},
+ {id:'F46-18',heb:'הִשְׁקָה',tr:'hišqāh',pl:'napoił, dał pić',lemma:'הִשְׁקָה',lemmaTr:'hišqāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁקה',note:'sprawczo dla שָׁתָה'}},
+ {id:'F46-19',heb:'הוֹרָה',tr:'hôrāh',pl:'pouczył, nauczał',lemma:'הוֹרָה',lemmaTr:'hôrāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'ירה',note:'I-Jod + III-He'}},
+ {id:'F46-20',heb:'הִגְלָה',tr:'heglāh',pl:'uprowadził na wygnanie',lemma:'הִגְלָה',lemmaTr:'heglāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'גלה'}},
+ {id:'F46-21',heb:'גָּלָה',tr:'gālāh',pl:'odsłonił; poszedł na wygnanie',lemma:'גָּלָה',lemmaTr:'gālāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'גלה',note:'III-He'}},
+ {id:'F46-22',heb:'לִמֵּד',tr:'limmēḏ',pl:'nauczał',lemma:'לִמֵּד',lemmaTr:'limmēḏ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'למד',note:'Piel; por. Qal לָמַד „uczyć się"'}},
+
+ /* ===== LEKCJA 47: HIFIL — pusty (II-Waw/Jod) (§169) ===== */
+ // ---- wzór: הֵקִים (rdzeń קום) ----
+ {id:'F47-01',heb:'הֵקִים',tr:'hēqîm',pl:'ustanowił, wzniósł',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'קום',note:'pusty: prefiks hē-'}},
+ {id:'F47-02',heb:'הֲקִימוֹתָ',tr:'hăqîmôṯā',pl:'ustanowiłeś',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'perf',pers:2,gen:'m',num:'sg',root:'קום',note:'paradygmat I: spójka -ô-'}},
+ {id:'F47-03',heb:'הֲקִימוֹתִי',tr:'hăqîmôṯî',pl:'ustanowiłem',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'perf',pers:1,gen:'c',num:'sg',root:'קום',note:'paradygmat I (częstszy)'}},
+ {id:'F47-04',heb:'יָקִים',tr:'yāqîm',pl:'ustanowi',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'קום'}},
+ {id:'F47-05',heb:'יָקֵם',tr:'yāqēm',pl:'niech ustanowi',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'juss',pers:3,gen:'m',num:'sg',root:'קום',note:'î → ē'}},
+ {id:'F47-06',heb:'וַיָּקֶם',tr:'wayyāqem',pl:'i ustanowił, i wzniósł',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'קום',note:'retrakcja akcentu'}},
+ {id:'F47-07',heb:'הָקֵם',tr:'hāqēm',pl:'ustanów!',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'קום'}},
+ {id:'F47-08',heb:'הָקִים',tr:'hāqîm',pl:'(by) ustanowić',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'inf',root:'קום'}},
+ {id:'F47-09',heb:'מֵקִים',tr:'mēqîm',pl:'ustanawiający',lemma:'הֵקִים',lemmaTr:'hēqîm',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'קום',note:'prefiks mē- (jak w perfectum)'}},
+ // ---- pusty + III-Alef: הֵבִיא (rdzeń בוא), paradygmat II ----
+ {id:'F47-10',heb:'הֵבִיא',tr:'hēḇîʾ',pl:'przyniósł, przyprowadził',lemma:'הֵבִיא',lemmaTr:'hēḇîʾ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'בוא',note:'pusty + III-Alef; paradygmat II'}},
+ {id:'F47-11',heb:'הֵבֵאתָ',tr:'hēḇēʾṯā',pl:'przyniosłeś',lemma:'הֵבִיא',lemmaTr:'hēḇîʾ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:2,gen:'m',num:'sg',root:'בוא'}},
+ {id:'F47-12',heb:'יָבִיא',tr:'yāḇîʾ',pl:'przyniesie',lemma:'הֵבִיא',lemmaTr:'hēḇîʾ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'בוא'}},
+ {id:'F47-13',heb:'וַיָּבֵא',tr:'wayyāḇēʾ',pl:'i przyniósł',lemma:'הֵבִיא',lemmaTr:'hēḇîʾ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'בוא'}},
+ {id:'F47-14',heb:'הָבֵא',tr:'hāḇēʾ',pl:'przynieś!',lemma:'הֵבִיא',lemmaTr:'hēḇîʾ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'בוא'}},
+ // ---- pusty + III-gardł.: הֵנִיחַ (rdzeń נוח) ----
+ {id:'F47-15',heb:'הֵנִיחַ',tr:'hēnîaḥ',pl:'dał odpocząć, dał wytchnienie',lemma:'הֵנִיחַ',lemmaTr:'hēnîaḥ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'נוח',note:'pusty + III-gardł.'}},
+ {id:'F47-16',heb:'יָנִיחַ',tr:'yānîaḥ',pl:'da odpocząć',lemma:'הֵנִיחַ',lemmaTr:'hēnîaḥ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'נוח'}},
+ {id:'F47-17',heb:'הִנִּיחַ',tr:'hinnîaḥ',pl:'położył, złożył, pozostawił',lemma:'הִנִּיחַ',lemmaTr:'hinnîaḥ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'נוח',note:'odrębny czas. (יַנִּיחַ); por. הֵנִיחַ'}},
+ // ---- leksemy słowniczka XLVII ----
+ {id:'F47-18',heb:'הֵכִין',tr:'hēḵîn',pl:'przygotował, ustanowił',lemma:'הֵכִין',lemmaTr:'hēḵîn',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'כון'}},
+ {id:'F47-19',heb:'הֵבִין',tr:'hēḇîn',pl:'zrozumiał, rozważył',lemma:'הֵבִין',lemmaTr:'hēḇîn',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'בין'}},
+ {id:'F47-20',heb:'הֵסִיר',tr:'hēsîr',pl:'usunął, odwrócił',lemma:'הֵסִיר',lemmaTr:'hēsîr',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'סור',note:'por. סָר „zboczyć"'}},
+ {id:'F47-21',heb:'וַיָּסַר',tr:'wayyāsar',pl:'i usunął, i odwrócił',lemma:'הֵסִיר',lemmaTr:'hēsîr',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'סור'}},
+ {id:'F47-22',heb:'הֵרִים',tr:'hērîm',pl:'podniósł, uniósł',lemma:'הֵרִים',lemmaTr:'hērîm',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'רום',note:'por. רָם „być wysokim"'}},
+ {id:'F47-23',heb:'הֵשִׁיב',tr:'hēšîḇ',pl:'przyprowadził z powrotem, odpłacił',lemma:'הֵשִׁיב',lemmaTr:'hēšîḇ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁוב',note:'por. שָׁב „wrócić"'}},
+ {id:'F47-24',heb:'הֶחֱרִים',tr:'heḥĕrîm',pl:'obłożył klątwą, wyniszczył',lemma:'הֶחֱרִים',lemmaTr:'heḥĕrîm',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'חרם',note:'I-gardł. (mocny)'}},
+ // ---- Qal: leksemy słowniczka XLVII ----
+ {id:'F47-25',heb:'נָח',tr:'nāḥ',pl:'odpoczął, osiadł',lemma:'נָח',lemmaTr:'nāḥ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'נוח',note:'pusty'}},
+ {id:'F47-26',heb:'רָם',tr:'rām',pl:'był wysoki, wyniosły',lemma:'רָם',lemmaTr:'rām',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'רום',note:'pusty'}},
+ {id:'F47-27',heb:'עָרַךְ',tr:'ʿāraḵ',pl:'uporządkował, ustawił w szyku',lemma:'עָרַךְ',lemmaTr:'ʿāraḵ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'ערך',note:'I-gardł.'}},
+ {id:'F47-28',heb:'זָנָה',tr:'zānāh',pl:'uprawiał nierząd',lemma:'זָנָה',lemmaTr:'zānāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'זנה',note:'III-He'}},
+ {id:'F47-29',heb:'מִהַר',tr:'mihar',pl:'pośpieszył się',lemma:'מִהַר',lemmaTr:'mihar',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'מהר',note:'Piel; inf. abs. מַהֵר „szybko"'}},
+ /* ===== LEKCJA 48: HIFIL geminowany (§172) ===== */
+ {id:'F48-01',heb:'הֵסֵב',tr:'hēsēḇ',pl:'odwrócił, zawrócił',lemma:'הֵסֵב',lemmaTr:'hēsēḇ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'סבב',note:'geminowany: prefiks hē-, samogł. ē'}},
+ {id:'F48-02',heb:'הֲסִבּוֹתָ',tr:'hăsibbôṯā',pl:'odwróciłeś',lemma:'הֵסֵב',lemmaTr:'hēsēḇ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:2,gen:'m',num:'sg',root:'סבב',note:'przed końcówką spółgł.: spójka -ô- (jak pusty)'}},
+ {id:'F48-03',heb:'יָסֵב',tr:'yāsēḇ',pl:'odwróci',lemma:'הֵסֵב',lemmaTr:'hēsēḇ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'סבב'}},
+ {id:'F48-04',heb:'וַיָּסֶב',tr:'wayyāseḇ',pl:'i odwrócił',lemma:'הֵסֵב',lemmaTr:'hēsēḇ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'סבב'}},
+ {id:'F48-05',heb:'הָסֵב',tr:'hāsēḇ',pl:'odwróć!',lemma:'הֵסֵב',lemmaTr:'hēsēḇ',cat:'verb',p:{binyan:'hifil',form:'impv',pers:2,gen:'m',num:'sg',root:'סבב'}},
+ {id:'F48-06',heb:'מֵסֵב',tr:'mēsēḇ',pl:'odwracający',lemma:'הֵסֵב',lemmaTr:'hēsēḇ',cat:'verb',p:{binyan:'hifil',form:'ptcp',gen:'m',num:'sg',root:'סבב'}},
+ {id:'F48-07',heb:'הֵרַע',tr:'hēraʿ',pl:'skrzywdził; postąpił źle',lemma:'הֵרַע',lemmaTr:'hēraʿ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'רעע',note:'geminowany + gardł.: a w sylabie tem.'}},
+ {id:'F48-08',heb:'יָרַע',tr:'yāraʿ',pl:'skrzywdzi',lemma:'הֵרַע',lemmaTr:'hēraʿ',cat:'verb',p:{binyan:'hifil',form:'impf',pers:3,gen:'m',num:'sg',root:'רעע'}},
+ {id:'F48-09',heb:'וַיָּרַע',tr:'wayyāraʿ',pl:'i skrzywdził',lemma:'הֵרַע',lemmaTr:'hēraʿ',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'רעע'}},
+ {id:'F48-10',heb:'הֵחֵל',tr:'hēḥēl',pl:'rozpoczął',lemma:'הֵחֵל',lemmaTr:'hēḥēl',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'חלל',note:'geminowany'}},
+ {id:'F48-11',heb:'וַיָּחֶל',tr:'wayyāḥel',pl:'i rozpoczął',lemma:'הֵחֵל',lemmaTr:'hēḥēl',cat:'verb',p:{binyan:'hifil',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'חלל'}},
+ {id:'F48-12',heb:'הֵפֵר',tr:'hēp̄ēr',pl:'złamał, unieważnił',lemma:'הֵפֵר',lemmaTr:'hēp̄ēr',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'פרר',note:'geminowany'}},
+ {id:'F48-13',heb:'הִשְׁבִּיעַ',tr:'hišbîaʿ',pl:'zaprzysiągł, kazał przysiąc',lemma:'הִשְׁבִּיעַ',lemmaTr:'hišbîaʿ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁבע',note:'III-gardł.'}},
+ {id:'F48-14',heb:'נִשְׁבַּע',tr:'nišbaʿ',pl:'przysiągł',lemma:'נִשְׁבַּע',lemmaTr:'nišbaʿ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁבע',note:'kontrast z הִשְׁבִּיעַ'}},
+ {id:'F48-15',heb:'הֶחֱיָה',tr:'heḥĕyāh',pl:'pozwolił żyć, ożywił',lemma:'הֶחֱיָה',lemmaTr:'heḥĕyāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'חיה',note:'I-gardł. + III-He'}},
+ {id:'F48-16',heb:'חִיָּה',tr:'ḥiyyāh',pl:'pozwolił żyć, ożywił',lemma:'חִיָּה',lemmaTr:'ḥiyyāh',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'חיה',note:'kontrast z הֶחֱיָה'}},
+ {id:'F48-17',heb:'פָּגַע',tr:'pāḡaʿ',pl:'spotkał, napotkał',lemma:'פָּגַע',lemmaTr:'pāḡaʿ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'פגע',note:'III-gardł.'}},
+
+ /* ===== LEKCJA 49: HOFAL — strona bierna Hifil (§175) ===== */
+ {id:'F49-01',heb:'הָשְׁמַד',tr:'hošmaḏ',pl:'został zniszczony',lemma:'הָשְׁמַד',lemmaTr:'hošmaḏ',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמד',note:'wzór regularny: o + a'}},
+ {id:'F49-02',heb:'יָשְׁמַד',tr:'yošmaḏ',pl:'zostanie zniszczony',lemma:'הָשְׁמַד',lemmaTr:'hošmaḏ',cat:'verb',p:{binyan:'hofal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמד'}},
+ {id:'F49-03',heb:'מָשְׁמָד',tr:'mošmāḏ',pl:'niszczony, zniszczony',lemma:'הָשְׁמַד',lemmaTr:'hošmaḏ',cat:'verb',p:{binyan:'hofal',form:'ptcp',gen:'m',num:'sg',root:'שׁמד'}},
+ {id:'F49-04',heb:'הֻגַּד',tr:'huggaḏ',pl:'zostało powiedziane',lemma:'הֻגַּד',lemmaTr:'huggaḏ',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'נגד',note:'I-Nun: u (z asymilacji נ)'}},
+ {id:'F49-05',heb:'יֻגַּד',tr:'yuggaḏ',pl:'zostanie powiedziane',lemma:'הֻגַּד',lemmaTr:'huggaḏ',cat:'verb',p:{binyan:'hofal',form:'impf',pers:3,gen:'m',num:'sg',root:'נגד'}},
+ {id:'F49-06',heb:'הוּרַד',tr:'hûraḏ',pl:'został sprowadzony',lemma:'הוּרַד',lemmaTr:'hûraḏ',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'ירד',note:'II-W/Y: û'}},
+ {id:'F49-07',heb:'יוּרַד',tr:'yûraḏ',pl:'zostanie sprowadzony',lemma:'הוּרַד',lemmaTr:'hûraḏ',cat:'verb',p:{binyan:'hofal',form:'impf',pers:3,gen:'m',num:'sg',root:'ירד'}},
+ {id:'F49-08',heb:'מוּרָד',tr:'mûrāḏ',pl:'sprowadzany',lemma:'הוּרַד',lemmaTr:'hûraḏ',cat:'verb',p:{binyan:'hofal',form:'ptcp',gen:'m',num:'sg',root:'ירד'}},
+ {id:'F49-09',heb:'הוּקַם',tr:'hûqam',pl:'został wzniesiony, ustanowiony',lemma:'הוּקַם',lemmaTr:'hûqam',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'קום',note:'pusty: û'}},
+ {id:'F49-10',heb:'יוּקַם',tr:'yûqam',pl:'zostanie wzniesiony',lemma:'הוּקַם',lemmaTr:'hûqam',cat:'verb',p:{binyan:'hofal',form:'impf',pers:3,gen:'m',num:'sg',root:'קום'}},
+ {id:'F49-11',heb:'מוּקָם',tr:'mûqām',pl:'wznoszony',lemma:'הוּקַם',lemmaTr:'hûqam',cat:'verb',p:{binyan:'hofal',form:'ptcp',gen:'m',num:'sg',root:'קום'}},
+ {id:'F49-12',heb:'הָבְנָה',tr:'hoḇnāh',pl:'został zbudowany',lemma:'הָבְנָה',lemmaTr:'hoḇnāh',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'בנה',note:'III-He'}},
+ {id:'F49-13',heb:'הָשְׁלַךְ',tr:'hošlaḵ',pl:'został rzucony',lemma:'הָשְׁלַךְ',lemmaTr:'hošlaḵ',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁלך'}},
+ {id:'F49-14',heb:'הוּסַב',tr:'hûsaḇ',pl:'został zawrócony, odwrócony',lemma:'הוּסַב',lemmaTr:'hûsaḇ',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'סבב',note:'geminowany: û'}},
+ {id:'F49-15',heb:'הָעֳמַד',tr:'hoʿŏmaḏ',pl:'został postawiony',lemma:'הָעֳמַד',lemmaTr:'hoʿŏmaḏ',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'עמד',note:'I-gardł.: o + ḥāṭēp̄'}},
+ {id:'F49-16',heb:'הָמְצָא',tr:'homṣāʾ',pl:'został dostarczony',lemma:'הָמְצָא',lemmaTr:'homṣāʾ',cat:'verb',p:{binyan:'hofal',form:'perf',pers:3,gen:'m',num:'sg',root:'מצא',note:'III-Alef'}},
+ // Qal — leksemy słowniczka XLIX
+ {id:'F49-17',heb:'מָשַׁל',tr:'māšal',pl:'panował, rządził',lemma:'מָשַׁל',lemmaTr:'māšal',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'משׁל'}},
+ {id:'F49-18',heb:'קָצַף',tr:'qāṣap̄',pl:'rozgniewał się',lemma:'קָצַף',lemmaTr:'qāṣap̄',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'קצף'}},
+ {id:'F49-19',heb:'שָׁכַן',tr:'šāḵan',pl:'osiadł, zamieszkał',lemma:'שָׁכַן',lemmaTr:'šāḵan',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁכן'}},
+ {id:'F49-20',heb:'הָגָה',tr:'hāḡāh',pl:'rozważał; mruczał',lemma:'הָגָה',lemmaTr:'hāḡāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'הגה',note:'III-He'}},
+
+ /* ===== LEKCJA 50: HITPAEL (§177) ===== */
+ {id:'F50-01',heb:'הִתְגַּדֵּל',tr:'hiṯgaddēl',pl:'wywyższał się',lemma:'הִתְגַּדֵּל',lemmaTr:'hiṯgaddēl',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'גדל',note:'wzór; prefiks hit- + podwojenie 2. sp.'}},
+ {id:'F50-02',heb:'יִתְגַּדֵּל',tr:'yiṯgaddēl',pl:'będzie się wywyższał',lemma:'הִתְגַּדֵּל',lemmaTr:'hiṯgaddēl',cat:'verb',p:{binyan:'hitpael',form:'impf',pers:3,gen:'m',num:'sg',root:'גדל'}},
+ {id:'F50-03',heb:'הִתְגַּדֵּל',tr:'hiṯgaddēl',pl:'wywyższaj się!',lemma:'הִתְגַּדֵּל',lemmaTr:'hiṯgaddēl',cat:'verb',p:{binyan:'hitpael',form:'impv',pers:2,gen:'m',num:'sg',root:'גדל'}},
+ {id:'F50-04',heb:'מִתְגַּדֵּל',tr:'miṯgaddēl',pl:'wywyższający się',lemma:'הִתְגַּדֵּל',lemmaTr:'hiṯgaddēl',cat:'verb',p:{binyan:'hitpael',form:'ptcp',gen:'m',num:'sg',root:'גדל',note:'prefiks mit-'}},
+ {id:'F50-05',heb:'הִתְגַּלָּה',tr:'hiṯgallāh',pl:'objawił się',lemma:'הִתְגַּלָּה',lemmaTr:'hiṯgallāh',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'גלה',note:'III-He'}},
+ {id:'F50-06',heb:'יִתְגַּלֶּה',tr:'yiṯgalleh',pl:'objawi się',lemma:'הִתְגַּלָּה',lemmaTr:'hiṯgallāh',cat:'verb',p:{binyan:'hitpael',form:'impf',pers:3,gen:'m',num:'sg',root:'גלה'}},
+ {id:'F50-07',heb:'הִתְפַּלֵּל',tr:'hiṯpallēl',pl:'modlił się',lemma:'הִתְפַּלֵּל',lemmaTr:'hiṯpallēl',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'פלל',note:'geminowany'}},
+ {id:'F50-08',heb:'יִתְפַּלֵּל',tr:'yiṯpallēl',pl:'będzie się modlił',lemma:'הִתְפַּלֵּל',lemmaTr:'hiṯpallēl',cat:'verb',p:{binyan:'hitpael',form:'impf',pers:3,gen:'m',num:'sg',root:'פלל'}},
+ {id:'F50-09',heb:'מִתְפַּלֵּל',tr:'miṯpallēl',pl:'modlący się',lemma:'הִתְפַּלֵּל',lemmaTr:'hiṯpallēl',cat:'verb',p:{binyan:'hitpael',form:'ptcp',gen:'m',num:'sg',root:'פלל'}},
+ {id:'F50-10',heb:'הִתְקַדֵּשׁ',tr:'hiṯqaddēš',pl:'uświęcił się',lemma:'הִתְקַדֵּשׁ',lemmaTr:'hiṯqaddēš',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'קדשׁ',note:'zwrotne (por. קִדֵּשׁ)'}},
+ {id:'F50-11',heb:'הִשְׁתַּמֵּר',tr:'hištammēr',pl:'strzegł się, miał się na baczności',lemma:'הִשְׁתַּמֵּר',lemmaTr:'hištammēr',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמר',note:'metateza ת↔ש przy syczącej'}},
+ {id:'F50-12',heb:'הִתְהַלֵּךְ',tr:'hiṯhallēḵ',pl:'przechadzał się',lemma:'הִתְהַלֵּךְ',lemmaTr:'hiṯhallēḵ',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'הלך',note:'iteratywne'}},
+ {id:'F50-13',heb:'וַיִּתְהַלֵּךְ',tr:'wayyiṯhallēḵ',pl:'i przechadzał się',lemma:'הִתְהַלֵּךְ',lemmaTr:'hiṯhallēḵ',cat:'verb',p:{binyan:'hitpael',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'הלך'}},
+ {id:'F50-14',heb:'הִתְנַבֵּא',tr:'hiṯnabbēʾ',pl:'prorokował',lemma:'הִתְנַבֵּא',lemmaTr:'hiṯnabbēʾ',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'נבא',note:'denominatywne'}},
+ {id:'F50-15',heb:'הִתְחַנֵּן',tr:'hiṯḥannēn',pl:'błagał o łaskę',lemma:'הִתְחַנֵּן',lemmaTr:'hiṯḥannēn',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'חנן',note:'geminowany'}},
+ {id:'F50-16',heb:'הִתְחַבֵּא',tr:'hiṯḥabbēʾ',pl:'ukrył się',lemma:'הִתְחַבֵּא',lemmaTr:'hiṯḥabbēʾ',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'חבא'}},
+ {id:'F50-17',heb:'נֶחְבָּא',tr:'neḥbāʾ',pl:'ukrył się',lemma:'נֶחְבָּא',lemmaTr:'neḥbāʾ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'חבא',note:'kontrast z הִתְחַבֵּא'}},
+ {id:'F50-18',heb:'נִבָּא',tr:'nibbāʾ',pl:'prorokował',lemma:'נִבָּא',lemmaTr:'nibbāʾ',cat:'verb',p:{binyan:'niphal',form:'perf',pers:3,gen:'m',num:'sg',root:'נבא',note:'kontrast z הִתְנַבֵּא'}},
+ // Qal — leksemy słowniczka L
+ {id:'F50-19',heb:'חָרַשׁ',tr:'ḥāraš',pl:'orał; wyrył',lemma:'חָרַשׁ',lemmaTr:'ḥāraš',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'חרשׁ',note:'I-gardł.'}},
+ {id:'F50-20',heb:'סָפַר',tr:'sāp̄ar',pl:'liczył',lemma:'סָפַר',lemmaTr:'sāp̄ar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'ספר'}},
+
+ /* ===== LEKCJA 51: Qal bierne, Polel/Polal/Hitpolel, Hishtaphel (§179–181) ===== */
+ {id:'F51-01',heb:'לֻקַּח',tr:'luqqaḥ',pl:'został wzięty',lemma:'לֻקַּח',lemmaTr:'luqqaḥ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'לקח',note:'Qal passivum (bierny, §179)'}},
+ {id:'F51-02',heb:'יֻקַּח',tr:'yuqqaḥ',pl:'zostanie wzięty',lemma:'לֻקַּח',lemmaTr:'luqqaḥ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'לקח',note:'Qal passivum (§179)'}},
+ {id:'F51-03',heb:'יֻלַּד',tr:'yullaḏ',pl:'został urodzony',lemma:'יֻלַּד',lemmaTr:'yullaḏ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'ילד',note:'Qal passivum (§179)'}},
+ {id:'F51-04',heb:'יֻתַּן',tr:'yuttan',pl:'został dany',lemma:'יֻתַּן',lemmaTr:'yuttan',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'נתן',note:'Qal passivum (§179)'}},
+ {id:'F51-05',heb:'קוֹמֵם',tr:'qômēm',pl:'wzniósł, odbudował, podtrzymał',lemma:'קוֹמֵם',lemmaTr:'qômēm',cat:'verb',p:{binyan:'polel',form:'perf',pers:3,gen:'m',num:'sg',root:'קום',note:'Polel (czynny) czas. pustego: podwojenie 3. sp.'}},
+ {id:'F51-06',heb:'יְקוֹמֵם',tr:'yəqômēm',pl:'wzniesie',lemma:'קוֹמֵם',lemmaTr:'qômēm',cat:'verb',p:{binyan:'polel',form:'impf',pers:3,gen:'m',num:'sg',root:'קום'}},
+ {id:'F51-07',heb:'מְקוֹמֵם',tr:'məqômēm',pl:'wznoszący',lemma:'קוֹמֵם',lemmaTr:'qômēm',cat:'verb',p:{binyan:'polel',form:'ptcp',gen:'m',num:'sg',root:'קום',note:'prefiks mə-'}},
+ {id:'F51-08',heb:'קוֹמַם',tr:'qômam',pl:'został wzniesiony',lemma:'קוֹמַם',lemmaTr:'qômam',cat:'verb',p:{binyan:'polal',form:'perf',pers:3,gen:'m',num:'sg',root:'קום',note:'Polal (bierny)'}},
+ {id:'F51-09',heb:'הִתְקוֹמֵם',tr:'hiṯqômēm',pl:'powstał, podniósł się (przeciw)',lemma:'הִתְקוֹמֵם',lemmaTr:'hiṯqômēm',cat:'verb',p:{binyan:'hitpolel',form:'perf',pers:3,gen:'m',num:'sg',root:'קום',note:'Hitpolel (zwrotny)'}},
+ {id:'F51-10',heb:'רוֹמֵם',tr:'rômēm',pl:'wywyższył, podniósł',lemma:'רוֹמֵם',lemmaTr:'rômēm',cat:'verb',p:{binyan:'polel',form:'perf',pers:3,gen:'m',num:'sg',root:'רום'}},
+ {id:'F51-11',heb:'מוֹתֵת',tr:'môṯēṯ',pl:'uśmiercił, zamordował',lemma:'מוֹתֵת',lemmaTr:'môṯēṯ',cat:'verb',p:{binyan:'polel',form:'perf',pers:3,gen:'m',num:'sg',root:'מות'}},
+ {id:'F51-12',heb:'כּוֹנֵן',tr:'kônēn',pl:'ustanowił, utwierdził',lemma:'כּוֹנֵן',lemmaTr:'kônēn',cat:'verb',p:{binyan:'polel',form:'perf',pers:3,gen:'m',num:'sg',root:'כון'}},
+ {id:'F51-13',heb:'עוֹרֵר',tr:'ʿôrēr',pl:'wzbudził, pobudził',lemma:'עוֹרֵר',lemmaTr:'ʿôrēr',cat:'verb',p:{binyan:'polel',form:'perf',pers:3,gen:'m',num:'sg',root:'עור'}},
+ {id:'F51-14',heb:'הִשְׁתַּחֲוָה',tr:'hištaḥăwāh',pl:'oddał pokłon, pokłonił się',lemma:'הִשְׁתַּחֲוָה',lemmaTr:'hištaḥăwāh',cat:'verb',p:{binyan:'hishtaphel',form:'perf',pers:3,gen:'m',num:'sg',root:'חוה',note:'Hisztafel; odmiana wg III-He'}},
+ {id:'F51-15',heb:'יִשְׁתַּחֲוֶה',tr:'yištaḥăweh',pl:'odda pokłon',lemma:'הִשְׁתַּחֲוָה',lemmaTr:'hištaḥăwāh',cat:'verb',p:{binyan:'hishtaphel',form:'impf',pers:3,gen:'m',num:'sg',root:'חוה'}},
+ {id:'F51-16',heb:'וַיִּשְׁתַּחוּ',tr:'wayyištaḥû',pl:'i oddał pokłon, i pokłonił się',lemma:'הִשְׁתַּחֲוָה',lemmaTr:'hištaḥăwāh',cat:'verb',p:{binyan:'hishtaphel',form:'wayyiqtol',pers:3,gen:'m',num:'sg',root:'חוה',note:'forma apokopowana (jussivus יִשְׁתָּחוּ)'}},
+ {id:'F51-17',heb:'מִשְׁתַּחֲוֶה',tr:'mištaḥăweh',pl:'oddający pokłon',lemma:'הִשְׁתַּחֲוָה',lemmaTr:'hištaḥăwāh',cat:'verb',p:{binyan:'hishtaphel',form:'ptcp',gen:'m',num:'sg',root:'חוה'}},
+ // czasowniki słowniczka LI
+ {id:'F51-18',heb:'הִתְיַצֵּב',tr:'hiṯyaṣṣēḇ',pl:'ustawił się, zajął stanowisko',lemma:'הִתְיַצֵּב',lemmaTr:'hiṯyaṣṣēḇ',cat:'verb',p:{binyan:'hitpael',form:'perf',pers:3,gen:'m',num:'sg',root:'יצב',note:'I-Jod (ת+י)'}},
+ {id:'F51-19',heb:'שָׁפַט',tr:'šāp̄aṭ',pl:'sądził',lemma:'שָׁפַט',lemmaTr:'šāp̄aṭ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁפט'}},
+ {id:'F51-20',heb:'פָּרַץ',tr:'pāraṣ',pl:'zburzył; rozprzestrzenił się',lemma:'פָּרַץ',lemmaTr:'pāraṣ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'פרץ'}},
+ {id:'F51-21',heb:'כִּחֵד',tr:'kiḥēḏ',pl:'ukrył, zataił',lemma:'כִּחֵד',lemmaTr:'kiḥēḏ',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'כחד',note:'II-gardł.'}},
+ /* ===== LEKCJA 52: przyrostki dop. z perfectum 3ms i 2ms (§185-186) ===== */
+ {id:'F52-01',heb:'שְׁמָרַנִי',tr:'šəmāranî',pl:'strzegł mnie',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'1cs',note:'perf. 3ms + przyr.; redukcja propretoniczna'}},
+ {id:'F52-02',heb:'שְׁמָרְךָ',tr:'šəmārəḵā',pl:'strzegł cię',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'2ms'}},
+ {id:'F52-03',heb:'שְׁמָרוֹ',tr:'šəmārô',pl:'strzegł go',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'3ms',note:'wariant שְׁמָרָהוּ'}},
+ {id:'F52-04',heb:'שְׁמָרָהּ',tr:'šəmārāh',pl:'strzegł jej',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'3fs'}},
+ {id:'F52-05',heb:'שְׁמָרָנוּ',tr:'šəmārānû',pl:'strzegł nas',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'1cp'}},
+ {id:'F52-06',heb:'שְׁמָרָם',tr:'šəmārām',pl:'strzegł ich',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'3mp'}},
+ {id:'F52-07',heb:'בִּקְּשַׁנִי',tr:'biqqəšanî',pl:'szukał mnie',lemma:'בִּקֵּשׁ',lemmaTr:'biqqēš',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'בקשׁ',objsuf:'1cs',note:'Piel: redukcja sylaby pretonicznej'}},
+ {id:'F52-08',heb:'שְׁמַרְתַּנִי',tr:'šəmartanî',pl:'strzegłeś mnie',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:2,gen:'m',num:'sg',root:'שׁמר',objsuf:'1cs',note:'perf. 2ms (temat -tā → -t-)'}},
+ {id:'F52-09',heb:'שְׁמַרְתּוֹ',tr:'šəmartô',pl:'strzegłeś go',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:2,gen:'m',num:'sg',root:'שׁמר',objsuf:'3ms'}},
+ {id:'F52-10',heb:'שְׁמַרְתָּם',tr:'šəmartām',pl:'strzegłeś ich',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:2,gen:'m',num:'sg',root:'שׁמר',objsuf:'3mp'}},
+
+ /* ===== LEKCJA 53: przyrostki dop. z perf. 3fs, pozostałe + nieregularne Qal (§188-190) ===== */
+ {id:'F53-01',heb:'שְׁמָרַתְנִי',tr:'šəmāraṯnî',pl:'strzegła mnie',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'שׁמר',objsuf:'1cs',note:'perf. 3fs (-āh → -aṯ-)'}},
+ {id:'F53-02',heb:'שְׁמָרַתְהוּ',tr:'šəmāraṯhû',pl:'strzegła go',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'f',num:'sg',root:'שׁמר',objsuf:'3ms',note:'wariant שְׁמָרַתּוּ'}},
+ {id:'F53-03',heb:'שְׁמַרְתִּיהוּ',tr:'šəmartîhû',pl:'strzegłem go',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:1,gen:'c',num:'sg',root:'שׁמר',objsuf:'3ms',note:'perf. 1cs'}},
+ {id:'F53-04',heb:'שְׁמַרְתִּים',tr:'šəmartîm',pl:'strzegłem ich',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:1,gen:'c',num:'sg',root:'שׁמר',objsuf:'3mp'}},
+ {id:'F53-05',heb:'שְׁמָרוּנִי',tr:'šəmārûnî',pl:'strzegli mnie',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'שׁמר',objsuf:'1cs',note:'perf. 3cp'}},
+ {id:'F53-06',heb:'שְׁמָרוּהוּ',tr:'šəmārûhû',pl:'strzegli go',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'c',num:'pl',root:'שׁמר',objsuf:'3ms'}},
+ {id:'F53-07',heb:'שְׁמַרְנוּהוּ',tr:'šəmarnûhû',pl:'strzegliśmy go',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'perf',pers:1,gen:'c',num:'pl',root:'שׁמר',objsuf:'3ms'}},
+ {id:'F53-08',heb:'אֲהֵבְךָ',tr:'ʾăhēḇəḵā',pl:'kochał cię',lemma:'אָהֵב',lemmaTr:'ʾāhēḇ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'אהב',objsuf:'2ms',note:'nieregularny Qal (samogł. ē przed przyr.)'}},
+ {id:'F53-09',heb:'יְלִדְתִּיךָ',tr:'yəliḏtîḵā',pl:'urodziłem cię, zrodziłem cię',lemma:'יָלַד',lemmaTr:'yālaḏ',cat:'verb',p:{binyan:'qal',form:'perf',pers:1,gen:'c',num:'sg',root:'ילד',objsuf:'2ms',note:'nieregularny Qal (i w 2. sylabie)'}},
+
+ /* ===== LEKCJA 54: przyrostki dop. z impf., impv. (§192-193) ===== */
+ {id:'F54-01',heb:'יִשְׁמְרֵנִי',tr:'yišmərēnî',pl:'będzie mnie strzegł',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'1cs',note:'zestaw (2): -ēnî'}},
+ {id:'F54-02',heb:'יִשְׁמְרֶנִּי',tr:'yišmərennî',pl:'będzie mnie strzegł',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'1cs',note:'zestaw (1): nun energicum -ennî'}},
+ {id:'F54-03',heb:'יִשְׁמָרְךָ',tr:'yišmārḵā',pl:'będzie cię strzegł',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'2ms',note:'-ḵā doczepiane wprost do tematu'}},
+ {id:'F54-04',heb:'יִשְׁמְרֵהוּ',tr:'yišmərēhû',pl:'będzie go strzegł',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמר',objsuf:'3ms'}},
+ {id:'F54-05',heb:'יִשְׁמָעֵנִי',tr:'yišmāʿēnî',pl:'usłyszy mnie',lemma:'שָׁמַע',lemmaTr:'šāmaʿ',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'שׁמע',objsuf:'1cs',note:'samogł. tem. a wydłużona do ā przed przyr.'}},
+ {id:'F54-06',heb:'יִשְׁמְרוּנִי',tr:'yišmərûnî',pl:'będą mnie strzec',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'pl',root:'שׁמר',objsuf:'1cs'}},
+ {id:'F54-07',heb:'יִבְנֵהוּ',tr:'yiḇnēhû',pl:'zbuduje go',lemma:'בָּנָה',lemmaTr:'bānāh',cat:'verb',p:{binyan:'qal',form:'impf',pers:3,gen:'m',num:'sg',root:'בנה',objsuf:'3ms',note:'III-He: końcowe -eh odpada'}},
+ {id:'F54-08',heb:'שָׁמְרֵנִי',tr:'šāmərēnî',pl:'strzeż mnie!',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'שׁמר',objsuf:'1cs',note:'imperatyw + przyr. (jak impf.)'}},
+ {id:'F54-09',heb:'תְּנֵנִי',tr:'tənēnî',pl:'daj mi!',lemma:'נָתַן',lemmaTr:'nāṯan',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'נתן',objsuf:'1cs'}},
+ {id:'F54-10',heb:'שָׁמְרֵהוּ',tr:'šāmərēhû',pl:'strzeż go!',lemma:'שָׁמַר',lemmaTr:'šāmar',cat:'verb',p:{binyan:'qal',form:'impv',pers:2,gen:'m',num:'sg',root:'שׁמר',objsuf:'3ms'}},
+
+ /* ===== Czasowniki słowniczków LII-LV (rozbiór) ===== */
+ {id:'F52-11',heb:'מָלַךְ',tr:'mālaḵ',pl:'panował, został królem',lemma:'מָלַךְ',lemmaTr:'mālaḵ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'מלך'}},
+ {id:'F52-12',heb:'סָלַח',tr:'sālaḥ',pl:'przebaczył',lemma:'סָלַח',lemmaTr:'sālaḥ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'סלח',note:'III-gardł.'}},
+ {id:'F52-13',heb:'הֵעִיד',tr:'hēʿîḏ',pl:'ostrzegł, przestrzegł',lemma:'הֵעִיד',lemmaTr:'hēʿîḏ',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'עוד',note:'Hifil pusty'}},
+ {id:'F53-10',heb:'מָשַׁח',tr:'māšaḥ',pl:'namaścił',lemma:'מָשַׁח',lemmaTr:'māšaḥ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'משׁח',note:'III-gardł.'}},
+ {id:'F53-11',heb:'עָזַר',tr:'ʿāzar',pl:'pomógł',lemma:'עָזַר',lemmaTr:'ʿāzar',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'עזר',note:'I-gardł.'}},
+ {id:'F53-12',heb:'שִׁלֵּם',tr:'šillēm',pl:'odpłacił, wynagrodził',lemma:'שִׁלֵּם',lemmaTr:'šillēm',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'שׁלם'}},
+ {id:'F54-11',heb:'הִטָּה',tr:'hiṭṭāh',pl:'nachylił, skierował',lemma:'הִטָּה',lemmaTr:'hiṭṭāh',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'נטה',note:'I-Nun + III-He'}},
+ {id:'F54-12',heb:'פָּנָה',tr:'pānāh',pl:'zwrócił się, skierował się',lemma:'פָּנָה',lemmaTr:'pānāh',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'פנה',note:'III-He'}},
+ {id:'F54-13',heb:'חָשַׁב',tr:'ḥāšaḇ',pl:'pomyślał, uznał za',lemma:'חָשַׁב',lemmaTr:'ḥāšaḇ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'חשׁב',note:'I-gardł.'}},
+ {id:'F55-01',heb:'הִבְדִּיל',tr:'hiḇdîl',pl:'oddzielił, rozłączył',lemma:'הִבְדִּיל',lemmaTr:'hiḇdîl',cat:'verb',p:{binyan:'hifil',form:'perf',pers:3,gen:'m',num:'sg',root:'בדל'}},
+ {id:'F55-02',heb:'כִּלָּה',tr:'killāh',pl:'skończył, dokończył',lemma:'כִּלָּה',lemmaTr:'killāh',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'כלה',note:'III-He'}},
+ {id:'F55-03',heb:'כָּרַע',tr:'kāraʿ',pl:'pokłonił się, ukląkł',lemma:'כָּרַע',lemmaTr:'kāraʿ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'כרע',note:'III-gardł.'}},
+ {id:'F55-04',heb:'פָּשַׁע',tr:'pāšaʿ',pl:'zbuntował się, wystąpił',lemma:'פָּשַׁע',lemmaTr:'pāšaʿ',cat:'verb',p:{binyan:'qal',form:'perf',pers:3,gen:'m',num:'sg',root:'פשׁע',note:'III-gardł.'}},
+ {id:'F55-05',heb:'רִחֵם',tr:'riḥēm',pl:'okazał miłosierdzie',lemma:'רִחֵם',lemmaTr:'riḥēm',cat:'verb',p:{binyan:'piel',form:'perf',pers:3,gen:'m',num:'sg',root:'רחם'}}
+];
+
+const PARADIGMS = [
+ /* ---------- LEKCJA 38 ---------- */
+ {lesson:38,title:'Nifal — perfectum klas słabych',meta:'§143 · I-nun, I-jod, III-alef, III-he',rows:[
+   {h:'נִתַּן',t:'nittan',g:'I-nun: dał się dać / został dany (3 r.m. lp.)'},
+   {h:'נִתְּנָה',t:'nittənāh',g:'3 os. r.ż. lp.'},
+   {h:'נוֹלַד',t:'nôlaḏ',g:'I-jod: urodził się (3 r.m. lp.)'},
+   {h:'נוֹלְדָה',t:'nôlədāh',g:'3 os. r.ż. lp.'},
+   {h:'נִקְרָא',t:'niqrāʾ',g:'III-alef: został nazwany (3 r.m. lp.)'},
+   {h:'נִקְרֵאתָ',t:'niqrēʾṯā',g:'2 os. r.m. lp. (ē przed alef)'},
+   {h:'נִבְנָה',t:'niḇnāh',g:'III-he: został zbudowany (3 r.m. lp.)'},
+   {h:'נִבְנֵיתִי',t:'niḇnêṯî',g:'1 os. lp. (-êṯî)'}
+ ]},
+ {lesson:38,title:'Nifal — imperfectum / imperatyw / bezokolicznik (klasy słabe)',meta:'§143 · obok form z prefiksem hi- (impv./inf.)',rows:[
+   {h:'יִנָּתֵן',t:'yinnāṯēn',g:'I-nun: zostanie dany (3 r.m. lp.)'},
+   {h:'הִנָּתֵן',t:'hinnāṯēn',g:'imperatyw / inf. constr.'},
+   {h:'יִוָּלֵד',t:'yiwwālēḏ',g:'I-jod: urodzi się (3 r.m. lp.)'},
+   {h:'הִוָּלֵד',t:'hiwwālēḏ',g:'imperatyw / inf. constr.'},
+   {h:'יִקָּרֵא',t:'yiqqārēʾ',g:'III-alef: zostanie nazwany'},
+   {h:'יִבָּנֶה',t:'yibbāneh',g:'III-he: zostanie zbudowany'},
+   {h:'הִבָּנֵה',t:'hibbānēh',g:'imperatyw r.m. lp.'},
+   {h:'הִבָּנוֹת',t:'hibbānôṯ',g:'inf. constr. (III-he: -ôṯ)'}
+ ]},
+ {lesson:38,title:'Nifal — czasowniki mieszane',meta:'§144 · nieregularne zestawienia perf./impf.',rows:[
+   {h:'נוֹדַע',t:'nôḏaʿ',g:'dał się poznać (perf.)'},
+   {h:'יִוָּדַע',t:'yiwwāḏaʿ',g:'da się poznać (impf.)'},
+   {h:'נַעֲשָׂה',t:'naʿăśāh',g:'został uczyniony (perf.)'},
+   {h:'יֵעָשֶׂה',t:'yēʿāśeh',g:'zostanie uczyniony (impf.)'},
+   {h:'נִחַם',t:'niḥam',g:'żałował / dał się pocieszyć (perf.)'},
+   {h:'יִנָּחֵם',t:'yinnāḥēm',g:'pożałuje / da się pocieszyć (impf.)'},
+   {h:'נִפְלָא',t:'nip̄lāʾ',g:'był zadziwiający (perf.)'},
+   {h:'יִפָּלֵא',t:'yippālēʾ',g:'będzie zbyt trudny / cudowny (impf.)'}
+ ]},
+ /* ---------- LEKCJA 39 ---------- */
+ {lesson:39,title:'Nifal — perfectum: pusty i geminowany',meta:'§146 · נָכוֹן „być pewnym", נָסַב „obrócić się"',rows:[
+   {h:'נָכוֹן',t:'nāḵôn',g:'pusty: był ustanowiony (3 r.m. lp.)'},
+   {h:'נָכוֹנָה',t:'nāḵônāh',g:'3 os. r.ż. lp.'},
+   {h:'נְכוֹנֹתָ',t:'nəḵônōṯā',g:'2 os. r.m. lp.'},
+   {h:'נְכוּנֹתִי',t:'nəḵûnōṯî',g:'1 os. lp. (u w sylabie zamkn.)'},
+   {h:'נָכוֹנוּ',t:'nāḵônû',g:'3 os. lmn.'},
+   {h:'נָסַב',t:'nāsaḇ',g:'geminowany: obrócił się (3 r.m. lp.)'},
+   {h:'נָסַבָּה',t:'nāsabbāh',g:'3 os. r.ż. lp.'},
+   {h:'נְסַבּוֹתִי',t:'nəsabbôṯî',g:'1 os. lp. (-ôṯî)'}
+ ]},
+ {lesson:39,title:'Nifal — impf./imperatyw/inf./imiesłów: pusty i geminowany',meta:'§146',rows:[
+   {h:'יִכּוֹן',t:'yikkôn',g:'pusty: będzie ustanowiony (impf.)'},
+   {h:'הִכּוֹן',t:'hikkôn',g:'imperatyw / inf. constr.'},
+   {h:'נָכוֹן',t:'nāḵôn',g:'imiesłów: pewny, ustalony'},
+   {h:'יִסַּב',t:'yissaḇ',g:'geminowany: obróci się (impf.)'},
+   {h:'הִסֵּב',t:'hissēḇ',g:'imperatyw / inf. constr.'},
+   {h:'נָסָב',t:'nāsāḇ',g:'imiesłów: obracający się'}
+ ]},
+ /* ---------- LEKCJA 40 ---------- */
+ {lesson:40,title:'Piel — relacja do qal (znaczenie)',meta:'§148 · faktytywne / intensywne / denominatywne',rows:[
+   {h:'גָּדַל ← גִּדֵּל',t:'gāḏal → giddēl',g:'być wielkim → czynić wielkim (faktytywne)'},
+   {h:'לָמַד ← לִמַּד',t:'lāmaḏ → limmaḏ',g:'uczyć się → nauczać'},
+   {h:'כָּלָה ← כִּלָּה',t:'kālāh → killāh',g:'skończyć się → wykończyć, dokonać'},
+   {h:'דָּבָר ← דִּבֶּר',t:'dāḇār → dibber',g:'słowo → mówić (denominatywne)'}
+ ]},
+ {lesson:40,title:'Piel — perfectum (mocny i gardłowe)',meta:'§149 · giddēl, šillaḥ, biʿēr, mēʾēn',rows:[
+   {h:'גִּדֵּל',t:'giddēl',g:'mocny: wychował, wywyższył (3 r.m. lp.)'},
+   {h:'גִּדַּלְתָּ',t:'giddaltā',g:'2 os. r.m. lp.'},
+   {h:'גִּדְּלוּ',t:'giddəlû',g:'3 os. lmn.'},
+   {h:'שִׁלַּח',t:'šillaḥ',g:'III-gardł.: odprawił, wypuścił (a w temacie)'},
+   {h:'בִּעֵר',t:'biʿēr',g:'II-gardł.: spalił, usunął'},
+   {h:'מֵאֵן',t:'mēʾēn',g:'II-alef: odmówił (wydłuż. zastępcze i→ē)'}
+ ]},
+ {lesson:40,title:'Piel — impf./imperatyw/inf./imiesłów (mocny)',meta:'§149 · prefiks z šəwa, charakterystyczne ə',rows:[
+   {h:'יְגַדֵּל',t:'yəḡaddēl',g:'imperfectum (3 r.m. lp.)'},
+   {h:'וַיְדַבֵּר',t:'waydabbēr',g:'waw consec.: i przemówił'},
+   {h:'גַּדֵּל',t:'gaddēl',g:'imperatyw r.m. lp.'},
+   {h:'גַּדֵּל',t:'gaddēl',g:'inf. constr.'},
+   {h:'מְגַדֵּל',t:'məḡaddēl',g:'imiesłów czynny (prefiks mə-)'}
+ ]},
+ /* ---------- LEKCJA 41 ---------- */
+ {lesson:41,title:'Piel — III-alef, III-he, geminowany',meta:'§151 · millēʾ, ʿinnāh, hillēl',rows:[
+   {h:'מִלֵּא',t:'millēʾ',g:'III-alef: napełnił (3 r.m. lp.)'},
+   {h:'יְמַלֵּא',t:'yəmallēʾ',g:'impf. (3 r.m. lp.)'},
+   {h:'עִנָּה',t:'ʿinnāh',g:'III-he: uciskał (3 r.m. lp.)'},
+   {h:'עִנִּיתִי',t:'ʿinnîṯî',g:'1 os. lp.'},
+   {h:'יְעַנֶּה',t:'yəʿanneh',g:'impf. (3 r.m. lp.)'},
+   {h:'עַנּוֹת',t:'ʿannôṯ',g:'inf. constr. (III-he: -ôṯ)'},
+   {h:'הִלֵּל',t:'hillēl',g:'geminowany: wysławiał (3 r.m. lp.)'}
+ ]},
+ {lesson:41,title:'Formy pauzalne',meta:'§152 · zmiany samogłosek w pauzie (atnach / sof pasuq)',rows:[
+   {h:'כָּתַב ← כָּתָב',t:'kāṯaḇ → kāṯāḇ',g:'a → ā w sylabie akcentowanej'},
+   {h:'קֶבֶר ← קָבֶר',t:'qéḇer → qā́ḇer',g:'segolatum: e → ā w pauzie'},
+   {h:'וַיֹּאמֶר ← וַיֹּאמַר',t:'wayyṓmer → wayyōmár',g:'e → a (akcent na pauzie)'},
+   {h:'אָנִי ← אָנִי',t:'ʾănî → ʾā́nî',g:'przesunięcie akcentu i wydłużenie'}
+ ]},
+ /* ---------- LEKCJA 42 ---------- */
+ {lesson:42,title:'Pual — perfectum / imperfectum',meta:'§154 · bierny odpowiednik piel; wzór u–a',rows:[
+   {h:'גֻּדַּל',t:'guddal',g:'był wywyższany (3 r.m. lp.)'},
+   {h:'גֻּדְּלָה',t:'guddəlāh',g:'3 os. r.ż. lp.'},
+   {h:'יְגֻדַּל',t:'yəḡuddal',g:'impf. (3 r.m. lp.)'},
+   {h:'בֹּרַךְ',t:'bōraḵ',g:'II-gardł.: był błogosławiony (u→ō)'},
+   {h:'מֻלָּא',t:'mullāʾ',g:'III-alef: był napełniony'},
+   {h:'עֻנָּה',t:'ʿunnāh',g:'III-he: był uciskany'},
+   {h:'עֻנֵּיתִי',t:'ʿunnêṯî',g:'1 os. lp.'}
+ ]},
+ {lesson:42,title:'Pual — imiesłów bierny',meta:'§154 · prefiks mə-, samogłoska u w 1. sylabie tematu',rows:[
+   {h:'מְגֻדָּל',t:'məḡuddāl',g:'wywyższany'},
+   {h:'מְבֹרָךְ',t:'məḇōrāḵ',g:'błogosławiony'},
+   {h:'מְהֻלָּל',t:'məhullāl',g:'wysławiany, chwalony'},
+   {h:'מְכֻסֶּה',t:'məḵusseh',g:'okryty (III-he)'}
+ ]},
+ {lesson:42,title:'Pual — składnia strony biernej',meta:'§154 · podmiot bez wykonawcy; orzeczenie 3 r.m. lp.',rows:[
+   {h:'סֻפַּר לוֹ הַדָּבָר',t:'suppar lô haddāḇār',g:'„rzecz została mu opowiedziana"'},
+   {h:'כֻּסּוּ הֶהָרִים',t:'kussû hehārîm',g:'„góry zostały okryte"'},
+   {h:'יְכֻפַּר הֶעָוֺן',t:'yəḵuppar heʿāwōn',g:'„wina zostanie odpuszczona"'}
+ ]},
+ /* ---------- LEKCJA 43 ---------- */
+ {lesson:43,title:'Hifil — perfectum (rdzeń mocny)',meta:'§158 · הִשְׁמִיד hišmîḏ „zniszczył" (rdzeń שׁמד)',rows:[
+   {h:'הִשְׁמִיד',t:'hišmîḏ',g:'3 os. r.m. lp. (forma podstawowa)'},
+   {h:'הִשְׁמִידָה',t:'hišmîḏā',g:'3 os. r.ż. lp.'},
+   {h:'הִשְׁמַדְתָּ',t:'hišmaḏtā',g:'2 os. r.m. lp. (przed końcówką -a-)'},
+   {h:'הִשְׁמַדְתְּ',t:'hišmaḏt',g:'2 os. r.ż. lp.'},
+   {h:'הִשְׁמַדְתִּי',t:'hišmaḏtî',g:'1 os. lp.'},
+   {h:'הִשְׁמִידוּ',t:'hišmîḏû',g:'3 os. lm.'},
+   {h:'הִשְׁמַדְתֶּם',t:'hišmaḏtem',g:'2 os. r.m. lm.'},
+   {h:'הִשְׁמַדְתֶּן',t:'hišmaḏten',g:'2 os. r.ż. lm.'},
+   {h:'הִשְׁמַדְנוּ',t:'hišmaḏnû',g:'1 os. lm.'}
+ ]},
+ {lesson:43,title:'Hifil — impf. / juss. / impv. / inf. / part. (mocny)',meta:'§158 · samogłoska charakterystyczna -î- (długie) ↔ -ē- (krótkie)',rows:[
+   {h:'יַשְׁמִיד',t:'yašmîḏ',g:'impf. 3 os. r.m. lp.'},
+   {h:'תַּשְׁמִידִי',t:'tašmîḏî',g:'impf. 2 os. r.ż. lp.'},
+   {h:'אַשְׁמִיד',t:'ʾašmîḏ',g:'impf. 1 os. lp.'},
+   {h:'יַשְׁמִידוּ',t:'yašmîḏû',g:'impf. 3 os. r.m. lm.'},
+   {h:'תַּשְׁמֵדְנָה',t:'tašmēḏnā',g:'impf. 3 os. r.ż. lm. (-ē-)'},
+   {h:'נַשְׁמִיד',t:'našmîḏ',g:'impf. 1 os. lm.'},
+   {h:'יַשְׁמֵד',t:'yašmēḏ',g:'jussivus 3 os. r.m. lp. (-ē-)'},
+   {h:'הַשְׁמֵד',t:'hašmēḏ',g:'imperatyw r.m. lp. (-ē-)'},
+   {h:'הַשְׁמִידִי',t:'hašmîḏî',g:'imperatyw r.ż. lp.'},
+   {h:'הַשְׁמִידוּ',t:'hašmîḏû',g:'imperatyw r.m. lm.'},
+   {h:'הַשְׁמֵדְנָה',t:'hašmēḏnā',g:'imperatyw r.ż. lm.'},
+   {h:'הַשְׁמִיד',t:'hašmîḏ',g:'inf. constr.'},
+   {h:'הַשְׁמֵד',t:'hašmēḏ',g:'inf. abs.'},
+   {h:'מַשְׁמִיד',t:'mašmîḏ',g:'imiesłów (prefiks ma-)'}
+ ]},
+ {lesson:43,title:'Hifil — I-Nun i I-gardłowy',meta:'§159 · נ asymiluje się; gardłowy bierze ḥāṭēp̄',rows:[
+   {h:'הִגִּיד',t:'higgîḏ',g:'I-Nun: oznajmił (rdzeń נגד; נ→podwojenie)'},
+   {h:'יַגִּיד',t:'yaggîḏ',g:'impf. 3 os. r.m. lp.'},
+   {h:'יַגֵּד',t:'yaggēḏ',g:'jussivus 3 os. r.m. lp.'},
+   {h:'הַגֵּד',t:'haggēḏ',g:'imperatyw r.m. lp.'},
+   {h:'מַגִּיד',t:'maggîḏ',g:'imiesłów'},
+   {h:'הֶעֱמִיד',t:'heʿĕmîḏ',g:'I-gardł.: postawił (rdzeń עמד; he- + ḥāṭēp̄)'},
+   {h:'יַעֲמִיד',t:'yaʿămîḏ',g:'impf. 3 os. r.m. lp.'},
+   {h:'יַעֲמֵד',t:'yaʿămēḏ',g:'jussivus 3 os. r.m. lp.'},
+   {h:'הַעֲמֵד',t:'haʿămēḏ',g:'imperatyw r.m. lp.'},
+   {h:'מַעֲמִיד',t:'maʿămîḏ',g:'imiesłów'}
+ ]},
+ /* ---------- LEKCJA 44 ---------- */
+ {lesson:44,title:'Hifil III-gardłowy',meta:'§160 · הִשְׁמִיעַ hišmîaʿ „dał słyszeć" (rdzeń שׁמע)',rows:[
+   {h:'הִשְׁמִיעַ',t:'hišmîaʿ',g:'perf. 3 os. r.m. lp. (pataḥ furtivum)'},
+   {h:'יַשְׁמִיעַ',t:'yašmîaʿ',g:'impf. 3 os. r.m. lp.'},
+   {h:'יַשְׁמַע',t:'yašmaʿ',g:'jussivus 3 os. r.m. lp.'},
+   {h:'הַשְׁמַע',t:'hašmaʿ',g:'imperatyw r.m. lp.'},
+   {h:'הַשְׁמִיעַ',t:'hašmîaʿ',g:'inf. constr.'},
+   {h:'מַשְׁמִיעַ',t:'mašmîaʿ',g:'imiesłów'}
+ ]},
+ {lesson:44,title:'Hifil III-Alef',meta:'§160 · הִמְצִיא himṣîʾ „dostarczył" (rdzeń מצא)',rows:[
+   {h:'הִמְצִיא',t:'himṣîʾ',g:'perf. 3 os. r.m. lp.'},
+   {h:'הִמְצֵאתָ',t:'himṣēʾṯā',g:'perf. 2 os. r.m. lp. (ē przed א)'},
+   {h:'יַמְצִיא',t:'yamṣîʾ',g:'impf. 3 os. r.m. lp.'},
+   {h:'תַּמְצֶאנָה',t:'tamṣeʾnā',g:'impf. 3 os. r.ż. lm.'},
+   {h:'הַמְצֵא',t:'hamṣēʾ',g:'imperatyw r.m. lp.'},
+   {h:'מַמְצִיא',t:'mamṣîʾ',g:'imiesłów'}
+ ]},
+ /* ---------- LEKCJA 45 ---------- */
+ {lesson:45,title:'Hifil I-Jod / I-Waw',meta:'§163 · הוֹרִיד hôrîḏ „sprowadził" (rdzeń ירד; י→ô)',rows:[
+   {h:'הוֹרִיד',t:'hôrîḏ',g:'perf. 3 os. r.m. lp. (i→ô)'},
+   {h:'הוֹרַדְתָּ',t:'hôraḏtā',g:'perf. 2 os. r.m. lp.'},
+   {h:'יוֹרִיד',t:'yôrîḏ',g:'impf. 3 os. r.m. lp.'},
+   {h:'יוֹרֵד',t:'yôrēḏ',g:'jussivus 3 os. r.m. lp.'},
+   {h:'וַיּוֹרֶד',t:'wayyôreḏ',g:'wayyiqtol (z dāgēš w י)'},
+   {h:'הוֹרֵד',t:'hôrēḏ',g:'imperatyw r.m. lp.'},
+   {h:'הוֹרִיד',t:'hôrîḏ',g:'inf. constr.'},
+   {h:'מוֹרִיד',t:'môrîḏ',g:'imiesłów'},
+   {h:'הֵיטִיב',t:'hêṭîḇ',g:'rdzeń יטב: uczynił dobrze (ê nieredukowalne)'},
+   {h:'הוֹלִיךְ',t:'hôlîḵ',g:'rdzeń הלך: poprowadził (jak I-Jod)'}
+ ]},
+ {lesson:45,title:'Liczebniki 11–19',meta:'§164 · jednostka + עָשָׂר (r.m.) / עֶשְׂרֵה (r.ż.)',rows:[
+   {h:'אַחַד עָשָׂר',t:'ʾaḥaḏ ʿāśār',g:'11 (r.m.)'},
+   {h:'אַחַת עֶשְׂרֵה',t:'ʾaḥaṯ ʿeśrēh',g:'11 (r.ż.)'},
+   {h:'שְׁנֵים עָשָׂר',t:'šənêm ʿāśār',g:'12 (r.m.)'},
+   {h:'שְׁתֵּים עֶשְׂרֵה',t:'šətêm ʿeśrēh',g:'12 (r.ż.)'},
+   {h:'שְׁלֹשָׁה עָשָׂר',t:'šəlōšāh ʿāśār',g:'13 (r.m.)'},
+   {h:'חֲמִשָּׁה עָשָׂר',t:'ḥămiššāh ʿāśār',g:'15 (r.m.)'},
+   {h:'תִּשְׁעָה עָשָׂר',t:'tišʿāh ʿāśār',g:'19 (r.m.)'},
+   {h:'תְּשַׁע עֶשְׂרֵה',t:'təšaʿ ʿeśrēh',g:'19 (r.ż.)'}
+ ]},
+ /* ---------- LEKCJA 46 ---------- */
+ {lesson:46,title:'Hifil III-He',meta:'§166 · הִרְבָּה hirbāh „uczynił wiele" (rdzeń רבה)',rows:[
+   {h:'הִרְבָּה',t:'hirbāh',g:'perf. 3 os. r.m. lp. (brak długiego î)'},
+   {h:'הִרְבְּתָה',t:'hirbəṯāh',g:'perf. 3 os. r.ż. lp.'},
+   {h:'הִרְבֵּיתִי',t:'hirbêṯî',g:'perf. 1 os. lp. (-êṯî)'},
+   {h:'יַרְבֶּה',t:'yarbeh',g:'impf. 3 os. r.m. lp.'},
+   {h:'יֶרֶב',t:'yereḇ',g:'jussivus 3 os. r.m. lp. (apokopa)'},
+   {h:'הַרְבֵּה',t:'harbēh',g:'imperatyw r.m. lp.; jako przysł. „bardzo, wiele"'},
+   {h:'הַרְבּוֹת',t:'harbôṯ',g:'inf. constr. (-ôṯ)'},
+   {h:'מַרְבֶּה',t:'marbeh',g:'imiesłów'}
+ ]},
+ {lesson:46,title:'Hifil III-He — kombinacje',meta:'§166 · I-gardł. / I-Nun + III-He',rows:[
+   {h:'הֶעֱלָה',t:'heʿĕlāh',g:'wprowadził w górę (rdzeń עלה; I-gardł.+III-He)'},
+   {h:'יַעֲלֶה',t:'yaʿăleh',g:'impf. 3 os. r.m. lp.'},
+   {h:'וַיַּעַל',t:'wayyaʿal',g:'wayyiqtol (apokopa)'},
+   {h:'הִכָּה',t:'hikkāh',g:'uderzył, pobił (rdzeń נכה; I-Nun+III-He)'},
+   {h:'יַכֶּה',t:'yakkeh',g:'impf. 3 os. r.m. lp.'},
+   {h:'וַיַּךְ',t:'wayyaḵ',g:'wayyiqtol (apokopa)'},
+   {h:'הַכֵּה',t:'hakkēh',g:'imperatyw r.m. lp.'},
+   {h:'הוֹרָה',t:'hôrāh',g:'pouczył (rdzeń ירה; I-Jod+III-He)'},
+   {h:'הוֹדָה',t:'hôḏāh',g:'wyznał, dziękował (rdzeń ידה; I-Jod+III-He)'}
+ ]},
+ /* ---------- LEKCJA 47 ---------- */
+ {lesson:47,title:'Hifil pusty — perfectum (dwa paradygmaty)',meta:'§169 · הֵקִים hēqîm „postawił" (rdzeń קום)',rows:[
+   {h:'הֵקִים',t:'hēqîm',g:'I/II — 3 os. r.m. lp.'},
+   {h:'הֵקִימָה',t:'hēqîmā',g:'I/II — 3 os. r.ż. lp.'},
+   {h:'הֲקִימוֹתָ',t:'hăqîmôṯā',g:'I — 2 os. r.m. lp. (z -ô-, częstszy)'},
+   {h:'הֲקִימוֹתִי',t:'hăqîmôṯî',g:'I — 1 os. lp. (z -ô-)'},
+   {h:'הֲקִימוֹתֶם',t:'hăqîmôṯem',g:'I — 2 os. r.m. lm.'},
+   {h:'הֵקַמְתָּ',t:'hēqamtā',g:'II — 2 os. r.m. lp. (bez -ô-)'},
+   {h:'הֵקַמְתֶּם',t:'hēqamtem',g:'II — 2 os. r.m. lm.'},
+   {h:'הֵקַמְנוּ',t:'hēqamnû',g:'II — 1 os. lm.'},
+   {h:'הֵבִיא',t:'hēḇîʾ',g:'wg par. II: przyniósł (rdzeń בוא)'}
+ ]},
+ {lesson:47,title:'Hifil pusty — impf. / juss. / impv. / inf. / part.',meta:'§169 · charakterystyczne -î- ↔ -ē- (krótkie); part. z mē-',rows:[
+   {h:'יָקִים',t:'yāqîm',g:'impf. 3 os. r.m. lp.'},
+   {h:'תָּקִים',t:'tāqîm',g:'impf. 3 os. r.ż. / 2 os. r.m. lp.'},
+   {h:'אָקִים',t:'ʾāqîm',g:'impf. 1 os. lp.'},
+   {h:'יָקִימוּ',t:'yāqîmû',g:'impf. 3 os. r.m. lm.'},
+   {h:'תְּקִימֶינָה',t:'təqîmênā',g:'impf. 3 os. r.ż. lm.'},
+   {h:'נָקִים',t:'nāqîm',g:'impf. 1 os. lm.'},
+   {h:'יָקֵם',t:'yāqēm',g:'jussivus 3 os. r.m. lp. (-ē-)'},
+   {h:'וַיָּקֶם',t:'wayyāqem',g:'wayyiqtol'},
+   {h:'הָקֵם',t:'hāqēm',g:'imperatyw r.m. lp.'},
+   {h:'הָקִימִי',t:'hāqîmî',g:'imperatyw r.ż. lp.'},
+   {h:'הָקִימוּ',t:'hāqîmû',g:'imperatyw r.m. lm.'},
+   {h:'הָקִים',t:'hāqîm',g:'inf. constr.'},
+   {h:'מֵקִים',t:'mēqîm',g:'imiesłów (prefiks mē-)'}
+ ]},
+ /* ---------- LEKCJA 48 ---------- */
+ {lesson:48,title:'Hifil geminowany',meta:'§172 · הֵסֵב hēsēḇ (rdzeń סבב), הֵרַע hēraʿ (rdzeń רעע)',rows:[
+   {h:'הֵסֵב',t:'hēsēḇ',g:'perf. 3 os. r.m. lp.'},
+   {h:'הֲסִבּוֹתָ',t:'hăsibbôṯā',g:'perf. 2 os. r.m. lp. (spójka -ô-, jak pusty)'},
+   {h:'הֲסִבּוֹתִי',t:'hăsibbôṯî',g:'perf. 1 os. lp.'},
+   {h:'יָסֵב',t:'yāsēḇ',g:'impf. 3 os. r.m. lp.'},
+   {h:'וַיָּסֶב',t:'wayyāseḇ',g:'wayyiqtol'},
+   {h:'הָסֵב',t:'hāsēḇ',g:'imperatyw r.m. lp.'},
+   {h:'הָסֵב',t:'hāsēḇ',g:'inf. constr. / inf. abs.'},
+   {h:'מֵסֵב',t:'mēsēḇ',g:'imiesłów'},
+   {h:'הֵרַע',t:'hēraʿ',g:'perf. (geminowany + gardł.): a w syl. tem.'},
+   {h:'יָרַע',t:'yāraʿ',g:'impf. 3 os. r.m. lp.'},
+   {h:'הָרֵעַ',t:'hārēaʿ',g:'inf. abs. (pataḥ furtivum)'}
+ ]},
+ /* ---------- LEKCJA 49 ---------- */
+ {lesson:49,title:'Hofal — pierwsza samogłoska wg klasy rdzenia',meta:'§175 · strona bierna Hifil: o / u / û + a',rows:[
+   {h:'הָשְׁמַד',t:'hošmaḏ',g:'regularny (o-)'},
+   {h:'הָעֳמַד',t:'hoʿŏmaḏ',g:'I-gardł. (o- + ḥāṭēp̄)'},
+   {h:'הֻגַּד',t:'huggaḏ',g:'I-Nun (u-, z asymilacji)'},
+   {h:'הָמְצָא',t:'homṣāʾ',g:'III-Alef (o-)'},
+   {h:'הוּרַד',t:'hûraḏ',g:'II-W/Y (û-)'},
+   {h:'הָבְנָה',t:'hoḇnāh',g:'III-He (o-)'},
+   {h:'הוּקַם',t:'hûqam',g:'pusty (û-)'},
+   {h:'הוּסַב',t:'hûsaḇ',g:'geminowany (û-)'}
+ ]},
+ {lesson:49,title:'Hofal — wybór fleksji',meta:'§175 · perf. / impf. / imiesłów',rows:[
+   {h:'הָשְׁמַד',t:'hošmaḏ',g:'perf. 3 os. r.m. lp.'},
+   {h:'הָשְׁמְדָה',t:'hošməḏāh',g:'perf. 3 os. r.ż. lp.'},
+   {h:'הָשְׁמַדְתָּ',t:'hošmaḏtā',g:'perf. 2 os. r.m. lp.'},
+   {h:'יָשְׁמַד',t:'yošmaḏ',g:'impf. 3 os. r.m. lp.'},
+   {h:'תָּשְׁמְדִי',t:'tošməḏî',g:'impf. 2 os. r.ż. lp.'},
+   {h:'מָשְׁמָד',t:'mošmāḏ',g:'imiesłów r.m. lp.'},
+   {h:'מָשְׁמָדִים',t:'mošmāḏîm',g:'imiesłów r.m. lm.'}
+ ]},
+ /* ---------- LEKCJA 50 ---------- */
+ {lesson:50,title:'Hitpael — perf. / impf. / impv. / inf. / part.',meta:'§177 · prefiks (h)it- + podwojenie 2. spółgłoski',rows:[
+   {h:'הִתְגַּדֵּל',t:'hiṯgaddēl',g:'perf. 3 os. r.m. lp. (regularny)'},
+   {h:'הִתְגַּדְּלוּ',t:'hiṯgaddəlû',g:'perf. 3 os. lm.'},
+   {h:'הִתְגַּדַּלְתָּ',t:'hiṯgaddaltā',g:'perf. 2 os. r.m. lp.'},
+   {h:'יִתְגַּדֵּל',t:'yiṯgaddēl',g:'impf. 3 os. r.m. lp.'},
+   {h:'תִּתְגַּדֵּלְנָה',t:'tiṯgaddēlnā',g:'impf. 3 os. r.ż. lm.'},
+   {h:'אֶתְגַּדֵּל',t:'ʾeṯgaddēl',g:'impf. 1 os. lp.'},
+   {h:'הִתְגַּדֵּל',t:'hiṯgaddēl',g:'imperatyw r.m. lp. / inf. constr.'},
+   {h:'מִתְגַּדֵּל',t:'miṯgaddēl',g:'imiesłów (prefiks mit-)'},
+   {h:'הִתְגַּלָּה',t:'hiṯgallāh',g:'III-He: perf. 3 os. r.m. lp.'},
+   {h:'הִתְגַּלּוֹת',t:'hiṯgallôṯ',g:'III-He: inf. constr.'},
+   {h:'הִתְפַּלֵּל',t:'hiṯpallēl',g:'geminowany: perf. 3 os. r.m. lp.'}
+ ]},
+ {lesson:50,title:'Hitpael — metateza i asymilacja sycząca',meta:'§177a · ת przestawia się przed s/š/ś/z/ṣ',rows:[
+   {h:'הִשְׁתַּמֵּר',t:'hištammēr',g:'*hitšammēr → metateza ת↔שׁ (rdzeń שׁמר)'},
+   {h:'הִזְדַּכֵּר',t:'hizdakkēr',g:'*-zt- → -zd- (rdzeń זכר)'},
+   {h:'הִצְטַדֵּק',t:'hiṣṭaddēq',g:'*-ṣt- → -ṣṭ- (rdzeń צדק)'},
+   {h:'הִשְׁתַּחֲוָה',t:'hištaḥăwāh',g:'Hisztafel (rdzeń חוה; zob. L51)'}
+ ]},
+ /* ---------- LEKCJA 51 ---------- */
+ {lesson:51,title:'Polel · Polal · Hitpolel (czasowniki puste)',meta:'§180 · podwojenie 3. sp., -ô- w 1. syl.; rdzeń קום',rows:[
+   {h:'קוֹמֵם',t:'qômēm',g:'Polel (czynny): perf. 3 os. r.m. lp.'},
+   {h:'יְקוֹמֵם',t:'yəqômēm',g:'Polel: impf. 3 os. r.m. lp.'},
+   {h:'מְקוֹמֵם',t:'məqômēm',g:'Polel: imiesłów'},
+   {h:'קוֹמַם',t:'qômam',g:'Polal (bierny): perf. 3 os. r.m. lp.'},
+   {h:'מְקוֹמָם',t:'məqômām',g:'Polal: imiesłów'},
+   {h:'הִתְקוֹמֵם',t:'hiṯqômēm',g:'Hitpolel (zwrotny): perf. 3 os. r.m. lp.'},
+   {h:'מִתְקוֹמֵם',t:'miṯqômēm',g:'Hitpolel: imiesłów'},
+   {h:'רוֹמֵם',t:'rômēm',g:'Polel od רום: wywyższył'},
+   {h:'כּוֹנֵן',t:'kônēn',g:'Polel od כון: ustanowił'}
+ ]},
+ {lesson:51,title:'Hishtaphel — הִשְׁתַּחֲוָה (oddać pokłon)',meta:'§181 · przedrostek (h)išt- + rdzeń חוה; wzór III-He',rows:[
+   {h:'הִשְׁתַּחֲוָה',t:'hištaḥăwāh',g:'perf. 3 os. r.m. lp.'},
+   {h:'הִשְׁתַּחֲוִיתָ',t:'hištaḥăwîṯā',g:'perf. 2 os. r.m. lp.'},
+   {h:'יִשְׁתַּחֲוֶה',t:'yištaḥăweh',g:'impf. 3 os. r.m. lp.'},
+   {h:'יִשְׁתָּחוּ',t:'yištāḥû',g:'jussivus (apokopa)'},
+   {h:'וַיִּשְׁתַּחוּ',t:'wayyištaḥû',g:'wayyiqtol'},
+   {h:'הִשְׁתַּחֲווּ',t:'hištaḥăwû',g:'imperatyw r.m. lm.'},
+   {h:'הִשְׁתַּחֲוֹת',t:'hištaḥăwōṯ',g:'inf. constr.'},
+   {h:'מִשְׁתַּחֲוֶה',t:'mištaḥăweh',g:'imiesłów'}
+ ]},
+ {lesson:51,title:'Qal bierne (passivum) i liczebniki > 99',meta:'§179, §182 · pozostałości strony biernej Qalu; setki i tysiące',rows:[
+   {h:'לֻקַּח',t:'luqqaḥ',g:'perf.: był wzięty (rdzeń לקח)'},
+   {h:'יֻקַּח',t:'yuqqaḥ',g:'impf.: będzie wzięty'},
+   {h:'יֻלַּד',t:'yullaḏ',g:'perf.: był urodzony (rdzeń ילד)'},
+   {h:'יֻתַּן',t:'yuttan',g:'impf.: będzie dany (rdzeń נתן)'},
+   {h:'מֵאָה',t:'mēʾāh',g:'100 (r.ż.); st. constr. מְאַת'},
+   {h:'אֶלֶף',t:'ʾelep̄',g:'1000 (r.m.); l.mn. אֲלָפִים'},
+   {h:'שְׁלֹשׁ מֵאוֹת',t:'šəlōš mēʾôṯ',g:'300'},
+   {h:'שְׁלֹשֶׁת אֲלָפִים',t:'šəlōšeṯ ʾălāp̄îm',g:'3000'}
+ ]},
+ /* ---------- LEKCJA 52 ---------- */
+ {lesson:52,title:'Przyrostki dopełnienia bliższego — zestaw',meta:'§184 · (a) akc. po sp. / (b) nieakc. po sam. / (c) nieakc. po sp.',rows:[
+   {h:'־ַנִי / ־נִי / ־ֵנִי',t:'-anî / -nî / -ēnî',g:'1 os. lp. „mnie"'},
+   {h:'־ְךָ / ־ְךָ / ־ְךָ',t:'-əḵā / -ḵā / -əḵā',g:'2 os. r.m. lp. „ciebie"'},
+   {h:'־ֵךְ / ־ךְ / ־ֵךְ',t:'-ēḵ / -ēḵ / -ēḵ',g:'2 os. r.ż. lp. „ciebie"'},
+   {h:'־ֹו / ־הוּ / ־הוּ',t:'-ô / -hû / -hû',g:'3 os. r.m. lp. „go"'},
+   {h:'־ָהּ / ־הָ / ־ָהּ',t:'-āh / -hā / -āh',g:'3 os. r.ż. lp. „ją / jej"'},
+   {h:'־ָנוּ / ־נוּ / ־ֵנוּ',t:'-ānû / -nû / -ēnû',g:'1 os. lmn. „nas"'},
+   {h:'־ָם / ־ם / ־ַם',t:'-ām / -m / -am',g:'3 os. r.m. lmn. „ich"'},
+   {h:'־ָן / ־ן / ־ַן',t:'-ān / -n / -an',g:'3 os. r.ż. lmn. „ich"'}
+ ]},
+ {lesson:52,title:'Perfectum 3 os. r.m. + przyrostki',meta:'§185 · שָׁמַר šāmar „strzegł"; przyr. akcentowane → redukcja ה→ə',rows:[
+   {h:'שְׁמָרַנִי',t:'šəmāranî',g:'strzegł mnie'},
+   {h:'שְׁמָרְךָ',t:'šəmārəḵā',g:'strzegł cię (r.m.)'},
+   {h:'שְׁמָרֵךְ',t:'šəmārēḵ',g:'strzegł cię (r.ż.)'},
+   {h:'שְׁמָרוֹ',t:'šəmārô',g:'strzegł go (wariant שְׁמָרָהוּ)'},
+   {h:'שְׁמָרָהּ',t:'šəmārāh',g:'strzegł jej'},
+   {h:'שְׁמָרָנוּ',t:'šəmārānû',g:'strzegł nas'},
+   {h:'שְׁמָרָם',t:'šəmārām',g:'strzegł ich (r.m.)'},
+   {h:'שְׁמָרָן',t:'šəmārān',g:'strzegł ich (r.ż.)'}
+ ]},
+ {lesson:52,title:'Perfectum 2 os. r.m. + przyrostki',meta:'§186 · temat שָׁמַרְתָּ → שְׁמַרְתּ־',rows:[
+   {h:'שְׁמַרְתַּנִי',t:'šəmartanî',g:'strzegłeś mnie'},
+   {h:'שְׁמַרְתּוֹ',t:'šəmartô',g:'strzegłeś go (wariant שְׁמַרְתָּהוּ)'},
+   {h:'שְׁמַרְתָּהּ',t:'šəmartāh',g:'strzegłeś jej'},
+   {h:'שְׁמַרְתָּנוּ',t:'šəmartānû',g:'strzegłeś nas'},
+   {h:'שְׁמַרְתָּם',t:'šəmartām',g:'strzegłeś ich (r.m.)'}
+ ]},
+ /* ---------- LEKCJA 53 ---------- */
+ {lesson:53,title:'Perfectum 3 os. r.ż. + przyrostki',meta:'§188 · końcówka -āh → -aṯ- / -āṯ- (przyr. kol. c)',rows:[
+   {h:'שְׁמָרַתְנִי',t:'šəmāraṯnî',g:'strzegła mnie'},
+   {h:'שְׁמָרָתֶךְ',t:'šəmārāṯeḵ',g:'strzegła cię (r.ż.)'},
+   {h:'שְׁמָרַתְהוּ',t:'šəmāraṯhû',g:'strzegła go (wariant שְׁמָרַתּוּ)'},
+   {h:'שְׁמָרַתָּה',t:'šəmārattāh',g:'strzegła jej (-aṯ + h → -att-)'},
+   {h:'שְׁמָרַתְנוּ',t:'šəmāraṯnû',g:'strzegła nas'},
+   {h:'שְׁמָרָתַם',t:'šəmārāṯam',g:'strzegła ich'}
+ ]},
+ {lesson:53,title:'Perfectum — pozostałe formy + przyrostki',meta:'§189 · 1 os. lp., 3 os. lmn., 1 os. lmn.',rows:[
+   {h:'שְׁמַרְתִּיהוּ',t:'šəmartîhû',g:'strzegłem go (1 os. lp.)'},
+   {h:'שְׁמַרְתִּים',t:'šəmartîm',g:'strzegłem ich'},
+   {h:'שְׁמַרְתִּיךָ',t:'šəmartîḵā',g:'strzegłem cię (r.m.)'},
+   {h:'שְׁמָרוּנִי',t:'šəmārûnî',g:'strzegli mnie (3 os. lmn.)'},
+   {h:'שְׁמָרוּהוּ',t:'šəmārûhû',g:'strzegli go'},
+   {h:'שְׁמַרְנוּךָ',t:'šəmarnûḵā',g:'strzegliśmy cię (1 os. lmn.)'},
+   {h:'שְׁמַרְנוּהוּ',t:'šəmarnûhû',g:'strzegliśmy go'}
+ ]},
+ {lesson:53,title:'Nieregularne czasowniki Qal przed przyrostkami',meta:'§190 · samogłoska ē / i w drugiej sylabie tematu',rows:[
+   {h:'אֲהֵבְךָ',t:'ʾăhēḇəḵā',g:'kochał cię (אָהֵב)'},
+   {h:'אֲהֵבוֹ',t:'ʾăhēḇô',g:'kochał go'},
+   {h:'יְלִדְתִּיךָ',t:'yəliḏtîḵā',g:'urodziłem/urodziłam cię (יָלַד)'},
+   {h:'יְרֵשְׁךָ',t:'yərēšəḵā',g:'odziedziczył cię (יָרַשׁ)'},
+   {h:'שְׁאֵלְךָ',t:'šəʾēlḵā',g:'pytał cię (שָׁאַל)'},
+   {h:'שְׁאִלְתִּיו',t:'šəʾiltîw',g:'pytałem go'}
+ ]},
+ /* ---------- LEKCJA 54 ---------- */
+ {lesson:54,title:'Imperfectum + przyrostki (dwa zestawy)',meta:'§192 · (1) z nun energicum / (2) bez; używane wymiennie',rows:[
+   {h:'יִשְׁמְרֵנִי',t:'yišmərēnî',g:'będzie mnie strzegł (zestaw 2)'},
+   {h:'יִשְׁמְרֶנִּי',t:'yišmərennî',g:'będzie mnie strzegł (zestaw 1, energicum)'},
+   {h:'יִשְׁמָרְךָ',t:'yišmārḵā',g:'będzie cię strzegł (r.m.)'},
+   {h:'יִשְׁמְרֵהוּ',t:'yišmərēhû',g:'będzie go strzegł'},
+   {h:'יִשְׁמְרֶנּוּ',t:'yišmərennû',g:'będzie go strzegł (energicum)'},
+   {h:'יִשְׁמָעֵנִי',t:'yišmāʿēnî',g:'usłyszy mnie (samogł. a → ā)'},
+   {h:'יִשְׁמְרוּנִי',t:'yišmərûnî',g:'będą mnie strzec (3 os. lmn.)'},
+   {h:'יִבְנֵהוּ',t:'yiḇnēhû',g:'zbuduje go (III-He: -eh odpada)'}
+ ]},
+ {lesson:54,title:'Tryb rozkazujący + przyrostki',meta:'§193 · przyrostki jak w imperfectum',rows:[
+   {h:'שָׁמְרֵנִי',t:'šāmərēnî',g:'strzeż mnie!'},
+   {h:'שָׁמְרֵהוּ',t:'šāmərēhû',g:'strzeż go!'},
+   {h:'שָׁמְרוּנִי',t:'šāmərûnî',g:'strzeżcie mnie!'},
+   {h:'תְּנֵנִי',t:'tənēnî',g:'daj mi! (נָתַן)'},
+   {h:'שְׁמָעֵנִי',t:'šəmāʿēnî',g:'usłysz mnie!'},
+   {h:'בְּנֵהוּ',t:'bənēhû',g:'zbuduj go! (III-He)'}
+ ]},
+ {lesson:54,title:'Bezokolicznik (constr.) + przyrostki',meta:'§194 · przyrostek może być podmiotem lub dopełnieniem',rows:[
+   {h:'הָרְגִי',t:'hārḡî',g:'moje zabicie / zabicie mnie (dwuznaczne)'},
+   {h:'הָרְגֵנִי',t:'hārḡēnî',g:'zabicie mnie (przyr. -ēnî jako dop.)'},
+   {h:'שָׁמְרוֹ',t:'šomrô',g:'jego strzeżenie / strzeżenie go'},
+   {h:'אָכְלִי',t:'ʾoḵlî',g:'moje jedzenie / zjedzenie mnie'}
+ ]},
+ /* ---------- LEKCJA 55 ---------- */
+ {lesson:55,title:'Zdania warunkowe — spójniki i typy',meta:'§196 · poprzednik („jeśli…") + następnik („to…")',rows:[
+   {h:'אִם · הֵן · כִּי',t:'ʾim · hēn · kî',g:'warunek rzeczywisty / możliwy do spełnienia'},
+   {h:'לוּ',t:'lû',g:'warunek nierzeczywisty, niemożliwy'},
+   {h:'לוּלֵא',t:'lûlēʾ',g:'„gdyby nie" (zaprzeczony warunek nierzeczywisty)'},
+   {h:'וְ + perf. (odwr.)',t:'wə- + perf.',g:'następnik: waw konsekutywne + perfectum'},
+   {h:'וְ + (nie-czas.) + impf.',t:'wə- + … + impf.',g:'następnik: schemat rozłączny'},
+   {h:'אִם … לֹא',t:'ʾim … lōʾ',g:'w formule przysięgi אִם = przeczenie; אִם־לֹא = twierdzenie'}
+ ]},
+ {lesson:55,title:'Zdania warunkowe — przykłady',meta:'§196 · poprzednik + następnik (przykłady biblijne)',rows:[
+   {h:'אִם נֵשֵׁב פֹּה וָמָתְנוּ',t:'ʾim nēšēḇ pōh wāmāṯnû',g:'„Jeśli zostaniemy tutaj, umrzemy" (2 Krl 7,4)'},
+   {h:'אִם תֵּלֵךְ עִמִּי …',t:'ʾim tēlēḵ ʿimmî …',g:'„Jeśli pójdziesz ze mną…" (poprzednik z impf.)'},
+   {h:'וְעָזַב אֶת אָבִיו וָמֵת',t:'wəʿāzaḇ ʾeṯ-ʾāḇîw wāmēṯ',g:'„A jeśli opuści ojca, ten umrze" (warunek nieoznaczony; Rdz 44,22)'},
+   {h:'מַכֵּה אָבִיו … מוֹת יוּמָת',t:'makkēh ʾāḇîw … môṯ yûmāṯ',g:'„Jeśli ktoś uderzy ojca… zostanie zabity" (poprzednik z imiesłowem; Wj 21,15)'}
+ ]}
+];
+/* ===================== SŁOWNIKI ETYKIET ===================== */
+const FORM_LABEL={impv:'tryb rozkazujący',juss:'jussivus',coh:'cohortativus',impf:'imperfectum',perf:'perfectum',ptcp:'imiesłów czynny',ptcpPass:'imiesłów bierny',wayyiqtol:'waw consec. + impf.',weqatal:'waw consec. + perf.',inf:'bezokolicznik (constr.)',infAbs:'infinitivus absolutus'};
+const FORM_SHORT={impv:'imperat.',juss:'jussivus',coh:'cohortat.',impf:'imperf.',perf:'perf.',ptcp:'imiesłów',ptcpPass:'im. bierny',wayyiqtol:'waw+impf',weqatal:'waw+perf',inf:'inf. constr.',infAbs:'inf. abs.'};
+const STATE_LABEL={abs:'status absolutus',constr:'status constructus',suf:'forma z sufiksem'};
+const SUF_LABEL={'1cs':'1 os. lp.','1cp':'1 os. lmn.','2ms':'2 os. r.m. lp.','2fs':'2 os. r.ż. lp.','3ms':'3 os. r.m. lp.','3fs':'3 os. r.ż. lp.','2mp':'2 os. r.m. lmn.','3mp':'3 os. r.m. lmn.','3fp':'3 os. r.ż. lmn.'};
+function gnum(n){return n==='pl'?'lmn.':'lp.'}
+function grod(g){return g==='m'?'r.m.':g==='f'?'r.ż.':'r.wsp.'}
+function lessOf(id){const m=String(id).match(/(\d+)-/);return m?+m[1]:0;}
+
+/* ---- klasa rdzenia (liczona w locie z rdzenia) ---- */
+const CLS_LABEL={mocny:'mocny',Igard:'I-gardłowa',IIgard:'II-gardłowa',IIIgard:'III-gardłowa',Ialef:'I-alef',IIIalef:'III-alef',Ijod:'I-jod',Inun:'I-nun',IIIhe:'III-he',pusty:'pusty',podw:'podwojony'};
+const ROOTCLS={
+ /* rdzenie z wcześniejszych lekcji (por. trener 25–37) */
+ 'נתן':['Inun'],'ילד':['Ijod'],'קרא':['IIIalef'],'בנה':['IIIhe'],'ידע':['Ijod'],
+ 'נשׂא':['Inun','IIIalef'],'ראה':['IIIhe'],'עשׂה':['IIIhe'],'סבב':['podw'],'גדל':['mocny'],
+ 'דבר':['mocny'],'שׁלח':['IIIgard'],'גרשׁ':['mocny'],'מאן':['IIgard'],'מלא':['IIIalef'],
+ 'ענה':['IIIhe'],'קלל':['podw'],'סור':['pusty'],'שׂמח':['IIIgard'],'נגשׁ':['Inun'],
+ /* nowe rdzenie lekcji 38–42 */
+ 'נצב':['Inun'],'יתר':['Ijod'],'נחם':['Inun','IIgard'],'פלא':['IIIalef'],'מסס':['podw'],
+ 'נום':['pusty'],'כון':['pusty'],'טבח':['IIIgard'],'רחץ':['IIgard'],'קדשׁ':['mocny'],
+ 'ברך':['mocny'],'בקשׁ':['mocny'],'בער':['IIgard'],'שׁרת':['mocny'],'נאץ':['IIgard'],
+ 'צוה':['IIIhe'],'הלל':['podw'],'ספר':['mocny'],'ערב':['Igard'],'קשׁר':['mocny'],
+ 'זעק':['IIgard'],'חלל':['podw'],'כפר':['mocny'],'כסה':['IIIhe'],
+ /* nowe rdzenie lekcji 43–47 (Hifil) */
+ 'שׁמד':['mocny'],'נגד':['Inun'],'עמד':['Igard'],'שׁמע':['IIIgard'],'מצא':['IIIalef'],
+ 'חטא':['Igard','IIIalef'],'צלח':['IIIgard'],'שׁלך':['mocny'],'ארך':['Ialef'],'אמן':['Ialef'],
+ 'חזק':['Igard'],'קרב':['mocny'],'נצל':['Inun'],'סתר':['mocny'],'נבט':['Inun'],
+ 'קרה':['IIIhe'],'זבח':['IIIgard'],'גנב':['mocny'],'רצח':['IIIgard'],'עבר':['Igard'],
+ 'ישׁב':['Ijod'],'ירד':['Ijod'],'יצא':['Ijod','IIIalef'],'הלך':['Ijod'],'יסף':['Ijod'],
+ 'ישׁע':['Ijod','IIIgard'],'יכח':['Ijod','IIIgard'],'יטב':['Ijod'],'קנא':['IIIalef'],
+ 'רבה':['IIIhe'],'עלה':['Igard','IIIhe'],'נכה':['Inun','IIIhe'],'ידה':['Ijod','IIIhe'],
+ 'שׁקה':['IIIhe'],'ירה':['Ijod','IIIhe'],'גלה':['IIIhe'],'למד':['mocny'],'קום':['pusty'],
+ 'בוא':['pusty','IIIalef'],'נוח':['pusty','IIIgard'],'בין':['pusty'],'רום':['pusty'],
+ 'שׁוב':['pusty'],'חרם':['Igard'],'ערך':['Igard'],'זנה':['IIIhe'],'מהר':['IIgard'],
+ /* nowe rdzenie lekcji 48–51 */
+ 'הגה':['IIIhe'],'חבא':['Igard','IIIalef'],'חוה':['IIIhe'],'חיה':['Igard','IIIhe'],'חנן':['podw'],
+ 'חרשׁ':['Igard'],'יצב':['Ijod'],'כחד':['IIgard'],'לקח':['Inun','IIIgard'],'מות':['pusty'],
+ 'משׁל':['mocny'],'נבא':['Inun','IIIalef'],'עור':['pusty'],'פגע':['IIIgard'],'פלל':['podw'],
+ 'פרץ':['mocny'],'פרר':['podw'],'קצף':['mocny'],'רעע':['podw'],'שׁבע':['IIIgard'],
+ 'שׁכן':['mocny'],'שׁמר':['mocny'],'שׁפט':['mocny'],
+ /* nowe rdzenie lekcji 52–55 */
+ 'אהב':['Ialef'],'בדל':['mocny'],'חשׁב':['Igard'],'כלה':['IIIhe'],'כרע':['IIIgard'],
+ 'מלך':['mocny'],'משׁח':['IIIgard'],'נטה':['Inun','IIIhe'],'סלח':['IIIgard'],'עוד':['pusty'],
+ 'עזר':['Igard'],'פנה':['IIIhe'],'פשׁע':['IIIgard'],'רחם':['mocny'],'שׁלם':['mocny']
+};
+function clsOf(f){ if(f.cat!=='verb') return []; return ROOTCLS[f.p.root]||['mocny']; }
+
+/* zwraca tablicę „tagów" do plakietek */
+function parseTags(f){
+  const p=f.p, out=[];
+  if(f.cat==='verb'){
+    out.push({k:'binyan',v:p.binyan});
+    out.push({k:'form',v:FORM_LABEL[p.form]});
+    if(p.pers) out.push({k:'',v:p.pers+' os.'});
+    if(p.gen && p.form!=='ptcp' || (p.form==='ptcp'&&p.gen)) out.push({k:'',v:grod(p.gen)});
+    if(p.num) out.push({k:'',v:gnum(p.num)});
+    if(p.objsuf) out.push({k:'',v:'+ dop. '+SUF_LABEL[p.objsuf]});
+    clsOf(f).forEach(c=>out.push({k:'cls',v:CLS_LABEL[c]}));
+  }else{
+    out.push({k:'binyan',v:'rzeczownik'});
+    out.push({k:'form',v:STATE_LABEL[p.state]});
+    if(p.gen) out.push({k:'',v:grod(p.gen)});
+    if(p.num) out.push({k:'',v:gnum(p.num)});
+    if(p.suf) out.push({k:'',v:'sufiks '+SUF_LABEL[p.suf]});
+  }
+  return out;
+}
+/* jednowierszowa etykieta (do listy i quizu) */
+function parseLine(f){
+  const p=f.p;
+  if(f.cat==='verb'){
+    let s=p.binyan+' · '+FORM_LABEL[p.form];
+    if(p.pers) s+=' · '+p.pers+' os.';
+    if(p.gen) s+=' '+grod(p.gen);
+    if(p.num) s+=' '+gnum(p.num);
+    if(p.objsuf) s+=' · + dop. '+SUF_LABEL[p.objsuf];
+    return s;
+  }
+  let s='rzeczownik · '+STATE_LABEL[p.state];
+  if(p.gen) s+=' · '+grod(p.gen)+' '+gnum(p.num);
+  if(p.suf) s+=' · suf. '+SUF_LABEL[p.suf];
+  return s;
+}
+
+/* ============ stan ============ */
+let mode='parse', pmode='flash', catFilter='all', formFilter='all', lessonFilter='all', clsFilter='all', binyanFilter='all';
+let idx=0, known={};
+const KEY='lambdin:adv-merged:38-55:known:v1';
+
+async function loadKnown(){
+  try{const r=await window.storage.get(KEY); if(r&&r.value) known=JSON.parse(r.value);}catch(e){known={};}
+}
+async function saveKnown(){
+  try{await window.storage.set(KEY,JSON.stringify(known));}catch(e){}
+}
+
+function filtered(){
+  return FORMS.filter(f=>{
+    if(lessonFilter!=='all' && lessOf(f.id)!==+lessonFilter) return false;
+    if(catFilter!=='all' && f.cat!==catFilter) return false;
+    if(formFilter!=='all'){
+      if(f.cat!=='verb') return false;
+      if(f.p.form!==formFilter) return false;
+    }
+    if(clsFilter!=='all'){
+      if(f.cat!=='verb') return false;
+      if(!clsOf(f).includes(clsFilter)) return false;
+    }
+    if(binyanFilter!=='all'){
+      if(f.cat!=='verb') return false;
+      if(f.p.binyan!==binyanFilter) return false;
+    }
+    return true;
+  });
+}
+
+/* ============ przełączniki ============ */
+document.getElementById('modes').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mode]'); if(!b)return;
+  mode=b.dataset.mode;
+  [...document.querySelectorAll('#modes .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  syncRows(); idx=0; render();
+});
+document.getElementById('parseToggle').addEventListener('click',e=>{
+  const b=e.target.closest('[data-pmode]'); if(!b)return;
+  pmode=b.dataset.pmode;
+  [...document.querySelectorAll('#parseToggle .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  idx=0; render();
+});
+document.getElementById('lessonRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-lesson]'); if(!b)return;
+  lessonFilter=b.dataset.lesson;
+  [...document.querySelectorAll('#lessonRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  idx=0; render();
+});
+document.getElementById('catRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-cat]'); if(!b)return;
+  catFilter=b.dataset.cat;
+  [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(catFilter==='noun'){
+    formFilter='all'; [...document.querySelectorAll('#formRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.form==='all'));
+    clsFilter='all'; [...document.querySelectorAll('#clsRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cls==='all'));
+  }
+  idx=0; render();
+});
+document.getElementById('formRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-form]'); if(!b)return;
+  formFilter=b.dataset.form;
+  [...document.querySelectorAll('#formRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(formFilter!=='all' && catFilter==='noun'){ catFilter='all'; [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat==='all')); }
+  idx=0; render();
+});
+document.getElementById('clsRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-cls]'); if(!b)return;
+  clsFilter=b.dataset.cls;
+  [...document.querySelectorAll('#clsRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(clsFilter!=='all' && catFilter==='noun'){ catFilter='all'; [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat==='all')); }
+  idx=0; render();
+});
+document.getElementById('binyanRow').addEventListener('click',e=>{
+  const b=e.target.closest('[data-binyan]'); if(!b)return;
+  binyanFilter=b.dataset.binyan;
+  [...document.querySelectorAll('#binyanRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  if(binyanFilter!=='all' && catFilter==='noun'){ catFilter='all'; [...document.querySelectorAll('#catRow .chip')].forEach(c=>c.setAttribute('aria-pressed',c.dataset.cat==='all')); }
+  idx=0; render();
+});
+document.getElementById('resetBtn').addEventListener('click',async()=>{
+  known={}; await saveKnown(); if(mode==='parse'&&pmode==='flash') render();
+});
+
+function syncRows(){
+  const showToggle = mode==='parse';
+  document.getElementById('parseToggle').style.display = showToggle?'':'none';
+  document.getElementById('lessonRow').style.display = '';
+  const visForFilters = mode==='parse'||mode==='list';
+  document.getElementById('catRow').style.display = visForFilters?'':'none';
+  document.getElementById('formRow').style.display = visForFilters?'':'none';
+  document.getElementById('clsRow').style.display = visForFilters?'':'none';
+  document.getElementById('binyanRow').style.display = visForFilters?'':'none';
+}
+
+/* ============ render główny ============ */
+function render(){
+  const s=document.getElementById('stage');
+  if(mode==='parse'){ pmode==='flash'?renderFlash(s):renderQuiz(s); }
+  else if(mode==='lex'){ renderLex(s); }
+  else if(mode==='para'){ renderPara(s); }
+  else { renderList(s); }
+}
+
+/* ---- ROZBIÓR: fiszka ---- */
+function renderFlash(s){
+  const list=filtered();
+  if(!list.length){ s.innerHTML='<div class="empty">Brak form dla wybranych filtrów.</div>'; return; }
+  if(idx>=list.length) idx=0;
+  const f=list[idx];
+  const total=list.length, kn=list.filter(x=>known[x.id]).length;
+  const tags=parseTags(f).map(t=>`<span class="tag ${t.k}">${t.v}</span>`).join('');
+  const isKnown=!!known[f.id];
+  s.innerHTML=`
+    <div class="deckbar"><span>${idx+1} / ${total}</span><span class="meter"><i style="width:${total?kn/total*100:0}%"></i></span><span>${kn} opanowane</span></div>
+    <div class="card ${isKnown?'is-known':''}" id="card">
+      <span class="corner l">lekcja ${lessOf(f.id)}</span>
+      <span class="corner r"><span class="cat">${f.cat==='verb'?'czasownik':'rzeczownik'}</span></span>
+      <div class="he">${f.heb}</div>
+      <div class="lemma-hint" id="hint">dotknij, aby zobaczyć rozbiór</div>
+      <div class="back" id="back" style="display:none">
+        <div class="translit">${f.tr}</div>
+        <div class="parsebar"><span class="tag root">√${f.p.root}</span>${tags}</div>
+        <div class="lemma-line">leksem: <b>${f.lemma}</b> · <i>${f.lemmaTr}</i></div>
+        <div class="pl">${f.pl}</div>
+        ${f.p.note?`<div class="note-wrap">${f.p.note}</div>`:''}
+      </div>
+      <div class="known-flag">opanowane</div>
+    </div>
+    <div class="deck-actions" id="acts" style="display:none">
+      <button class="btn again" id="again">Jeszcze raz</button>
+      <button class="btn know" id="know">${isKnown?'Opanowane ✓':'Umiem'}</button>
+    </div>
+    <div class="navmini">
+      <button id="prev" ${idx===0?'disabled':''}>‹ poprzednia</button>
+      <button id="next" ${idx>=total-1?'disabled':''}>następna ›</button>
+    </div>`;
+  let flipped=false;
+  const card=document.getElementById('card');
+  function flip(){flipped=true;document.getElementById('back').style.display='';document.getElementById('hint').style.display='none';document.getElementById('acts').style.display='';}
+  card.onclick=()=>{if(!flipped)flip();};
+  document.getElementById('again').onclick=e=>{e.stopPropagation();step(1);};
+  document.getElementById('know').onclick=async e=>{e.stopPropagation();known[f.id]=true;await saveKnown();step(1);};
+  document.getElementById('prev').onclick=e=>{e.stopPropagation();step(-1);};
+  document.getElementById('next').onclick=e=>{e.stopPropagation();step(1);};
+  function step(d){idx=(idx+d+total)%total;renderFlash(s);}
+}
+
+/* ---- ROZBIÓR: quiz (rozpoznaj formę) ---- */
+let QLEN=10;
+let qs=null, qsig='';
+const QSTATS_KEY='lambdin:adv-merged:38-55:quizstats:v1';
+let qstats={sessions:0,asked:0,correct:0,best:0};
+(async function(){ try{ const r=await window.storage.get(QSTATS_KEY); if(r&&r.value) qstats=Object.assign(qstats,JSON.parse(r.value)); }catch(e){} })();
+async function saveQStats(){ try{ await window.storage.set(QSTATS_KEY, JSON.stringify(qstats)); }catch(e){} }
+
+function startQuizSession(subset){
+  const isSub = !!(subset && subset.length);
+  const list = isSub ? subset : filtered();
+  if(!isSub && list.length < 4){ qs=null; return; }
+  const items = shuffle([...list]).slice(0, Math.min(QLEN, list.length));
+  qs = {items, i:0, ok:0, wrong:[], answered:false, done:false};
+}
+function quizLenBar(){
+  return '<div class="qlen"><span>Długość sesji</span>' +
+    [10,20,30].map(n => '<button data-len="'+n+'" class="'+(QLEN===n?'on':'')+'">'+n+'</button>').join('') + '</div>';
+}
+function finishQuiz(){
+  qs.done = true;
+  qstats.sessions++; qstats.asked += qs.items.length; qstats.correct += qs.ok;
+  const p = Math.round(qs.ok / qs.items.length * 100);
+  if(p > (qstats.best||0)) qstats.best = p;
+  saveQStats();
+}
+function renderQuiz(s){
+  const list = filtered();
+  if(list.length < 4){ s.innerHTML='<div class="empty">Za mało form w tym filtrze na quiz (potrzeba ≥4). Zmień filtr.</div>'; return; }
+  const sig = JSON.stringify([lessonFilter,catFilter,formFilter,clsFilter,binyanFilter,list.length,QLEN]);
+  if(!qs || qsig !== sig){ qsig = sig; startQuizSession(); }
+  if(!qs){ s.innerHTML='<div class="empty">Za mało form na quiz.</div>'; return; }
+  if(qs.done){ renderQuizSummary(s); return; }
+  if(qs.answered){ // powrót do pytania już rozstrzygniętego (np. po zmianie trybu) — przejdź dalej
+    if(qs.i >= qs.items.length - 1){ finishQuiz(); renderQuizSummary(s); return; }
+    qs.i++; qs.answered = false;
+  }
+
+  const f = qs.items[qs.i];
+  const correct = parseLine(f);
+  const pool = [...new Set(FORMS.map(parseLine))].filter(l => l!==correct);
+  shuffle(pool);
+  const opts = shuffle([correct, ...pool.slice(0,3)]);
+  const pct = Math.round(qs.i / qs.items.length * 100);
+  s.innerHTML = `
+    ${quizLenBar()}
+    <div class="deckbar"><span>Pytanie ${qs.i+1} / ${qs.items.length}</span><span class="meter"><i style="width:${pct}%"></i></span><span>${qs.ok} poprawnych</span></div>
+    <div class="q-card quiz">
+      <div class="q-prompt">Jaki to rozbiór?</div>
+      <div class="he">${f.heb}</div>
+      <div class="translit" style="margin-top:6px">${f.tr}</div>
+      <div class="options" id="opts">
+        ${opts.map(o=>`<button class="opt" data-v="${encodeURIComponent(o)}">${o}</button>`).join('')}
+      </div>
+    </div>
+    <div class="next-q" id="nextWrap" style="display:none"><button class="btn know" id="nextQ" style="max-width:240px;margin:0 auto"></button></div>`;
+  const bar = s.querySelector('.qlen');
+  if(bar) bar.addEventListener('click', e => {
+    const b = e.target.closest('button[data-len]'); if(!b) return;
+    QLEN = +b.dataset.len; startQuizSession(); renderQuiz(s);
+  });
+  document.getElementById('opts').addEventListener('click', e => {
+    const b = e.target.closest('.opt'); if(!b || qs.answered) return;
+    qs.answered = true;
+    const chosen = decodeURIComponent(b.dataset.v);
+    [...document.querySelectorAll('.opt')].forEach(o => { o.disabled = true;
+      const v = decodeURIComponent(o.dataset.v);
+      if(v===correct) o.classList.add('correct'); else if(o===b) o.classList.add('wrong'); });
+    if(chosen===correct) qs.ok++;
+    else qs.wrong.push({heb:f.heb, tr:f.tr, correct, chosen, id:f.id});
+    const last = qs.i >= qs.items.length - 1;
+    const nb = document.getElementById('nextQ');
+    nb.textContent = last ? 'Podsumowanie →' : 'Następna ›';
+    document.getElementById('nextWrap').style.display = '';
+    nb.onclick = () => {
+      if(last){ finishQuiz(); } else { qs.i++; qs.answered = false; }
+      renderQuiz(s);
+    };
+  });
+}
+
+function renderQuizSummary(s){
+  const n = qs.items.length, ok = qs.ok, bad = n - ok;
+  const pct = Math.round(ok / n * 100);
+  const verdict = pct===100 ? 'Komplet — bezbłędnie!' : pct>=80 ? 'Bardzo dobrze' : pct>=60 ? 'Nieźle, warto powtórzyć' : 'Ten materiał wymaga powtórki';
+  const masteredPct = Math.round(Object.values(known).filter(Boolean).length / FORMS.length * 100);
+  const lifePct = qstats.asked ? Math.round(qstats.correct / qstats.asked * 100) : 0;
+  const misses = qs.wrong.map(w => `
+    <div class="miss">
+      <div class="mhe">${w.heb}</div>
+      <div class="mtr">${w.tr}</div>
+      <div class="mrow">poprawnie: <span class="good">${w.correct}</span></div>
+      <div class="mrow">Twoja odpowiedź: <span class="bad">${w.chosen}</span></div>
+    </div>`).join('');
+  s.innerHTML = `
+    <div class="qsum">
+      <div class="ring">
+        <div class="big">${pct}<small>%</small></div>
+        <div>
+          <div class="verdict">${verdict}</div>
+          <div style="font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:4px">Sesja: ${n} pytań</div>
+        </div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><b>${ok}</b><span>poprawnie</span></div>
+        <div class="tile"><b>${bad}</b><span>błędów</span></div>
+        <div class="tile"><b>${masteredPct}%</b><span>opanowane formy</span></div>
+      </div>
+      ${bad ? '<h4>Do powtórki</h4><div class="misses">'+misses+'</div>'
+            : '<div class="allgood">Wszystkie odpowiedzi poprawne — świetna sesja.</div>'}
+      <div class="acts">
+        <button class="btn know" id="qnew" style="max-width:220px">Nowa sesja (${QLEN})</button>
+        ${bad ? '<button class="btn" id="qredo" style="max-width:220px">Powtórz błędy ('+bad+')</button>' : ''}
+        ${ok ? '<button class="btn" id="qmark" style="max-width:260px">Dodaj poprawne do „opanowanych”</button>' : ''}
+      </div>
+      <div class="lifetime">Łącznie: ${qstats.sessions} ${qstats.sessions===1?'sesja':(qstats.sessions%10>=2&&qstats.sessions%10<=4&&(qstats.sessions%100<10||qstats.sessions%100>=20))?'sesje':'sesji'} · ${qstats.correct}/${qstats.asked} poprawnych (${lifePct}%) · najlepszy wynik: ${qstats.best||0}%</div>
+    </div>`;
+  document.getElementById('qnew').onclick = () => { startQuizSession(); renderQuiz(s); };
+  const redo = document.getElementById('qredo');
+  if(redo) redo.onclick = () => {
+    const ids = new Set(qs.wrong.map(w => w.id));
+    startQuizSession(FORMS.filter(f => ids.has(f.id)));
+    renderQuiz(s);
+  };
+  const mark = document.getElementById('qmark');
+  if(mark) mark.onclick = async () => {
+    const wrongIds = new Set(qs.wrong.map(w => w.id));
+    qs.items.filter(f => !wrongIds.has(f.id)).forEach(f => { known[f.id] = true; });
+    await saveKnown();
+    mark.textContent = 'Dodano ✓'; mark.disabled = true;
+  };
+}
+
+
+/* ---- SŁOWNIK (leksemy) ---- */
+function renderLex(s){
+  const roman={38:'XXXVIII',39:'XXXIX',40:'XL',41:'XLI',42:'XLII',43:'XLIII',44:'XLIV',45:'XLV',46:'XLVI',47:'XLVII',48:'XLVIII',49:'XLIX',50:'L',51:'LI',52:'LII',53:'LIII',54:'LIV',55:'LV'};
+  const lessons=[38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55].filter(L=>lessonFilter==='all'||+lessonFilter===L);
+  let h='';
+  lessons.forEach(L=>{
+    const items=LEX.filter(x=>lessOf(x.id)===L);
+    h+=`<div class="lemgroup"><div class="lh"><span class="lhe">Słowniczek ${roman[L]}</span><span class="ltr">${items.length} haseł</span></div>`;
+    items.forEach(x=>{
+      h+=`<div class="lrow"><span class="lhe2">${x.heb}</span><span class="ltr2">${x.tr}</span><span class="lpl2">${x.pl}${x.note?` <span style="color:var(--muted)">— ${x.note}</span>`:''}</span><span class="lpar">${x.pos}</span></div>`;
+    });
+    h+='</div>';
+  });
+  s.innerHTML=h;
+}
+
+/* ---- PARADYGMATY ---- */
+function renderPara(s){
+  const list=PARADIGMS.filter(P=>lessonFilter==='all'||(P.lesson||38)===+lessonFilter);
+  s.innerHTML=list.map(P=>`
+    <div class="para">
+      <h3>${P.title} <span style="font-family:var(--sans);font-size:11px;color:var(--gold);letter-spacing:.1em">L${P.lesson||38}</span></h3>
+      <div class="meta">${P.meta}</div>
+      <table><tbody>
+        ${P.rows.map(r=>`<tr><td class="h">${r.h}</td><td class="t">${r.t}</td><td class="g">${r.g}</td></tr>`).join('')}
+      </tbody></table>
+    </div>`).join('');
+}
+
+/* ---- LISTA (formy zgrupowane wg leksemu) ---- */
+function renderList(s){
+  const list=filtered();
+  if(!list.length){ s.innerHTML='<div class="empty">Brak form dla wybranych filtrów.</div>'; return; }
+  const groups={};
+  list.forEach(f=>{(groups[f.lemma]=groups[f.lemma]||[]).push(f);});
+  const order=Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length);
+  let h='';
+  order.forEach(lem=>{
+    const arr=groups[lem]; const first=arr[0];
+    h+=`<div class="lemgroup"><div class="lh"><span class="lhe">${lem}</span><span class="ltr">${first.lemmaTr}</span><span class="lpl">${arr.length} ${arr.length===1?'forma':'formy/form'}</span></div>`;
+    arr.forEach(f=>{
+      const cls=f.cat==='verb'?' · '+clsOf(f).map(c=>CLS_LABEL[c]).join(', '):'';
+      h+=`<div class="lrow"><span class="lhe2">${f.heb}</span><span class="ltr2">${f.tr}</span><span class="lpl2">${f.pl}</span><span class="lpar"><span style="color:var(--gold)">L${lessOf(f.id)}</span> · ${parseLine(f)}${cls}</span></div>`;
+    });
+    h+='</div>';
+  });
+  s.innerHTML=h;
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ============ start ============ */
+(async function(){ await loadKnown(); syncRows(); render(); })();
+</script>
+</body>
+</html>

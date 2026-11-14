@@ -1,0 +1,1234 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lambdin — trener (lekcje 1–24)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EBDD;--surface:#FBF7EE;--surface-2:#F6F0E3;
+    --ink:#22262F;--indigo:#2A3450;--verdigris:#2C6E63;--verdigris-soft:#E1EDE9;
+    --gold:#A9803A;--muted:#8A8270;--line:#DCD3BF;
+    --shadow:0 1px 2px rgba(40,30,10,.05),0 12px 30px -18px rgba(40,30,10,.35);
+    --he:'Frank Ruhl Libre',serif;--serif:'Spectral',Georgia,serif;--sans:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(120% 80% at 50% -10%, #F7F2E7 0%, var(--paper) 55%) fixed;color:var(--ink);font-family:var(--serif);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:26px 18px 60px}
+  header.masthead{text-align:center;margin-bottom:18px}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--verdigris);font-weight:600}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,5vw,30px);margin:.18em 0 .1em;letter-spacing:-.01em}
+  .sub{font-family:var(--sans);font-size:13px;color:var(--muted)}
+  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--line) 18%,var(--line) 82%,transparent);margin:18px 0}
+  .controls{display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
+  .label{font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-right:4px;align-self:center}
+  .chip{font-family:var(--sans);font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 13px;border-radius:999px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--verdigris)}
+  .chip[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+  .modes .chip[aria-pressed="true"]{background:var(--verdigris);border-color:var(--verdigris)}
+  .chip:disabled{opacity:.35;cursor:default}
+  .stage{margin-top:18px;min-height:300px}
+  .deckbar{display:flex;justify-content:space-between;align-items:center;font-family:var(--sans);font-size:12px;color:var(--muted);margin-bottom:10px}
+  .deckbar .meter{height:5px;flex:1;margin:0 12px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .deckbar .meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--verdigris),var(--gold));width:0;transition:width .3s}
+  .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:34px 26px 26px;text-align:center;cursor:pointer;min-height:268px;display:flex;flex-direction:column;justify-content:center;gap:14px;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+  .corner{position:absolute;top:14px;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .corner.l{left:18px}.corner.r{right:18px}.corner.r .pos{color:var(--verdigris)}
+  .he{font-family:var(--he);direction:rtl;unicode-bidi:isolate;font-size:clamp(54px,15vw,82px);line-height:1.18;font-weight:500;color:var(--ink);padding-top:6px}
+  .hint{font-family:var(--sans);font-size:12px;color:var(--muted)}
+  .back{border-top:1px dashed var(--line);margin-top:6px;padding-top:14px}
+  .translit{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--verdigris)}
+  .pl{font-family:var(--serif);font-size:23px;font-weight:600;margin-top:4px;color:var(--ink)}
+  .note{font-family:var(--he);direction:rtl;unicode-bidi:isolate;display:inline}
+  .note-wrap{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:9px}
+  .known-flag{position:absolute;bottom:12px;left:0;right:0;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);opacity:0}
+  .card.is-known .known-flag{opacity:1}
+  .deck-actions{display:flex;gap:10px;margin-top:14px}
+  .btn{flex:1;font-family:var(--sans);font-size:14px;font-weight:600;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:.15s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.again{color:var(--indigo)}
+  .btn.know{background:var(--verdigris);border-color:var(--verdigris);color:#F6F2E7}
+  .navmini{display:flex;justify-content:center;gap:18px;margin-top:12px;font-family:var(--sans);font-size:13px}
+  .navmini button{background:none;border:none;color:var(--verdigris);cursor:pointer;font-weight:600;font-family:var(--sans);font-size:13px;padding:6px}
+  .navmini button:disabled{color:var(--line);cursor:default}
+  .quiz .he{font-size:clamp(50px,13vw,72px)}
+  .q-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px 22px;text-align:center}
+  .options{display:flex;flex-direction:column;gap:9px;margin-top:20px}
+  .opt{font-family:var(--serif);font-size:17px;text-align:left;padding:13px 16px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;transition:.12s}
+  .opt:hover{border-color:var(--verdigris)}
+  .opt.correct{background:var(--verdigris-soft);border-color:var(--verdigris);color:#1d4d45;font-weight:600}
+  .opt.wrong{background:#F6E5DF;border-color:#C77B5E;color:#8a3d22}
+  .opt:disabled{cursor:default}
+  .score{font-family:var(--sans);font-size:13px;color:var(--muted);text-align:center;margin-top:16px}
+  .next-q{margin-top:14px;text-align:center}
+  /* sentences */
+  .s-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:30px 24px}
+  .s-he{font-family:var(--he);direction:rtl;unicode-bidi:plaintext;text-align:right;font-size:clamp(26px,5.6vw,34px);line-height:1.75;color:var(--ink)}
+  .s-tr{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--verdigris);margin-top:14px;display:none}
+  .s-tr.show{display:block}
+  .s-pl{font-family:var(--serif);font-size:20px;color:var(--ink);margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);display:none}
+  .s-pl.show{display:block}
+  .pl-amb .alt{display:block;margin-top:8px;color:var(--indigo);font-style:italic;font-size:18px}
+  .amb-badge{display:inline-block;font-family:var(--sans);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:99px;padding:2px 8px;margin-right:10px;vertical-align:middle}
+  .s-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .s-actions .btn{flex:1;min-width:130px}
+  .ghost{background:var(--surface);border:1px solid var(--line);color:var(--indigo)}
+  .empty{text-align:center;font-family:var(--sans);font-size:14px;color:var(--muted);padding:40px 10px}
+  .lessongroup{margin-bottom:26px}
+  .lessongroup h3{font-family:var(--sans);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--verdigris);border-bottom:1px solid var(--line);padding-bottom:7px;margin:0 0 4px}
+  table{width:100%;border-collapse:collapse}
+  td{padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.hcell{font-family:var(--he);direction:rtl;font-size:30px;width:34%;line-height:1.3;white-space:nowrap}
+  td.tcell{font-family:var(--serif);font-style:italic;color:var(--verdigris);font-size:15px;width:22%}
+  td.pcell{font-family:var(--serif);font-size:16px}
+  td.pcell .nt{display:block;font-family:var(--sans);font-size:11.5px;color:var(--muted);margin-top:2px}
+  td.pcell .nt b{font-family:var(--he);font-weight:400;font-size:15px}
+  footer{text-align:center;font-family:var(--sans);font-size:11.5px;color:var(--muted);margin-top:34px;line-height:1.7}
+  .reset{background:none;border:none;color:var(--verdigris);cursor:pointer;font-family:var(--sans);font-size:11.5px;text-decoration:underline}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* --- sesje quizu: podsumowanie --- */
+.qsum{max-width:620px;margin:0 auto}
+.qsum .ring{display:flex;align-items:center;justify-content:center;gap:18px;margin:6px 0 16px;flex-wrap:wrap}
+.qsum .big{font-family:var(--serif);font-size:54px;font-weight:600;line-height:1;color:var(--ink)}
+.qsum .big small{font-size:20px;color:var(--muted);font-weight:400}
+.qsum .verdict{font-family:var(--sans);font-size:13px;color:var(--verdigris);font-weight:600;letter-spacing:.06em}
+.qsum .tiles{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.qsum .tile{flex:1 1 130px;min-width:120px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+.qsum .tile b{display:block;font-family:var(--serif);font-size:23px;font-weight:600;color:var(--ink)}
+.qsum .tile span{font-family:var(--sans);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.qsum h4{font-family:var(--sans);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--verdigris);
+  font-weight:600;margin:18px 0 8px;text-align:left}
+.qsum .misses{display:flex;flex-direction:column;gap:8px;text-align:left}
+.qsum .miss{background:var(--surface);border:1px solid var(--line);border-left:3px solid #B4553F;border-radius:10px;padding:10px 12px}
+.qsum .miss .mhe{font-family:var(--he);font-size:26px;direction:rtl;unicode-bidi:isolate;line-height:1.3}
+.qsum .miss .mtr{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted)}
+.qsum .miss .mrow{font-family:var(--sans);font-size:12.5px;margin-top:4px;line-height:1.5}
+.qsum .miss .good{color:var(--verdigris);font-weight:600}
+.qsum .miss .bad{color:#B4553F;text-decoration:line-through}
+.qsum .allgood{font-family:var(--sans);font-size:13px;color:var(--verdigris);background:var(--surface);
+  border:1px dashed var(--line);border-radius:10px;padding:14px;text-align:center}
+.qsum .acts{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.qsum .lifetime{font-family:var(--sans);font-size:11.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+.qlen{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.qlen span{font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.qlen button{font-family:var(--sans);font-size:12px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.qlen button.on{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Lambdin · Hebrajszczyzna biblijna</div>
+    <h1>Trener — lekcje 1–24</h1>
+    <div class="sub">Hebrajski → polski · pełna wokalizacja · lekcje 1–24</div>
+  </header>
+
+  <div class="controls">
+    <div class="row modes" id="modes">
+      <span class="label">Tryb</span>
+      <button class="chip" data-mode="cards" aria-pressed="true">Fiszki</button>
+      <button class="chip" data-mode="quiz" aria-pressed="false">Quiz</button>
+      <button class="chip" data-mode="zdania" aria-pressed="false">Zdania</button>
+      <button class="chip" data-mode="frazy" aria-pressed="false">Frazy</button>
+      <button class="chip" data-mode="list" aria-pressed="false">Lista</button>
+    </div>
+    <div class="row lessons" id="lessons">
+      <span class="label">Lekcja</span>
+      <button class="chip" data-lesson="all" aria-pressed="true">Wszystkie</button>
+      <button class="chip" data-lesson="1">1</button>
+      <button class="chip" data-lesson="2">2</button>
+      <button class="chip" data-lesson="3">3</button>
+      <button class="chip" data-lesson="4">4</button>
+      <button class="chip" data-lesson="5">5</button>
+      <button class="chip" data-lesson="6">6</button>
+      <button class="chip" data-lesson="7">7</button>
+      <button class="chip" data-lesson="8">8</button>
+      <button class="chip" data-lesson="9">9</button>
+      <button class="chip" data-lesson="10">10</button>
+      <button class="chip" data-lesson="11">11</button>
+      <button class="chip" data-lesson="12">12</button>
+      <button class="chip" data-lesson="13">13</button>
+      <button class="chip" data-lesson="14">14</button>
+      <button class="chip" data-lesson="15">15</button>
+      <button class="chip" data-lesson="16">16</button>
+      <button class="chip" data-lesson="17">17</button>
+      <button class="chip" data-lesson="18">18</button>
+      <button class="chip" data-lesson="19">19</button>
+      <button class="chip" data-lesson="20">20</button>
+      <button class="chip" data-lesson="21">21</button>
+      <button class="chip" data-lesson="22">22</button>
+      <button class="chip" data-lesson="23">23</button>
+      <button class="chip" data-lesson="24">24</button>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+  <div class="stage" id="stage"></div>
+
+  <footer>
+    Treść słowników i ćwiczeń z polskiego wydania „Wprowadzenia do hebrajszczyzny biblijnej” T.&nbsp;Lambdina, lekcje 1–24.<br>
+    Tłumaczenia zdań w trybie Zdania sporządzone pomocniczo. Postęp zapisywany na tym urządzeniu. <button class="reset" id="reset">Wyzeruj postęp</button>
+  </footer>
+</div>
+
+<script>
+const DATA = [
+ {id:'1-1',lesson:1,heb:'נַעַר',tr:'náʿar',pl:'młodzieniec, chłopiec; sługa',pos:'rzeczownik'},
+ {id:'1-2',lesson:1,heb:'זָקֵן',tr:'zāqēn',pl:'starzec, starszy',pos:'rzeczownik'},
+ {id:'1-3',lesson:1,heb:'בַּיִת',tr:'báyiṯ',pl:'dom',pos:'rzeczownik',note:'l.mn. nieregularna: בָּתִּים bāttîm'},
+ {id:'1-4',lesson:1,heb:'נָהָר',tr:'nāhār',pl:'rzeka',pos:'rzeczownik'},
+ {id:'1-5',lesson:1,heb:'שָׂדֶה',tr:'śāḏeh',pl:'pole',pos:'rzeczownik'},
+ {id:'1-6',lesson:1,heb:'דֶּרֶךְ',tr:'déreḵ',pl:'droga',pos:'rzeczownik',note:'rodzaj m. lub ż.'},
+ {id:'1-7',lesson:1,heb:'עַל־',tr:'ʿal-',pl:'na, powyżej, przeciwko, z powodu',pos:'przyimek'},
+ {id:'1-8',lesson:1,heb:'בְּ',tr:'bə',pl:'w, przy pomocy',pos:'przyimek'},
+ {id:'1-9',lesson:1,heb:'אֵצֶל',tr:'ʾēṣel',pl:'przy, obok, blisko',pos:'przyimek'},
+ {id:'1-10',lesson:1,heb:'שָׁם',tr:'šām',pl:'tam, w tamtym miejscu',pos:'przysłówek'},
+ {id:'1-11',lesson:1,heb:'אַיֵּה',tr:'ʾayyēh',pl:'gdzie? w którym miejscu?',pos:'przysłówek'},
+ {id:'1-12',lesson:1,heb:'וְ',tr:'wə',pl:'i (pisane łącznie z następnym wyrazem)',pos:'spójnik'},
+
+ {id:'2-1',lesson:2,heb:'אִישׁ',tr:'ʾîš',pl:'mężczyzna, mąż',pos:'rzeczownik',note:'l.mn. nieregularna: אֲנָשִׁים ʾănāšîm'},
+ {id:'2-2',lesson:2,heb:'אִשָּׁה',tr:'ʾiššāh',pl:'kobieta, żona',pos:'rzeczownik',note:'l.mn. nieregularna: נָשִׁים nāšîm'},
+ {id:'2-3',lesson:2,heb:'יֶלֶד',tr:'yéleḏ',pl:'chłopiec, dziecko',pos:'rzeczownik'},
+ {id:'2-4',lesson:2,heb:'הֵיכָל',tr:'hêḵāl',pl:'pałac, świątynia',pos:'rzeczownik'},
+ {id:'2-5',lesson:2,heb:'מֶלֶךְ',tr:'méleḵ',pl:'król',pos:'rzeczownik',note:'l.mn. -îm: מְלָכִים'},
+ {id:'2-6',lesson:2,heb:'סֵפֶר',tr:'sēp̄er',pl:'księga, zwój',pos:'rzeczownik',note:'l.mn. -îm: סְפָרִים'},
+ {id:'2-7',lesson:2,heb:'עֶבֶד',tr:'ʿéḇeḏ',pl:'sługa, niewolnik',pos:'rzeczownik',note:'l.mn. -îm: עֲבָדִים'},
+ {id:'2-8',lesson:2,heb:'עִיר',tr:'ʿîr',pl:'miasto',pos:'rzeczownik',note:'r.ż.; l.mn. nieregularna: עָרִים ʿārîm'},
+ {id:'2-9',lesson:2,heb:'הוּא',tr:'hûʾ',pl:'on',pos:'zaimek'},
+ {id:'2-10',lesson:2,heb:'הִיא',tr:'hîʾ',pl:'ona',pos:'zaimek'},
+ {id:'2-11',lesson:2,heb:'מִי',tr:'mî',pl:'kto? (bez rozróżnienia rodzaju)',pos:'zaimek'},
+ {id:'2-12',lesson:2,heb:'פֹּה',tr:'pōh',pl:'tutaj',pos:'przysłówek'},
+ {id:'2-13',lesson:2,heb:'אֵיפֹה',tr:'ʾêp̄ōh',pl:'gdzie? (synonim אַיֵּה)',pos:'przysłówek'},
+
+ {id:'3-1',lesson:3,heb:'דָּבָר',tr:'dāḇār',pl:'słowo, rzecz, sprawa',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'3-2',lesson:3,heb:'רָעָב',tr:'rāʿāḇ',pl:'głód',pos:'rzeczownik'},
+ {id:'3-3',lesson:3,heb:'אֶרֶץ',tr:'ʾéreṣ',pl:'ziemia, kraj, kraina',pos:'rzeczownik',note:'r.ż.; l.mn. -ôṯ'},
+ {id:'3-4',lesson:3,heb:'הַר',tr:'har',pl:'góra',pos:'rzeczownik'},
+ {id:'3-5',lesson:3,heb:'עַם',tr:'ʿam',pl:'lud, naród',pos:'rzeczownik'},
+ {id:'3-6',lesson:3,heb:'גַּן',tr:'gan',pl:'ogród',pos:'rzeczownik'},
+ {id:'3-7',lesson:3,heb:'טוֹב',tr:'ṭôḇ',pl:'dobry',pos:'przymiotnik'},
+ {id:'3-8',lesson:3,heb:'גָּדוֹל',tr:'gāḏôl',pl:'wielki, duży',pos:'przymiotnik'},
+ {id:'3-9',lesson:3,heb:'קָטֹן',tr:'qāṭōn',pl:'mały, niewielki, nieistotny',pos:'przymiotnik'},
+ {id:'3-10',lesson:3,heb:'יָפֶה',tr:'yāp̄eh',pl:'piękny, przystojny',pos:'przymiotnik'},
+ {id:'3-11',lesson:3,heb:'רַע',tr:'raʿ',pl:'zły, występny, nikczemny',pos:'przymiotnik'},
+ {id:'3-12',lesson:3,heb:'מְאֹד',tr:'məʾōḏ',pl:'bardzo, dużo',pos:'przysłówek'},
+
+ {id:'4-1',lesson:4,heb:'שֹׁפֵט',tr:'šōp̄ēṭ',pl:'sędzia',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'4-2',lesson:4,heb:'מַלְאָךְ',tr:'malʾāḵ',pl:'posłaniec, anioł',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'4-3',lesson:4,heb:'כִּסֵּא',tr:'kissēʾ',pl:'krzesło, tron',pos:'rzeczownik',note:'l.mn. nieregularna: כִּסְאוֹת kisʾôṯ'},
+ {id:'4-4',lesson:4,heb:'כֹּתֵב',tr:'kōṯēḇ',pl:'piszący',pos:'imiesłów'},
+ {id:'4-5',lesson:4,heb:'אֹכֵל',tr:'ʾōḵēl',pl:'jedzący',pos:'imiesłów'},
+ {id:'4-6',lesson:4,heb:'נֹתֵן',tr:'nōṯēn',pl:'dający, kładzący',pos:'imiesłów'},
+ {id:'4-7',lesson:4,heb:'הֹלֵךְ',tr:'hōlēḵ',pl:'idący, chodzący',pos:'imiesłów'},
+ {id:'4-8',lesson:4,heb:'יֹשֵׁב',tr:'yōšēḇ',pl:'siedzący, mieszkający, przebywający',pos:'imiesłów'},
+ {id:'4-9',lesson:4,heb:'אֵת',tr:'ʾēṯ',pl:'partykuła dopełnienia bliższego',pos:'przyimek',note:'lub אֶת־ ʾeṯ-'},
+ {id:'4-10',lesson:4,heb:'לְ',tr:'lə-',pl:'do, dla (celownik); jako',pos:'przyimek'},
+ {id:'4-11',lesson:4,heb:'אֶל־',tr:'ʾel-',pl:'do, w kierunku',pos:'przyimek'},
+ {id:'4-12',lesson:4,heb:'בְּעֵינֵי',tr:'bəʿênê',pl:'w oczach, według, w opinii',pos:'wyrażenie'},
+
+ {id:'5-1',lesson:5,heb:'זָהָב',tr:'zāhāḇ',pl:'złoto',pos:'rzeczownik'},
+ {id:'5-2',lesson:5,heb:'חָכְמָה',tr:'ḥoḵmāh',pl:'mądrość',pos:'rzeczownik'},
+ {id:'5-3',lesson:5,heb:'כֶּסֶף',tr:'késep̄',pl:'srebro, pieniądze',pos:'rzeczownik'},
+ {id:'5-4',lesson:5,heb:'עֲבוֹדָה',tr:'ʿăḇôḏāh',pl:'praca, zadanie, służba',pos:'rzeczownik'},
+ {id:'5-5',lesson:5,heb:'עֵצָה',tr:'ʿēṣāh',pl:'rada, porada',pos:'rzeczownik'},
+ {id:'5-6',lesson:5,heb:'יָקָר',tr:'yāqār',pl:'drogi',pos:'przymiotnik'},
+ {id:'5-7',lesson:5,heb:'יָשָׁר',tr:'yāšār',pl:'prawy',pos:'przymiotnik'},
+ {id:'5-8',lesson:5,heb:'צַדִּיק',tr:'ṣaddîq',pl:'sprawiedliwy',pos:'przymiotnik'},
+ {id:'5-9',lesson:5,heb:'קָשֶׁה',tr:'qāšeh',pl:'trudny, twardy, surowy',pos:'przymiotnik'},
+ {id:'5-10',lesson:5,heb:'רָשָׁע',tr:'rāšāʿ',pl:'zły, niedobry, występny',pos:'przymiotnik'},
+ {id:'5-11',lesson:5,heb:'דָּוִד',tr:'dāwiḏ',pl:'Dawid',pos:'imię własne'},
+ {id:'5-12',lesson:5,heb:'שְׁמוּאֵל',tr:'šəmûʾēl',pl:'Samuel',pos:'imię własne'},
+ {id:'5-13',lesson:5,heb:'יְרוּשָׁלִַם',tr:'yərûšāláim',pl:'Jerozolima',pos:'imię własne'},
+ {id:'5-14',lesson:5,heb:'מִן',tr:'min',pl:'od; (partytywnie) część z',pos:'przyimek'},
+ {id:'5-15',lesson:5,heb:'אֲשֶׁר',tr:'ʾăšer',pl:'(zaimek wzgl.) który, która, które',pos:'zaimek'},
+
+ {id:'6-1',lesson:6,heb:'קוֹל',tr:'qôl',pl:'głos, dźwięk',pos:'rzeczownik',note:'l.mn. -ôṯ; בְּקוֹל גָּדוֹל = głośno'},
+ {id:'6-2',lesson:6,heb:'עֵץ',tr:'ʿēṣ',pl:'drzewo, drewno',pos:'rzeczownik',note:'l.mn. עֵצִים ʿēṣîm'},
+ {id:'6-3',lesson:6,heb:'כֶּרֶם',tr:'kérem',pl:'winnica',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'6-4',lesson:6,heb:'צֹעֵק',tr:'ṣōʿēq',pl:'krzyczący (w ucisku)',pos:'imiesłów'},
+ {id:'6-5',lesson:6,heb:'שֹׁלֵחַ',tr:'šōlēaḥ',pl:'wysyłający',pos:'imiesłów'},
+ {id:'6-6',lesson:6,heb:'נֹטֵעַ',tr:'nōṭēaʿ',pl:'sadzący',pos:'imiesłów'},
+ {id:'6-7',lesson:6,heb:'יֹצֵא',tr:'yōṣēʾ',pl:'wychodzący, opuszczający (jakieś miejsce)',pos:'imiesłów'},
+ {id:'6-8',lesson:6,heb:'תַּחַת',tr:'táḥaṯ',pl:'pod; zamiast',pos:'przyimek'},
+ {id:'6-9',lesson:6,heb:'כִּי',tr:'kî',pl:'ponieważ; że',pos:'spójnik'},
+ {id:'6-10',lesson:6,heb:'רַב',tr:'raḇ',pl:'liczny, wielki, obfity',pos:'przymiotnik'},
+
+ {id:'7-1',lesson:7,heb:'צֹאן',tr:'ṣōʾn',pl:'małe bydło (owce i kozy)',pos:'rzeczownik',note:'rzecz. zbiorowy; brak l.mn.'},
+ {id:'7-2',lesson:7,heb:'בָּקָר',tr:'bāqār',pl:'duże bydło (byki, krowy, woły)',pos:'rzeczownik',note:'rzecz. zbiorowy; brak l.mn.'},
+ {id:'7-3',lesson:7,heb:'גָּמָל',tr:'gāmāl',pl:'wielbłąd',pos:'rzeczownik',note:'l.mn. nieregularna: גְּמַלִּים gəmallîm'},
+ {id:'7-4',lesson:7,heb:'לֶחֶם',tr:'léḥem',pl:'chleb, pożywienie',pos:'rzeczownik',note:'brak l.mn.'},
+ {id:'7-5',lesson:7,heb:'יֹרֵד',tr:'yōrēḏ',pl:'schodzący',pos:'imiesłów'},
+ {id:'7-6',lesson:7,heb:'עָשִׁיר',tr:'ʿāšîr',pl:'bogaty',pos:'przymiotnik'},
+ {id:'7-7',lesson:7,heb:'דַּל',tr:'dal',pl:'biedny',pos:'przymiotnik'},
+ {id:'7-8',lesson:7,heb:'יֵשׁ',tr:'yēš',pl:'jest, istnieje',pos:'partykuła'},
+ {id:'7-9',lesson:7,heb:'אֵין',tr:'ʾēn',pl:'nie ma, nie istnieje',pos:'partykuła'},
+
+ {id:'8-1',lesson:8,heb:'בִּינָה',tr:'bînāh',pl:'rozumienie, pojmowanie, spostrzegawczość',pos:'rzeczownik'},
+ {id:'8-2',lesson:8,heb:'צֶדֶק',tr:'ṣéḏeq',pl:'sprawiedliwość',pos:'rzeczownik',note:'por. צַדִּיק ṣaddîq'},
+ {id:'8-3',lesson:8,heb:'אֵשׁ',tr:'ʾēš',pl:'ogień',pos:'rzeczownik',note:'r.ż.; brak l.mn.'},
+ {id:'8-4',lesson:8,heb:'נָבִיא',tr:'nāḇîʾ',pl:'prorok',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'8-5',lesson:8,heb:'בֹּנֶה',tr:'bōneh',pl:'budujący',pos:'imiesłów'},
+ {id:'8-6',lesson:8,heb:'עֹלֶה',tr:'ʿōleh',pl:'wchodzący, wstępujący',pos:'imiesłów'},
+ {id:'8-7',lesson:8,heb:'נֹפֵל',tr:'nōp̄el',pl:'upadający',pos:'imiesłów'},
+
+ {id:'9-1',lesson:9,heb:'יוֹם',tr:'yôm',pl:'dzień',pos:'rzeczownik',note:'l.mn. nieregularna: יָמִים yāmîm; הַיּוֹם = dzisiaj'},
+ {id:'9-2',lesson:9,heb:'לַיְלָה',tr:'láylāh',pl:'noc',pos:'rzeczownik',note:'r.m.; l.mn. rzadkie'},
+ {id:'9-3',lesson:9,heb:'מָקוֹם',tr:'māqôm',pl:'miejsce',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'9-4',lesson:9,heb:'שָׁמַיִם',tr:'šāmáyim',pl:'niebo, niebiosa',pos:'rzeczownik',note:'tylko l.mn.'},
+ {id:'9-5',lesson:9,heb:'יָלַד',tr:'yālaḏ',pl:'rodzić',pos:'czasownik',note:'perfectum, 3 os. r.m.'},
+ {id:'9-6',lesson:9,heb:'קָבַץ',tr:'qāḇaṣ',pl:'gromadzić',pos:'czasownik',note:'perfectum, 3 os. r.m.'},
+ {id:'9-7',lesson:9,heb:'זָכַר',tr:'zāḵar',pl:'pamiętać',pos:'czasownik',note:'perfectum, 3 os. r.m.'},
+ {id:'9-8',lesson:9,heb:'אֶחָד',tr:'ʾeḥāḏ',pl:'jeden',pos:'liczebnik',note:'r.ż. nieregularna: אַחַת ʾaḥaṯ; אֶחָד מִן = jeden z'},
+ {id:'9-9',lesson:9,heb:'בֵּין',tr:'bên',pl:'między, pomiędzy',pos:'przyimek'},
+ {id:'9-10',lesson:9,heb:'בְּתוֹךְ',tr:'bəṯôḵ',pl:'pośród, w środku',pos:'przyimek'},
+ {id:'9-11',lesson:9,heb:'מִתּוֹךְ',tr:'mittôḵ',pl:'spośród, ze środka',pos:'przyimek'},
+ {id:'9-12',lesson:9,heb:'גַּם',tr:'gam',pl:'również, nawet, także',pos:'przysłówek'},
+ {id:'9-13',lesson:9,heb:'לֹא',tr:'lōʾ',pl:'nie (przeczenie)',pos:'przysłówek'},
+
+ {id:'10-1',lesson:10,heb:'גִּבּוֹר',tr:'gibbôr',pl:'wojownik, bohater, mężny człowiek',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'10-2',lesson:10,heb:'גִּבְעָה',tr:'giḇʿāh',pl:'wzgórze',pos:'rzeczownik'},
+ {id:'10-3',lesson:10,heb:'מַיִם',tr:'máyim',pl:'woda',pos:'rzeczownik',note:'tylko l.mn.'},
+ {id:'10-4',lesson:10,heb:'מַחֲנֶה',tr:'maḥăneh',pl:'obóz',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'10-5',lesson:10,heb:'מִלְחָמָה',tr:'milḥāmāh',pl:'bitwa, wojna',pos:'rzeczownik'},
+ {id:'10-6',lesson:10,heb:'פְּרִי',tr:'pərî',pl:'owoc',pos:'rzeczownik'},
+ {id:'10-7',lesson:10,heb:'בָּחַר',tr:'bāḥar',pl:'wybierać',pos:'czasownik',note:'z בְּ (np. בָּחַר בִּי = wybrał mnie)'},
+ {id:'10-8',lesson:10,heb:'הָרַג',tr:'hāraḡ',pl:'zabić, zamordować',pos:'czasownik'},
+ {id:'10-9',lesson:10,heb:'יָדַע',tr:'yāḏaʿ',pl:'wiedzieć, znać, poznać',pos:'czasownik'},
+ {id:'10-10',lesson:10,heb:'לָקַח',tr:'lāqaḥ',pl:'wziąć, brać',pos:'czasownik'},
+ {id:'10-11',lesson:10,heb:'עָמַד',tr:'ʿāmaḏ',pl:'stać, stanąć',pos:'czasownik'},
+ {id:'10-12',lesson:10,heb:'לִפְנֵי',tr:'lip̄nê',pl:'przed, wobec, w obecności',pos:'przyimek'},
+
+ {id:'11-1',lesson:11,heb:'שֶׁמֶשׁ',tr:'šémeš',pl:'słońce',pos:'rzeczownik'},
+ {id:'11-2',lesson:11,heb:'יָרֵחַ',tr:'yārēaḥ',pl:'księżyc',pos:'rzeczownik'},
+ {id:'11-3',lesson:11,heb:'כּוֹכָב',tr:'kôḵāḇ',pl:'gwiazda',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'11-4',lesson:11,heb:'עָנָן',tr:'ʿānān',pl:'obłok',pos:'rzeczownik'},
+ {id:'11-5',lesson:11,heb:'בְּרָכָה',tr:'bərāḵāh',pl:'błogosławieństwo',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'11-6',lesson:11,heb:'שָׁנָה',tr:'šānāh',pl:'rok',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'11-7',lesson:11,heb:'תּוֹרָה',tr:'tôrāh',pl:'prawo, Prawo (Tora)',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'11-8',lesson:11,heb:'מָצָא',tr:'māṣāʾ',pl:'znaleźć',pos:'czasownik'},
+ {id:'11-9',lesson:11,heb:'בָּרָא',tr:'bārāʾ',pl:'stworzyć',pos:'czasownik'},
+ {id:'11-10',lesson:11,heb:'קָרָא',tr:'qārāʾ',pl:'wołać, nazywać; wezwać; przeczytać',pos:'czasownik',note:'+ אֶל = wołać do; + לְ = wezwać kogoś'},
+ {id:'11-11',lesson:11,heb:'אָמַר',tr:'ʾāmar',pl:'mówić, powiedzieć',pos:'czasownik'},
+ {id:'11-12',lesson:11,heb:'לֵאמֹר',tr:'lēʾmōr',pl:'(wprowadza mowę niezależną; nieprzekładalne)',pos:'spójnik'},
+
+ {id:'12-1',lesson:12,heb:'אֱלֹהִים',tr:'ʾĕlōhîm',pl:'Bóg; bogowie',pos:'rzeczownik',note:'l.mn.; z czas. l.poj. = „Bóg"'},
+ {id:'12-2',lesson:12,heb:'יהוה',tr:'Yhwh',pl:'Jahwe, Pan (imię Boga)',pos:'imię własne',note:'czytane אֲדֹנָי ʾăḏōnāy'},
+ {id:'12-3',lesson:12,heb:'בְּרִית',tr:'bərîṯ',pl:'przymierze, traktat',pos:'rzeczownik',note:'r.ż.'},
+ {id:'12-4',lesson:12,heb:'חֵן',tr:'ḥēn',pl:'łaska, przychylność',pos:'rzeczownik'},
+ {id:'12-5',lesson:12,heb:'יְשׁוּעָה',tr:'yəšûʿāh',pl:'zbawienie, wyzwolenie, zwycięstwo',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'12-6',lesson:12,heb:'שִׂמְחָה',tr:'śimḥāh',pl:'radość',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'12-7',lesson:12,heb:'עָשָׂה',tr:'ʿāśāh',pl:'zrobić, uczynić, wykonać',pos:'czasownik'},
+ {id:'12-8',lesson:12,heb:'רָאָה',tr:'rāʾāh',pl:'widzieć, zobaczyć',pos:'czasownik'},
+ {id:'12-9',lesson:12,heb:'כָּרַת',tr:'kāraṯ',pl:'przeciąć; (z בְּרִית) zawrzeć przymierze',pos:'czasownik'},
+ {id:'12-10',lesson:12,heb:'נָסַע',tr:'nāsaʿ',pl:'wyruszyć, podróżować, wędrować',pos:'czasownik'},
+ {id:'12-11',lesson:12,heb:'עִם',tr:'ʿim',pl:'z, wraz z, razem z',pos:'przyimek'},
+ {id:'12-12',lesson:12,heb:'כְּ',tr:'kə',pl:'jak, podobnie do, według',pos:'przyimek'},
+ {id:'12-13',lesson:12,heb:'אֵת',tr:'ʾēṯ',pl:'z, wraz z, razem z',pos:'przyimek',note:'lub אֶת־; nie mylić z partykułą dopełnienia'},
+
+ {id:'13-1',lesson:13,heb:'חַטָּאת',tr:'ḥaṭṭāʾṯ',pl:'grzech',pos:'rzeczownik',note:'r.ż.; l.mn. חַטָּאוֹת ḥaṭṭāʾôṯ'},
+ {id:'13-2',lesson:13,heb:'חֲלוֹם',tr:'ḥălôm',pl:'sen',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'13-3',lesson:13,heb:'בַּת',tr:'baṯ',pl:'córka',pos:'rzeczownik',note:'l.mn. בָּנוֹת bānôṯ'},
+ {id:'13-4',lesson:13,heb:'אֵימָה',tr:'ʾêmāh',pl:'strach, lęk, przerażenie',pos:'rzeczownik'},
+ {id:'13-5',lesson:13,heb:'שִׁפְחָה',tr:'šip̄ḥāh',pl:'służąca, niewolnica',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'13-6',lesson:13,heb:'אָמָה',tr:'ʾāmāh',pl:'służąca, niewolnica',pos:'rzeczownik',note:'l.mn. nieregularna אֲמָהוֹת ʾămāhôṯ'},
+ {id:'13-7',lesson:13,heb:'הָיָה',tr:'hāyāh',pl:'być, stać się',pos:'czasownik',note:'+ לְ = stać się czymś'},
+ {id:'13-8',lesson:13,heb:'חָטָא',tr:'ḥāṭāʾ',pl:'grzeszyć',pos:'czasownik',note:'przeciwko: לְ'},
+ {id:'13-9',lesson:13,heb:'חָלַם',tr:'ḥālam',pl:'śnić',pos:'czasownik'},
+ {id:'13-10',lesson:13,heb:'לָכַד',tr:'lāḵaḏ',pl:'pojmać, schwytać, zdobyć',pos:'czasownik'},
+
+ {id:'14-1',lesson:14,heb:'כְּלִי',tr:'kəlî',pl:'naczynie, zbiornik; narzędzie',pos:'rzeczownik',note:'l.mn. nieregularna כֵּלִים kēlîm'},
+ {id:'14-2',lesson:14,heb:'עֶרֶב',tr:'ʿéreḇ',pl:'wieczór',pos:'rzeczownik'},
+ {id:'14-3',lesson:14,heb:'שֻׁלְחָן',tr:'šulḥān',pl:'stół',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'14-4',lesson:14,heb:'בֹּקֶר',tr:'bṓqer',pl:'poranek',pos:'rzeczownik'},
+ {id:'14-5',lesson:14,heb:'קָם',tr:'qām',pl:'powstać, wstać',pos:'czasownik',note:'czasownik pusty (wydrążony)'},
+ {id:'14-6',lesson:14,heb:'שָׂם',tr:'śām',pl:'położyć, umieścić, kłaść',pos:'czasownik',note:'czasownik pusty'},
+ {id:'14-7',lesson:14,heb:'בָּא',tr:'bāʾ',pl:'przyjść, wejść',pos:'czasownik',note:'czas. pusty; może łączyć rzecz. miejsca bez przyimka'},
+ {id:'14-8',lesson:14,heb:'צָם',tr:'ṣām',pl:'pościć',pos:'czasownik',note:'czasownik pusty'},
+ {id:'14-9',lesson:14,heb:'גָּר',tr:'gār',pl:'przebywać, mieszkać',pos:'czasownik',note:'czasownik pusty'},
+ {id:'14-10',lesson:14,heb:'שָׁתָה',tr:'šāṯāh',pl:'pić',pos:'czasownik'},
+ {id:'14-11',lesson:14,heb:'עַד',tr:'ʿaḏ',pl:'do; aż do; tak daleko, jak',pos:'przyimek'},
+ {id:'14-12',lesson:14,heb:'כֹּל',tr:'kōl',pl:'każdy, cały, wszystko',pos:'rzeczownik',note:'כָּל־ kol- przed wyrazem'},
+
+ {id:'15-1',lesson:15,heb:'מִצְוָה',tr:'miṣwāh',pl:'przykazanie',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'15-2',lesson:15,heb:'אוֹר',tr:'ʾôr',pl:'światło',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'15-3',lesson:15,heb:'חֹשֶׁךְ',tr:'ḥṓšeḵ',pl:'ciemność',pos:'rzeczownik'},
+ {id:'15-4',lesson:15,heb:'אֹיֵב',tr:'ʾōyēḇ',pl:'wróg',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'15-5',lesson:15,heb:'סָבַב',tr:'sāḇaḇ',pl:'okrążać, iść naokoło',pos:'czasownik'},
+ {id:'15-6',lesson:15,heb:'אָרַר',tr:'ʾārar',pl:'przeklinać',pos:'czasownik'},
+ {id:'15-7',lesson:15,heb:'עָזַב',tr:'ʿāzaḇ',pl:'pozostawić, opuścić, porzucić',pos:'czasownik'},
+ {id:'15-8',lesson:15,heb:'עָבַר',tr:'ʿāḇar',pl:'przechodzić (o miejscu); przekraczać (przykazanie)',pos:'czasownik'},
+ {id:'15-9',lesson:15,heb:'יָרַשׁ',tr:'yāraš',pl:'dziedziczyć',pos:'czasownik'},
+ {id:'15-10',lesson:15,heb:'שָׁכַח',tr:'šāḵaḥ',pl:'zapominać',pos:'czasownik'},
+ {id:'15-11',lesson:15,heb:'כַּאֲשֶׁר',tr:'kaʾăšer',pl:'tak, jak; zgodnie z; kiedy',pos:'spójnik'},
+
+ {id:'16-1',lesson:16,heb:'אֶבֶן',tr:'ʾéḇen',pl:'kamień',pos:'rzeczownik',note:'r.ż.; l.mn. -îm'},
+ {id:'16-2',lesson:16,heb:'דָּג',tr:'dāḡ',pl:'ryba',pos:'rzeczownik',note:'l.mn. -îm; zbior. r.ż. דָּגָה dāḡāh'},
+ {id:'16-3',lesson:16,heb:'חֲצִי',tr:'ḥăṣî',pl:'połowa',pos:'rzeczownik',note:'brak l.mn.'},
+ {id:'16-4',lesson:16,heb:'יָם',tr:'yām',pl:'morze',pos:'rzeczownik',note:'l.mn. יַמִּים yammîm'},
+ {id:'16-5',lesson:16,heb:'לוּחַ',tr:'lûaḥ',pl:'tablica',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'16-6',lesson:16,heb:'מְלָאכָה',tr:'məlāʾḵāh',pl:'praca, zajęcie',pos:'rzeczownik'},
+ {id:'16-7',lesson:16,heb:'עוֹף',tr:'ʿôp̄',pl:'ptactwo, ptaki',pos:'rzeczownik',note:'rzecz. zbiorowy; brak l.mn.'},
+ {id:'16-8',lesson:16,heb:'עֵשֶׂב',tr:'ʿēśeḇ',pl:'trawa, zioła',pos:'rzeczownik',note:'rzecz. zbiorowy'},
+ {id:'16-9',lesson:16,heb:'צֶלֶם',tr:'ṣélem',pl:'obraz, podobieństwo; posąg',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'16-10',lesson:16,heb:'שָׁבַר',tr:'šāḇar',pl:'rozbić, roztrzaskać',pos:'czasownik'},
+ {id:'16-11',lesson:16,heb:'שָׁמַע',tr:'šāmaʿ',pl:'słyszeć; (+ אֶל/לְ) słuchać; być posłusznym',pos:'czasownik'},
+ {id:'16-12',lesson:16,heb:'שָׁבַת',tr:'šāḇaṯ',pl:'przestać, odpocząć',pos:'czasownik'},
+ {id:'16-13',lesson:16,heb:'לָמָּה',tr:'lāmmāh',pl:'dlaczego?',pos:'przysłówek',note:'przed gardłowymi: לָמָה lāmáh'},
+
+ {id:'17-1',lesson:17,heb:'רָקִיעַ',tr:'rāqîaʿ',pl:'firmament, sklepienie niebieskie',pos:'rzeczownik'},
+ {id:'17-2',lesson:17,heb:'יַבָּשָׁה',tr:'yabbāšāh',pl:'sucha ziemia, ląd',pos:'rzeczownik'},
+ {id:'17-3',lesson:17,heb:'אָב',tr:'ʾāḇ',pl:'ojciec',pos:'rzeczownik',note:'l.mn. -ôṯ: אָבוֹת ʾāḇôṯ'},
+ {id:'17-4',lesson:17,heb:'אָח',tr:'ʾāḥ',pl:'brat',pos:'rzeczownik',note:'l.mn. nieregularna: אַחִים ʾaḥîm'},
+ {id:'17-5',lesson:17,heb:'בֵּן',tr:'bēn',pl:'syn',pos:'rzeczownik',note:'l.mn. nieregularna: בָּנִים bānîm'},
+ {id:'17-6',lesson:17,heb:'מַלְכָּה',tr:'malkāh',pl:'królowa',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'17-7',lesson:17,heb:'שֵׁם',tr:'šēm',pl:'imię',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'17-8',lesson:17,heb:'רִאשׁוֹן',tr:'riʾšôn',pl:'pierwszy',pos:'liczebnik porządkowy',note:'r.ż. רִאשׁוֹנָה riʾšônāh'},
+ {id:'17-9',lesson:17,heb:'שֵׁנִי',tr:'šēnî',pl:'drugi',pos:'liczebnik porządkowy',note:'r.ż. שֵׁנִית šēnîṯ'},
+ {id:'17-10',lesson:17,heb:'שְׁלִישִׁי',tr:'šəlîšî',pl:'trzeci',pos:'liczebnik porządkowy',note:'r.ż. שְׁלִישִׁית šəlîšîṯ'},
+ {id:'17-11',lesson:17,heb:'רְבִיעִי',tr:'rəḇîʿî',pl:'czwarty',pos:'liczebnik porządkowy',note:'r.ż. רְבִיעִית rəḇîʿîṯ'},
+ {id:'17-12',lesson:17,heb:'חֲמִישִׁי',tr:'ḥămîšî',pl:'piąty',pos:'liczebnik porządkowy',note:'r.ż. חֲמִישִׁית ḥămîšîṯ'},
+ {id:'17-13',lesson:17,heb:'עַל־פְּנֵי',tr:'ʿal-pənê',pl:'na powierzchni, ponad',pos:'przyimek'},
+ {id:'17-14',lesson:17,heb:'כֵּן',tr:'kēn',pl:'tak, w ten sposób',pos:'przysłówek',note:'odnosi się do uprzedniego kontekstu'},
+
+ {id:'18-1',lesson:18,heb:'אָדָם',tr:'ʾāḏām',pl:'człowiek; ludzkość; (imię) Adam',pos:'rzeczownik',note:'zbior./l.poj.; brak l.mn.'},
+ {id:'18-2',lesson:18,heb:'אֲדָמָה',tr:'ʾăḏāmāh',pl:'ziemia, grunt, rola, własność ziemska',pos:'rzeczownik'},
+ {id:'18-3',lesson:18,heb:'בְּהֵמָה',tr:'bəhēmāh',pl:'zwierzę, bestia (często zbiorowo)',pos:'rzeczownik',note:'st. constr. בֶּהֱמַת; l.mn. -ôṯ'},
+ {id:'18-4',lesson:18,heb:'רֶמֶשׂ',tr:'rémeś',pl:'istoty pełzające',pos:'rzeczownik',note:'rzecz. zbiorowy; brak l.mn.'},
+ {id:'18-5',lesson:18,heb:'זָכָר',tr:'zāḵār',pl:'mężczyzna; samiec',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'18-6',lesson:18,heb:'נְקֵבָה',tr:'nəqēḇāh',pl:'kobieta; samica',pos:'rzeczownik'},
+ {id:'18-7',lesson:18,heb:'שַׁבָּת',tr:'šabbāṯ',pl:'szabat',pos:'rzeczownik',note:'r.ż.; l.mn. nieregularna שַׁבָּתוֹת šabbāṯôṯ'},
+ {id:'18-8',lesson:18,heb:'מְאוּמָה',tr:'məʾûmāh',pl:'cokolwiek, coś; (z przeczeniem) nic',pos:'rzeczownik'},
+ {id:'18-9',lesson:18,heb:'שִׁשִּׁי',tr:'šiššî',pl:'szósty',pos:'liczebnik porządkowy',note:'r.ż. שִׁשִּׁית šiššîṯ'},
+ {id:'18-10',lesson:18,heb:'שְׁבִיעִי',tr:'šəḇîʿî',pl:'siódmy',pos:'liczebnik porządkowy',note:'r.ż. שְׁבִיעִית šəḇîʿîṯ'},
+ {id:'18-11',lesson:18,heb:'אַחֵר',tr:'ʾaḥēr',pl:'inny, kolejny',pos:'przymiotnik',note:'r.ż. אַחֶרֶת; l.mn. אֲחֵרִים / אֲחֵרוֹת'},
+ {id:'18-12',lesson:18,heb:'יָצַר',tr:'yāṣar',pl:'kształtować, formować, uczynić',pos:'czasownik'},
+ {id:'18-13',lesson:18,heb:'חַי',tr:'ḥay',pl:'żywy, żyjący',pos:'przymiotnik',note:'formy w §22; nie mylić z חַיָּה / חַיִּים'},
+ {id:'18-14',lesson:18,heb:'חַיָּה',tr:'ḥayyāh',pl:'zwierzę, żywe stworzenie',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'18-15',lesson:18,heb:'חַיִּים',tr:'ḥayyîm',pl:'życie',pos:'rzeczownik',note:'tylko l.mn. (w znaczeniu l.poj.)'},
+
+ {id:'19-1',lesson:19,heb:'נָחָשׁ',tr:'nāḥāš',pl:'wąż',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'19-2',lesson:19,heb:'עֵזֶר',tr:'ʿēzer',pl:'pomoc, wspomożenie',pos:'rzeczownik'},
+ {id:'19-3',lesson:19,heb:'צֵלָע',tr:'ṣēlāʿ',pl:'żebro, bok',pos:'rzeczownik',note:'l.mn. -îm / -ôṯ; st. constr. צֶלַע ṣélaʿ'},
+ {id:'19-4',lesson:19,heb:'שִׁיר',tr:'šîr',pl:'pieśń',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'19-5',lesson:19,heb:'בָּשָׂר',tr:'bāśār',pl:'mięso, ciało',pos:'rzeczownik',note:'כָּל־בָּשָׂר = ludzkość'},
+ {id:'19-6',lesson:19,heb:'מָוֶת',tr:'máwet',pl:'śmierć',pos:'rzeczownik'},
+ {id:'19-7',lesson:19,heb:'אָרוּר',tr:'ʾārûr',pl:'przeklęty',pos:'przymiotnik'},
+ {id:'19-8',lesson:19,heb:'נֶחְמָד',tr:'neḥmāḏ',pl:'przyjemny, miły',pos:'przymiotnik'},
+ {id:'19-9',lesson:19,heb:'חָכָם',tr:'ḥāḵām',pl:'mądry; (jako rzecz.) mędrzec',pos:'przymiotnik'},
+ {id:'19-10',lesson:19,heb:'שָׁר',tr:'šār',pl:'śpiewać',pos:'czasownik',note:'por. שִׁיר pieśń'},
+ {id:'19-11',lesson:19,heb:'אֶתְמוֹל',tr:'ʾeṯmôl',pl:'wczoraj',pos:'przysłówek',note:'lub תְּמוֹל təmôl'},
+ {id:'19-12',lesson:19,heb:'אַחֲרֵי',tr:'ʾaḥărê',pl:'po, za; (z אֲשֶׁר) potem',pos:'przyimek'},
+ {id:'19-13',lesson:19,heb:'אַחַר',tr:'ʾaḥar',pl:'po, za; potem',pos:'przyimek',note:'wariant אַחֲרֵי'},
+
+ {id:'20-1',lesson:20,heb:'חוּץ',tr:'ḥûṣ',pl:'zewnątrz, zewnętrzna część',pos:'rzeczownik',note:'מִחוּץ לְ = na zewnątrz czegoś'},
+ {id:'20-2',lesson:20,heb:'חַיִל',tr:'ḥáyil',pl:'siła, moc; armia; bogactwo',pos:'rzeczownik',note:'l.mn. חֲיָלִים; גִּבּוֹר חַיִל = mężny wojownik'},
+ {id:'20-3',lesson:20,heb:'מִסְפָּר',tr:'mispār',pl:'liczba, liczenie',pos:'rzeczownik',note:'אֵין מִסְפָּר לְ = bez liku'},
+ {id:'20-4',lesson:20,heb:'מֶרְכָּבָה',tr:'merkāḇāh',pl:'rydwan',pos:'rzeczownik',note:'l.mn. מַרְכָּבוֹת markāḇôṯ'},
+ {id:'20-5',lesson:20,heb:'סוּס',tr:'sûs',pl:'koń',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'20-6',lesson:20,heb:'פָּרָשׁ',tr:'pārāš',pl:'jeździec (konny)',pos:'rzeczownik',note:'l.mn. פָּרָשִׁים pārāšîm'},
+ {id:'20-7',lesson:20,heb:'צָבָא',tr:'ṣāḇāʾ',pl:'armia, zastępy',pos:'rzeczownik',note:'l.mn. -ôṯ; יהוה צְבָאוֹת = Pan Zastępów'},
+ {id:'20-8',lesson:20,heb:'רוּחַ',tr:'rûaḥ',pl:'tchnienie, wiatr, duch',pos:'rzeczownik',note:'r.ż.; l.mn. -ôṯ'},
+ {id:'20-9',lesson:20,heb:'צוּר',tr:'ṣûr',pl:'skała; (przen.) oparcie, obrona',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'20-10',lesson:20,heb:'קָהָל',tr:'qāhāl',pl:'zgromadzenie, zebranie',pos:'rzeczownik'},
+ {id:'20-11',lesson:20,heb:'קִיר',tr:'qîr',pl:'ściana',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'20-12',lesson:20,heb:'חָדָשׁ',tr:'ḥāḏāš',pl:'nowy',pos:'przymiotnik'},
+ {id:'20-13',lesson:20,heb:'חָזָק',tr:'ḥāzāq',pl:'silny, twardy, mocny',pos:'przymiotnik'},
+ {id:'20-14',lesson:20,heb:'רָכַב',tr:'rāḵaḇ',pl:'jechać',pos:'czasownik'},
+
+ {id:'21-1',lesson:21,heb:'פֶּה',tr:'peh',pl:'usta',pos:'rzeczownik',note:'לְפִי/כְּפִי/עַל־פִּי = według; פֶּה אֶחָד = jednomyślnie'},
+ {id:'21-2',lesson:21,heb:'יָד',tr:'yāḏ',pl:'ręka, bok; (przen.) siła',pos:'rzeczownik',note:'r.ż.; l.podw. יָדַיִם; l.mn. -ôṯ'},
+ {id:'21-3',lesson:21,heb:'דָּם',tr:'dām',pl:'krew',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'21-4',lesson:21,heb:'כָּבוֹד',tr:'kāḇôḏ',pl:'chwała, cześć, bogactwo',pos:'rzeczownik'},
+ {id:'21-5',lesson:21,heb:'מִנְחָה',tr:'minḥāh',pl:'ofiara, dar',pos:'rzeczownik',note:'l.mn. מִנְחוֹת minḥôṯ'},
+ {id:'21-6',lesson:21,heb:'כָּבֵד',tr:'kāḇēḏ',pl:'być ciężkim, ważnym; (przym.) ciężki',pos:'czasownik'},
+ {id:'21-7',lesson:21,heb:'מָלֵא',tr:'mālēʾ',pl:'być pełnym; (przym.) pełny',pos:'czasownik',note:'nie wymaga przyimka'},
+ {id:'21-8',lesson:21,heb:'מֵת',tr:'mēṯ',pl:'umrzeć; (przym.) martwy',pos:'czasownik'},
+ {id:'21-9',lesson:21,heb:'בּוֹשׁ',tr:'bôš',pl:'wstydzić się, być zawstydzonym',pos:'czasownik'},
+ {id:'21-10',lesson:21,heb:'שָׁמַר',tr:'šāmar',pl:'strzec, pilnować, zachowywać',pos:'czasownik'},
+ {id:'21-11',lesson:21,heb:'עָבַד',tr:'ʿāḇaḏ',pl:'służyć, pracować; uprawiać (ziemię)',pos:'czasownik'},
+ {id:'21-12',lesson:21,heb:'חָרָה',tr:'ḥārāh',pl:'rozgniewać się',pos:'czasownik',note:'bezosobowo z לְ: חָרָה לָאִישׁ'},
+ {id:'21-13',lesson:21,heb:'רָעָה',tr:'rāʿāh',pl:'paść (stado), być pasterzem',pos:'czasownik',note:'רֹעֶה rōʿeh = pasterz'},
+ {id:'21-14',lesson:21,heb:'קַיִן',tr:'qáyin',pl:'Kain',pos:'imię własne'},
+ {id:'21-15',lesson:21,heb:'הֶבֶל',tr:'héḇel',pl:'Abel',pos:'imię własne'},
+ {id:'21-16',lesson:21,heb:'חַוָּה',tr:'ḥawwāh',pl:'Ewa',pos:'imię własne'},
+
+ {id:'22-1',lesson:22,heb:'אֹזֶן',tr:'ʾṓzen',pl:'ucho',pos:'rzeczownik',note:'r.ż.; l.podw. אָזְנַיִם ʾoznáyim'},
+ {id:'22-2',lesson:22,heb:'רֶגֶל',tr:'régel',pl:'stopa, noga',pos:'rzeczownik',note:'r.ż.; l.podw. רַגְלַיִם; בְּרַגְלֵי = idący za'},
+ {id:'22-3',lesson:22,heb:'קֶבֶר',tr:'qéḇer',pl:'grób',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'22-4',lesson:22,heb:'עַיִן',tr:'ʿáyin',pl:'oko; źródło',pos:'rzeczownik',note:'r.ż.; l.podw. עֵינַיִם ʿênáyim'},
+ {id:'22-5',lesson:22,heb:'צָהֳרַיִם',tr:'ṣohŏráyim',pl:'południe (pora dnia)',pos:'rzeczownik',note:'tylko l.podw.'},
+ {id:'22-6',lesson:22,heb:'מִצְרַיִם',tr:'miṣráyim',pl:'Egipt',pos:'imię własne',note:'מִצְרַיְמָה = do Egiptu'},
+ {id:'22-7',lesson:22,heb:'קָבַר',tr:'qāḇar',pl:'pogrzebać, pochować',pos:'czasownik',note:'impf. יִקְבֹּר yiqbōr'},
+ {id:'22-8',lesson:22,heb:'מָכַר',tr:'māḵar',pl:'sprzedać',pos:'czasownik',note:'impf. יִמְכֹּר yimkōr'},
+ {id:'22-9',lesson:22,heb:'שָׂרַף',tr:'śārap̄',pl:'spalić',pos:'czasownik',note:'impf. יִשְׂרֹף yiśrōp̄'},
+ {id:'22-10',lesson:22,heb:'דָּרַשׁ',tr:'dāraš',pl:'badać, szukać, żądać',pos:'czasownik',note:'impf. יִדְרֹשׁ yiḏrōš'},
+ {id:'22-11',lesson:22,heb:'פַּעֲמַיִם',tr:'paʿămáyim',pl:'dwa razy, dwukrotnie',pos:'przysłówek'},
+
+ {id:'23-1',lesson:23,heb:'רְכוּשׁ',tr:'rəḵûš',pl:'dobytek, własność',pos:'rzeczownik'},
+ {id:'23-2',lesson:23,heb:'כְּנַעֲנִי',tr:'kənaʿănî',pl:'Kananejczyk; kananejski',pos:'rzeczownik/przymiotnik'},
+ {id:'23-3',lesson:23,heb:'מִזְבֵּחַ',tr:'mizbēaḥ',pl:'ołtarz',pos:'rzeczownik',note:'st. constr. מִזְבַּח; l.mn. -ôṯ'},
+ {id:'23-4',lesson:23,heb:'קֶדֶם',tr:'qéḏem',pl:'wschód',pos:'rzeczownik',note:'מִקֶּדֶם לְ = na wschód od'},
+ {id:'23-5',lesson:23,heb:'שָׁכַב',tr:'šāḵaḇ',pl:'leżeć',pos:'czasownik',note:'impf. יִשְׁכַּב yiškaḇ'},
+ {id:'23-6',lesson:23,heb:'בָּטַח',tr:'bāṭaḥ',pl:'ufać, polegać na kimś',pos:'czasownik',note:'impf. יִבְטַח; z בְּ'},
+ {id:'23-7',lesson:23,heb:'גָּאַל',tr:'gāʾal',pl:'odkupić, wykupić',pos:'czasownik',note:'impf. יִגְאַל yiḡʾal'},
+ {id:'23-8',lesson:23,heb:'שָׂמַח',tr:'śāmaḥ',pl:'cieszyć się, radować się',pos:'czasownik',note:'impf. יִשְׂמַח yiśmaḥ'},
+ {id:'23-9',lesson:23,heb:'אָז',tr:'ʾāz',pl:'wtedy, w tamtym czasie',pos:'przysłówek'},
+ {id:'23-10',lesson:23,heb:'מִשָּׁם',tr:'miššām',pl:'stamtąd, z tamtego miejsca',pos:'przysłówek',note:'= מִן + שָׁם'},
+ {id:'23-11',lesson:23,heb:'אָנָה',tr:'ʾā́nāh',pl:'dokąd?',pos:'przysłówek'},
+ {id:'23-12',lesson:23,heb:'מֵאַיִן',tr:'mēʾáyin',pl:'skąd?',pos:'przysłówek'},
+ {id:'23-13',lesson:23,heb:'אַבְרָם',tr:'ʾaḇrām',pl:'Abram (= Abraham)',pos:'imię własne'},
+ {id:'23-14',lesson:23,heb:'אוּר כַּשְׂדִּים',tr:'ʾûr kaśdîm',pl:'Ur Chaldejskie',pos:'imię własne'},
+ {id:'23-15',lesson:23,heb:'תֶּרַח',tr:'téraḥ',pl:'Terach (ojciec Abrama)',pos:'imię własne'},
+ {id:'23-16',lesson:23,heb:'חָרָן',tr:'ḥārān',pl:'Haran (syn Teracha; też miasto)',pos:'imię własne'},
+ {id:'23-17',lesson:23,heb:'שָׂרַי',tr:'śāray',pl:'Saraj (= Sara, żona Abrama)',pos:'imię własne'},
+ {id:'23-18',lesson:23,heb:'לוֹט',tr:'lôṭ',pl:'Lot (bratanek Abrama)',pos:'imię własne'},
+ {id:'23-19',lesson:23,heb:'כְּנַעַן',tr:'kənáʿan',pl:'Kanaan',pos:'imię własne'},
+ {id:'23-20',lesson:23,heb:'שְׁכֶם',tr:'šəḵem',pl:'Sychem (miasto)',pos:'imię własne'},
+ {id:'23-21',lesson:23,heb:'בֵּית־אֵל',tr:'bêṯ-ʾēl',pl:'Betel (miasto)',pos:'imię własne'},
+
+ {id:'24-1',lesson:24,heb:'קֶרֶב',tr:'qéreḇ',pl:'środek, wnętrze',pos:'rzeczownik',note:'בְּקֶרֶב = pośród, wewnątrz'},
+ {id:'24-2',lesson:24,heb:'חֶסֶד',tr:'ḥéseḏ',pl:'życzliwość, łaskawość; dobry czyn',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'24-3',lesson:24,heb:'מִדְבָּר',tr:'miḏbār',pl:'pustynia, step, pastwisko',pos:'rzeczownik',note:'brak l.mn.'},
+ {id:'24-4',lesson:24,heb:'פָּנִים',tr:'pānîm',pl:'twarz',pos:'rzeczownik',note:'tylko l.mn.'},
+ {id:'24-5',lesson:24,heb:'מַרְאֶה',tr:'marʾeh',pl:'wygląd',pos:'rzeczownik'},
+ {id:'24-6',lesson:24,heb:'מִצְרִי',tr:'miṣrî',pl:'Egipcjanin; egipski',pos:'rzeczownik/przymiotnik',note:'r.ż. מִצְרִית; l.mn. מִצְרִים'},
+ {id:'24-7',lesson:24,heb:'מִקְנֶה',tr:'miqneh',pl:'bydło, własność, dobytek',pos:'rzeczownik'},
+ {id:'24-8',lesson:24,heb:'חֲמוֹר',tr:'ḥămôr',pl:'osioł',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'24-9',lesson:24,heb:'אָתוֹן',tr:'ʾāṯôn',pl:'oślica',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'24-10',lesson:24,heb:'מַגֵּפָה',tr:'maggēp̄āh',pl:'plaga, uderzenie, ucisk',pos:'rzeczownik',note:'l.mn. -ôṯ'},
+ {id:'24-11',lesson:24,heb:'נֶגֶב',tr:'néḡeḇ',pl:'Negew (płd. Palestyny)',pos:'rzeczownik',note:'הַנֶּגְבָּה = w stronę Negewu'},
+ {id:'24-12',lesson:24,heb:'אָחוֹת',tr:'ʾāḥôṯ',pl:'siostra',pos:'rzeczownik'},
+ {id:'24-13',lesson:24,heb:'כֹּהֵן',tr:'kōhēn',pl:'kapłan',pos:'rzeczownik',note:'l.mn. -îm'},
+ {id:'24-14',lesson:24,heb:'נָגַף',tr:'nāḡap̄',pl:'uderzyć, dotknąć (plagą)',pos:'czasownik'},
+ {id:'24-15',lesson:24,heb:'לְמַעַן',tr:'ləmáʿan',pl:'aby, po to aby',pos:'spójnik',note:'+ imperfectum'},
+ {id:'24-16',lesson:24,heb:'בַּעֲבוּר',tr:'baʿăḇûr',pl:'ze względu na, z powodu',pos:'przyimek'},
+ {id:'24-17',lesson:24,heb:'עַל־דְּבַר',tr:'ʿal-dəḇar',pl:'ze względu na, z powodu',pos:'przyimek'},
+ {id:'24-18',lesson:24,heb:'פַּרְעֹה',tr:'parʿōh',pl:'faraon',pos:'imię własne',note:'z czytanki'},
+];
+
+const SENTENCES = [
+ {lesson:1,heb:'אַיֵּה הַנַּעַר? הַנַּעַר בַּבַּיִת.',tr:'ʾayyēh hannáʿar? hannáʿar babbáyiṯ.',pl:'Gdzie jest młodzieniec? Młodzieniec jest w domu.'},
+ {lesson:1,heb:'אַיֵּה הַזָּקֵן? הַזָּקֵן שָׁם.',tr:'ʾayyēh hazzāqēn? hazzāqēn šām.',pl:'Gdzie jest starzec? Starzec jest tam.'},
+ {lesson:1,heb:'אַיֵּה הַבַּיִת? הַבַּיִת אֵצֶל הַנָּהָר.',tr:'ʾayyēh habbáyiṯ? habbáyiṯ ʾēṣel hannāhār.',pl:'Gdzie jest dom? Dom jest przy rzece.'},
+ {lesson:1,heb:'הַשָּׂדֶה אֵצֶל הַנָּהָר.',tr:'haśśāḏeh ʾēṣel hannāhār.',pl:'Pole jest przy rzece.'},
+ {lesson:1,heb:'הַנַּעַר וְהַזָּקֵן בַּשָּׂדֶה.',tr:'hannáʿar wəhazzāqēn baśśāḏeh.',pl:'Młodzieniec i starzec są na polu.'},
+ {lesson:1,heb:'אַיֵּה הַזָּקֵן? הַזָּקֵן עַל־הַדֶּרֶךְ.',tr:'ʾayyēh hazzāqēn? hazzāqēn ʿal-haddéreḵ.',pl:'Gdzie jest starzec? Starzec jest na drodze.'},
+
+ {lesson:2,heb:'הָאֲנָשִׁים בָּעִיר.',tr:'hāʾănāšîm bāʿîr.',pl:'Mężczyźni są w mieście.'},
+ {lesson:2,heb:'הַנָּשִׁים בַּבַּיִת.',tr:'hannāšîm babbáyiṯ.',pl:'Kobiety są w domu.'},
+ {lesson:2,heb:'הַמֶּלֶךְ וְהָעֲבָדִים בַּהֵיכָל.',tr:'hamméleḵ wəhāʿăḇāḏîm bahêḵāl.',pl:'Król i słudzy są w pałacu.'},
+ {lesson:2,heb:'הַסְּפָרִים בַּבַּיִת.',tr:'hassəp̄ārîm babbáyiṯ.',pl:'Księgi są w domu.'},
+ {lesson:2,heb:'אַיֵּה הַנְּעָרִים? הַנְּעָרִים בַּשָּׂדֶה.',tr:'ʾayyēh hannəʿārîm? hannəʿārîm baśśāḏeh.',pl:'Gdzie są młodzieńcy? Młodzieńcy są na polu.'},
+ {lesson:2,heb:'אֵיפֹה הַבָּתִּים? הַבָּתִּים בָּעִיר.',tr:'ʾêp̄ōh habbāttîm? habbāttîm bāʿîr.',pl:'Gdzie są domy? Domy są w mieście.'},
+ {lesson:2,heb:'אֵיפֹה הַנְּהָרוֹת? הַנְּהָרוֹת שָׁם.',tr:'ʾêp̄ōh hannəhārôṯ? hannəhārôṯ šām.',pl:'Gdzie są rzeki? Rzeki są tam.'},
+ {lesson:2,heb:'הֶעָרִים שָׁם וְהַנְּהָרוֹת פֹּה.',tr:'heʿārîm šām wəhannəhārôṯ pōh.',pl:'Miasta są tam, a rzeki tutaj.'},
+
+ {lesson:3,heb:'הָאִשָּׁה רָעָה מְאֹד.',tr:'hāʾiššāh rāʿāh məʾōḏ.',pl:'Kobieta jest bardzo zła.'},
+ {lesson:3,heb:'הוּא יָפֶה.',tr:'hûʾ yāp̄eh.',pl:'On jest przystojny.'},
+ {lesson:3,heb:'הָאִישׁ וְהָאִשָּׁה יָפִים מְאֹד.',tr:'hāʾîš wəhāʾiššāh yāp̄îm məʾōḏ.',pl:'Mężczyzna i kobieta są bardzo piękni.'},
+ {lesson:3,heb:'אַיֵּה הָאֲנָשִׁים הַטּוֹבִים? הָאֲנָשִׁים הַטּוֹבִים בָּעִיר הַקְּטַנָּה.',tr:'ʾayyēh hāʾănāšîm haṭṭôḇîm? hāʾănāšîm haṭṭôḇîm bāʿîr haqqəṭannāh.',pl:'Gdzie są dobrzy ludzie? Dobrzy ludzie są w małym mieście.'},
+ {lesson:3,heb:'אֵיפֹה הַנַּעַר הָרַע? הוּא בַּבַּיִת הַגָּדוֹל.',tr:'ʾêp̄ōh hannáʿar hāraʿ? hûʾ babbáyiṯ haggāḏôl.',pl:'Gdzie jest zły młodzieniec? On jest w wielkim domu.'},
+ {lesson:3,heb:'אַיֵּה הַמֶּלֶךְ? הוּא בַּהֵיכָל הַגָּדוֹל.',tr:'ʾayyēh hamméleḵ? hûʾ bahêḵāl haggāḏôl.',pl:'Gdzie jest król? On jest w wielkim pałacu.'},
+ {lesson:3,heb:'מִי טוֹב? טוֹבָה הָאִשָּׁה הַיָּפָה.',tr:'mî ṭôḇ? ṭôḇāh hāʾiššāh hayyāp̄āh.',pl:'Kto jest dobry? Dobra jest piękna kobieta.'},
+ {lesson:3,heb:'הַדָּבָר טוֹב מְאֹד.',tr:'haddāḇār ṭôḇ məʾōḏ.',pl:'Ta rzecz (słowo) jest bardzo dobra.'},
+ {lesson:3,heb:'גָּדוֹל הָרָעָב בָּעִיר.',tr:'gāḏôl hārāʿāḇ bāʿîr.',pl:'Wielki jest głód w mieście.'},
+ {lesson:3,heb:'הָעֲבָדִים רָעִים מְאֹד.',tr:'hāʿăḇāḏîm rāʿîm məʾōḏ.',pl:'Słudzy są bardzo źli.'},
+ {lesson:3,heb:'הַזְּקֵנִים אֵצֶל הַבַּיִת.',tr:'hazzəqēnîm ʾēṣel habbáyiṯ.',pl:'Starcy są przy domu.'},
+ {lesson:3,heb:'הֶעָרִים הַקְּטַנּוֹת אֵצֶל הַנָּהָר הַגָּדוֹל.',tr:'heʿārîm haqqəṭannôṯ ʾēṣel hannāhār haggāḏôl.',pl:'Małe miasta są przy wielkiej rzece.'},
+
+ {lesson:4,heb:'הַשֹּׁפֵט נֹתֵן אֶת־הַסֵּפֶר לָאִישׁ.',tr:'haššōp̄ēṭ nōṯēn ʾeṯ-hassēp̄er lāʾîš.',pl:'Sędzia daje księgę mężczyźnie.'},
+ {lesson:4,heb:'הָאִשָּׁה יֹשֶׁבֶת וְאֹכֶלֶת בַּבַּיִת.',tr:'hāʾiššāh yōšéḇeṯ wəʾōḵéleṯ babbáyiṯ.',pl:'Kobieta siedzi i je w domu.'},
+ {lesson:4,heb:'הָאֲנָשִׁים הֹלְכִים אֶל־הַהֵיכָל הַגָּדוֹל.',tr:'hāʾănāšîm hōləḵîm ʾel-hahêḵāl haggāḏôl.',pl:'Ludzie idą do wielkiego pałacu.'},
+ {lesson:4,heb:'הַמֶּלֶךְ יֹשֵׁב וְכֹתֵב בַּסֵּפֶר.',tr:'hamméleḵ yōšēḇ wəḵōṯēḇ bassēp̄er.',pl:'Król siedzi i pisze w księdze.'},
+ {lesson:4,heb:'הַמַּלְאָכִים הֹלְכִים אֶל־הַהֵיכָל.',tr:'hammalʾāḵîm hōləḵîm ʾel-hahêḵāl.',pl:'Posłańcy idą do pałacu.'},
+ {lesson:4,heb:'רַע הַדָּבָר בְּעֵינֵי הָעָם.',tr:'raʿ haddāḇār bəʿênê hāʿām.',pl:'Zła jest ta sprawa w oczach ludu.'},
+ {lesson:4,heb:'הַנְּעָרִים הֹלְכִים אֶל־הַנָּהָר.',tr:'hannəʿārîm hōləḵîm ʾel-hannāhār.',pl:'Młodzieńcy idą ku rzece.'},
+ {lesson:4,heb:'הַמֶּלֶךְ יֹשֵׁב עַל־הַכִּסֵּא בַּהֵיכָל.',tr:'hamméleḵ yōšēḇ ʿal-hakkissēʾ bahêḵāl.',pl:'Król siedzi na tronie w pałacu.'},
+ {lesson:4,heb:'הָעָם יֹשֵׁב בָּאָרֶץ הַגְּדוֹלָה.',tr:'hāʿām yōšēḇ bāʾāreṣ haggəḏôlāh.',pl:'Lud mieszka w wielkiej krainie.'},
+ {lesson:4,heb:'הָאִישׁ וְהָאִשָּׁה יֹשְׁבִים בָּעִיר הָרָעָה.',tr:'hāʾîš wəhāʾiššāh yōšəḇîm bāʿîr hārāʿāh.',pl:'Mężczyzna i kobieta mieszkają w złym mieście.'},
+ {lesson:4,heb:'הַשֹּׁפְטִים הֹלְכִים אֶל־הַנָּהָר.',tr:'haššōp̄əṭîm hōləḵîm ʾel-hannāhār.',pl:'Sędziowie idą ku rzece.'},
+ {lesson:4,heb:'הַיְלָדִים יֹשְׁבִים אֵצֶל הַנָּהָר הַקָּטֹן.',tr:'haylāḏîm yōšəḇîm ʾēṣel hannāhār haqqāṭōn.',pl:'Dzieci siedzą przy małej rzece.'},
+ {lesson:4,heb:'הוּא כֹּתֵב אֶת־הַדְּבָרִים עַל־הַסֵּפֶר.',tr:'hûʾ kōṯēḇ ʾeṯ-haddəḇārîm ʿal-hassēp̄er.',pl:'On pisze te słowa na zwoju (w księdze).'},
+ {lesson:4,heb:'אֵיפֹה יֹשְׁבוֹת הַנָּשִׁים?',tr:'ʾêp̄ōh yōšəḇôṯ hannāšîm?',pl:'Gdzie siedzą kobiety?'},
+ {lesson:4,heb:'טוֹבִים הָעֲבָדִים בְּעֵינֵי הַמֶּלֶךְ.',tr:'ṭôḇîm hāʿăḇāḏîm bəʿênê hamméleḵ.',pl:'Dobrzy są słudzy w oczach króla.'},
+
+ {lesson:5,heb:'יְקָרָה חָכְמָה מִזָּהָב.',tr:'yəqārāh ḥoḵmāh mizzāhāḇ.',pl:'Mądrość jest droższa od złota.'},
+ {lesson:5,heb:'קָשָׁה הָעֲבוֹדָה מֵהָאֲנָשִׁים.',tr:'qāšāh hāʿăḇôḏāh mēhāʾănāšîm.',pl:'Praca jest zbyt trudna dla ludzi.'},
+ {lesson:5,heb:'יְשָׁרִים הָעֲבָדִים מֵהַמְּלָכִים.',tr:'yəšārîm hāʿăḇāḏîm mēhamməlāḵîm.',pl:'Słudzy są bardziej prawi niż królowie.'},
+ {lesson:5,heb:'דָּוִד יָשָׁר מְאֹד.',tr:'dāwiḏ yāšār məʾōḏ.',pl:'Dawid jest bardzo prawy.'},
+ {lesson:5,heb:'הוּא נֹתֵן חָכְמָה לַמֶּלֶךְ הַיֹּשֵׁב עַל־הַכִּסֵּא.',tr:'hûʾ nōṯēn ḥoḵmāh lamméleḵ hayyōšēḇ ʿal-hakkissēʾ.',pl:'On daje mądrość królowi, który siedzi na tronie.'},
+ {lesson:5,heb:'רָעִים הַדְּבָרִים אֲשֶׁר בַּסֵּפֶר.',tr:'rāʿîm haddəḇārîm ʾăšer bassēp̄er.',pl:'Złe są słowa, które są w księdze.'},
+ {lesson:5,heb:'טוֹבָה חָכְמָה מִכֶּסֶף.',tr:'ṭôḇāh ḥoḵmāh mikkésep̄.',pl:'Mądrość jest lepsza od srebra.'},
+ {lesson:5,heb:'יְשָׁרִים הָאֲנָשִׁים.',tr:'yəšārîm hāʾănāšîm.',pl:'Ludzie są prawi.'},
+ {lesson:5,heb:'דָּוִד וְהָאֲנָשִׁים יֹשְׁבִים בִּירוּשָׁלִָם.',tr:'dāwiḏ wəhāʾănāšîm yōšəḇîm bîrûšāláim.',pl:'Dawid i ludzie mieszkają w Jerozolimie.'},
+ {lesson:5,heb:'מִי צַדִּיק מִשְּׁמוּאֵל?',tr:'mî ṣaddîq miššəmûʾēl?',pl:'Kto jest sprawiedliwszy od Samuela?'},
+ {lesson:5,heb:'הָעֵצָה רָעָה מְאֹד.',tr:'hāʿēṣāh rāʿāh məʾōḏ.',pl:'Ta rada jest bardzo zła.'},
+ {lesson:5,heb:'אַיֵּה הַיְשָׁרִים וְהַצַּדִּיקִים?',tr:'ʾayyēh hayšārîm wəhaṣṣaddîqîm?',pl:'Gdzie są prawi i sprawiedliwi?'},
+
+ {lesson:6,heb:'הָאֲנָשִׁים נֹטְעִים עֵצִים רַבִּים עַל־הָהָר.',tr:'hāʾănāšîm nōṭəʿîm ʿēṣîm rabbîm ʿal-hāhār.',pl:'Ludzie sadzą wiele drzew na górze.'},
+ {lesson:6,heb:'הַנַּעַר יֹשֵׁב תַּחַת הָעֵץ אֲשֶׁר בַּגָּן.',tr:'hannáʿar yōšēḇ táḥaṯ hāʿēṣ ʾăšer baggān.',pl:'Chłopiec siedzi pod drzewem, które jest w ogrodzie.'},
+ {lesson:6,heb:'גְּדוֹלִים הָעֵצִים אֲשֶׁר בֶּהָרִים מֵהָעֵצִים אֲשֶׁר אֵצֶל הַנָּהָר.',tr:'gəḏôlîm hāʿēṣîm ʾăšer behārîm mēhāʿēṣîm ʾăšer ʾēṣel hannāhār.',pl:'Drzewa w górach są większe od drzew, które są obok rzeki.'},
+ {lesson:6,heb:'עַמִּים רַבִּים יֹשְׁבִים בָּאָרֶץ כִּי הָאָרֶץ טוֹבָה מְאֹד.',tr:'ʿammîm rabbîm yōšəḇîm bāʾāreṣ kî hāʾāreṣ ṭôḇāh məʾōḏ.',pl:'Liczne ludy mieszkają w tym kraju, ponieważ kraj jest bardzo dobry.'},
+ {lesson:6,heb:'הָעָם צֹעֲקִים בְּקוֹל גָּדוֹל כִּי קָשָׁה מְאֹד הָעֲבוֹדָה.',tr:'hāʿām ṣōʿăqîm bəqôl gāḏôl kî qāšāh məʾōḏ hāʿăḇôḏāh.',pl:'Lud krzyczy donośnym głosem, ponieważ praca jest bardzo ciężka.'},
+ {lesson:6,heb:'מִי יֹצֵא מִן־הָעִיר הָרָעָה.',tr:'mî yōṣēʾ min-hāʿîr hārāʿāh?',pl:'Kto wychodzi ze złego miasta?'},
+ {lesson:6,heb:'רָעִים הַדְּבָרִים בְּעֵינֵי הַמֶּלֶךְ הַיָּשָׁר.',tr:'rāʿîm haddəḇārîm bəʿênê hammélek hayyāšār.',pl:'Te słowa są złe w oczach prawego króla.'},
+ {lesson:6,heb:'הָאִשָּׁה יֹצֵאת מֵהַבַּיִת.',tr:'hāʾiššāh yōṣēʾṯ mēhabbáyiṯ.',pl:'Kobieta wychodzi z domu.'},
+ {lesson:6,heb:'הָעֲבָדִים נֹטְעִים כֶּרֶם קָטֹן אֵצֶל הַשָּׂדֶה.',tr:'hāʿăḇāḏîm nōṭəʿîm kérem qāṭōn ʾēṣel haśśāḏeh.',pl:'Słudzy sadzą małą winnicę obok pola.'},
+
+ {lesson:7,heb:'אֵין אִישׁ יֹשֵׁב עַל־הַכִּסֵּא.',tr:'ʾēn ʾîš yōšēḇ ʿal-hakkissēʾ.',pl:'Nikt nie siedzi na tronie.'},
+ {lesson:7,heb:'יֵשׁ סֵפֶר שָׁם.',tr:'yēš sēp̄er šām.',pl:'Tam jest księga.'},
+ {lesson:7,heb:'אֵין שֹׁפֵט יָשָׁר בָּעִיר.',tr:'ʾēn šōp̄ēṭ yāšār bāʿîr.',pl:'Nie ma prawego sędziego w mieście.'},
+ {lesson:7,heb:'הַמַּלְאָכִים יֹרְדִים מֵהָהָר כִּי אֵין לָהֶם לֶחֶם שָׁם.',tr:'hammalʾākîm yōrəḏîm mēhāhār kî ʾēn lāhem léḥem šām.',pl:'Posłańcy schodzą z góry, ponieważ nie mają tam chleba.'},
+ {lesson:7,heb:'הָעֲשִׁירִים נֹתְנִים לֶחֶם לַדַּלִּים הַיֹּשְׁבִים שָׁם.',tr:'hāʿăšîrîm nōṯənîm léḥem laddallîm hayyōšəḇîm šām.',pl:'Bogaci dają chleb ubogim, którzy tam mieszkają.'},
+ {lesson:7,heb:'הָאֲנָשִׁים יֹצְאִים מִן־הָעִיר וְהֹלְכִים אֶל־הָהָר.',tr:'hāʾănāšîm yōṣəʾîm min-hāʿîr wəhōləḵîm ʾel-hāhār.',pl:'Ludzie wychodzą z miasta i idą ku górze.'},
+ {lesson:7,heb:'הַנָּשִׁים יֹצְאוֹת מֵהָעִיר וְיֹרְדוֹת אֶל־הַנָּהָר.',tr:'hannāšîm yōṣəʾôṯ mēhāʿîr wəyōrəḏôṯ ʾel-hannāhār.',pl:'Kobiety wychodzą z miasta i schodzą ku rzece.'},
+ {lesson:7,heb:'יֵשׁ לָנוּ בַּיִת גָּדוֹל וְגַן קָטֹן.',tr:'yēš lā́nû báyiṯ gāḏôl wəgan qāṭōn.',pl:'Mamy duży dom i mały ogród.'},
+ {lesson:7,heb:'מִי הָאֲנָשִׁים הַהֹלְכִים אֶל־הָעִיר.',tr:'mî hāʾănāšîm hahōləḵîm ʾel-hāʿîr?',pl:'Którzy to ludzie idą do miasta?'},
+ {lesson:7,heb:'הַיְלָדִים יֹשְׁבִים וְאֹכְלִים בַּכֶּרֶם.',tr:'haylāḏîm yōšəḇîm wəʾōḵəlîm bakkérem.',pl:'Dzieci siedzą i jedzą w winnicy.'},
+ {lesson:7,heb:'הוּא עָשִׁיר מְאֹד. יֵשׁ לוֹ כֶּסֶף וְזָהָב.',tr:'hûʾ ʿāšîr məʾōḏ. yēš lô késep̄ wəzāhāḇ.',pl:'On jest bardzo bogaty. Ma srebro i złoto.'},
+
+ {lesson:8,heb:'דַּל הַנָּבִיא הַזֶּה וְאֵין לוֹ לֶחֶם.',tr:'dal hannāḇîʾ hazzeh wəʾēn lô léḥem.',pl:'Ten prorok jest ubogi i nie ma chleba.'},
+ {lesson:8,heb:'הָאֲנָשִׁים הָאֵלֶּה עֹלִים אֶל־הֶהָרִים.',tr:'hāʾănāšîm hāʾēlleh ʿōlîm ʾel-hehārîm.',pl:'Ci ludzie wchodzą na góry.'},
+ {lesson:8,heb:'הַנְּבִיאִים הַיְשָׁרִים הֹלְכִים בְּצֶדֶק.',tr:'hannəḇîʾîm hayšārîm hōləḵîm bəṣéḏeq.',pl:'Prawi prorocy postępują w sprawiedliwości.'},
+ {lesson:8,heb:'בִּינָה וְחָכְמָה טוֹבוֹת מִזָּהָב.',tr:'bînāh wəḥoḵmāh ṭôḇôṯ mizzāhāḇ.',pl:'Rozumienie i mądrość są lepsze od złota.'},
+ {lesson:8,heb:'הָאֵשׁ נֹפֶלֶת עַל־הַבַּיִת אֲשֶׁר אֵצֶל הַהֵיכָל.',tr:'hāʾēš nōp̄élet ʿal-habbáyiṯ ʾăšer ʾēṣel hahêḵāl.',pl:'Ogień spada na dom, który jest obok pałacu.'},
+ {lesson:8,heb:'הָאֲנָשִׁים בֹּנִים בַּיִת גָּדוֹל בָּעִיר הַהִיא.',tr:'hāʾănāšîm bōnîm báyiṯ gāḏôl bāʿîr hahîʾ.',pl:'Ludzie budują wielki dom w tamtym mieście.'},
+ {lesson:8,heb:'רָעִים הָעָם כִּי אֵין לָהֶם בִּינָה.',tr:'rāʿîm hāʿām kî ʾēn lāhem bînāh.',pl:'Lud jest zły, ponieważ nie ma rozumienia.'},
+ {lesson:8,heb:'הוּא שֹׁלֵחַ לָנוּ נָבִיא צַדִּיק.',tr:'hûʾ šōlēaḥ lā́nû nāḇîʾ ṣaddîq.',pl:'On posyła nam sprawiedliwego proroka.'},
+ {lesson:8,heb:'אֵין מֶלֶךְ בִּירוּשָׁלִָם.',tr:'ʾēn mélek bîrûšāláim.',pl:'Nie ma króla w Jerozolimie.'},
+
+ {lesson:9,heb:'יָשַׁב הָאִישׁ בֵּין־הַנָּהָר וּבֵין־הַשָּׂדֶה.',tr:'yāšaḇ hāʾîš bên-hannāhār ûḇên-haśśāḏeh.',pl:'Mężczyzna usiadł między rzeką a polem.'},
+ {lesson:9,heb:'קָבַץ הַנָּבִיא אֶת־הָעָם אֵצֶל הַהֵיכָל הַגָּדוֹל.',tr:'qāḇaṣ hannāḇîʾ ʾeṯ-hāʿām ʾēṣel hahêḵāl haggāḏôl.',pl:'Prorok zgromadził lud przy wielkim pałacu.'},
+ {lesson:9,heb:'בַּיּוֹם הַהוּא נָפְלָה אֵשׁ מִן־הַשָּׁמָיִם.',tr:'bayyôm hahûʾ nāp̄əlāh ʾēš min-haššāmáyim.',pl:'W tym dniu ogień spadł z nieba.'},
+ {lesson:9,heb:'הָלְכוּ הָעָם אֶל־הַשֹּׁפֵט הַיָּשָׁר וְלֹא הָלְכוּ אֶל־הַנָּבִיא הָרָשָׁע.',tr:'hāləḵû hāʿām ʾel-haššōp̄ēṭ hayyāšār wəlōʾ hāləḵû ʾel-hannāḇîʾ hārāšāʿ.',pl:'Lud poszedł do prawego sędziego, a nie poszedł do niegodziwego proroka.'},
+ {lesson:9,heb:'מִי הַנְּבִיאִים הַהֹלְכִים אֶל־הָעִיר.',tr:'mî hannəḇîʾîm hahōləḵîm ʾel-hāʿîr?',pl:'Którzy to prorocy idą do miasta?'},
+ {lesson:9,heb:'בַּלַּיְלָה הַהוּא יָרְדוּ הָאֲנָשִׁים מֵהֶהָרִים.',tr:'balláylāh hahûʾ yārəḏû hāʾănāšîm mēhehārîm.',pl:'Tamtej nocy ludzie zeszli z gór.'},
+ {lesson:9,heb:'יָשַׁבְנוּ בְּתוֹךְ הָעִיר וְלֹא הָלַכְנוּ מִן־הַמָּקוֹם הַהוּא.',tr:'yāšáḇnû bəṯôḵ hāʿîr wəlōʾ hāláḵnû min-hammāqôm hahûʾ.',pl:'Mieszkaliśmy pośrodku miasta i nie odeszliśmy z tamtego miejsca.'},
+ {lesson:9,heb:'יָלְדָה הָאִשָּׁה יְלָדִים רַבִּים וְיָפִים.',tr:'yāləḏāh hāʾiššāh yəlāḏîm rabbîm wəyāp̄îm.',pl:'Kobieta urodziła wiele pięknych dzieci.'},
+ {lesson:9,heb:'לְמִי קָבַצְתָּ אֶת־הַכֶּסֶף וְאֶת־הַזָּהָב.',tr:'ləmî qāḇáṣtā ʾeṯ-hakkésep̄ wəʾeṯ-hazzāhāḇ?',pl:'Dla kogo zgromadziłeś srebro i złoto?'},
+ {lesson:9,heb:'לֹא נָפַל אֶחָד מֵהַנְּעָרִים.',tr:'lōʾ nāp̄al ʾeḥāḏ mēhannəʿārîm.',pl:'Nie upadł ani jeden z młodzieńców.'},
+
+ {lesson:10,heb:'נָטְעוּ הָאֲנָשִׁים כֶּרֶם גָּדוֹל עַל־הַגִּבְעָה.',tr:'nāṭəʿû hāʾănāšîm kérem gāḏôl ʿal-haggiḇʿāh.',pl:'Ludzie zasadzili wielką winnicę na wzgórzu.'},
+ {lesson:10,heb:'לֹא יָדַעְתִּי כִּי הוּא הָרַג אֶת־הַנָּבִיא.',tr:'lōʾ yāḏáʿtî kî hûʾ hāraḡ ʾeṯ-hannāḇîʾ.',pl:'Nie wiedziałem, że to on zabił proroka.'},
+ {lesson:10,heb:'עָמְדוּ הָעֲבָדִים הָרְשָׁעִים לִפְנֵי הַמֶּלֶךְ.',tr:'ʿāmᵊḏû hāʿăḇāḏîm hārəšāʿîm lip̄nê hammélek.',pl:'Niegodziwi słudzy stanęli przed królem.'},
+ {lesson:10,heb:'בָּחַרְתִּי בְּךָ לְמֶלֶךְ עַל־הָעָם הַגָּדוֹל הַזֶּה.',tr:'bāḥártî bəḵā ləmélek ʿal-hāʿām haggāḏôl hazzeh.',pl:'Wybrałem ciebie na króla nad tym wielkim ludem.'},
+ {lesson:10,heb:'נָפְלוּ גִּבּוֹרִים רַבִּים בַּמִּלְחָמָה הַהִיא.',tr:'nāp̄əlû gibbôrîm rabbîm bammilḥāmāh hahîʾ.',pl:'Wielu wojowników padło w tamtej bitwie.'},
+ {lesson:10,heb:'יֵשׁ מַחֲנֶה בֵּין־הַנָּהָר וּבֵין־הֶהָרִים.',tr:'yēš maḥăneh bên-hannāhār ûḇên-hehārîm.',pl:'Jest obóz między rzeką a górami.'},
+ {lesson:10,heb:'מִי שָׁלַח אֹתְךָ אֶל־הַמָּקוֹם הַזֶּה.',tr:'mî šālaḥ ʾōṯəḵā ʾel-hammāqôm hazzeh?',pl:'Kto cię posłał do tego miejsca?'},
+ {lesson:10,heb:'מִי הָרַג אֶת־הָאֲנָשִׁים הָאֵלֶּה.',tr:'mî hāraḡ ʾeṯ-hāʾănāšîm hāʾēlleh?',pl:'Kto zabił tych ludzi?'},
+ {lesson:10,heb:'לָקְחָה הָאִשָּׁה מֵהַפְּרִי וְנָתְנָה אֹתוֹ לָאִישׁ.',tr:'lāqᵊḥāh hāʾiššāh mēhappərî wᵊnāṯᵊnāh ʾōṯô lāʾîš.',pl:'Kobieta wzięła z owocu i dała go mężczyźnie.'},
+ {lesson:10,heb:'בָּחֲרוּ הָעָם אֶת־דָּוִד לָהֶם לְמֶלֶךְ.',tr:'bāḥărû hāʿām ʾeṯ-dāwiḏ lāhem ləmélek.',pl:'Lud wybrał sobie Dawida na króla.'},
+
+ {lesson:11,heb:'אֵלֶּה הַדְּבָרִים אֲשֶׁר כָּתַב הַנָּבִיא בַּסֵּפֶר הַהוּא.',tr:'ʾēlleh haddəḇārîm ʾăšer kāṯaḇ hannāḇîʾ bassēp̄er hahûʾ.',pl:'To są słowa, które prorok napisał w tamtej księdze.'},
+ {lesson:11,heb:'הָלְכוּ אֶל־הָעִיר וְלֹא מָצְאוּ אֶת־הַיֶּלֶד הַקָּטֹן.',tr:'hāləḵû ʾel-hāʿîr wəlōʾ māṣəʾû ʾeṯ-hayyéleḏ haqqāṭōn.',pl:'Poszli do miasta i nie znaleźli małego chłopca.'},
+ {lesson:11,heb:'הַשֶּׁמֶשׁ בַּשָּׁמַיִם וְגַם־הַיָּרֵחַ שָׁם, הַשֶּׁמֶשׁ בַּיּוֹם וְהַיָּרֵחַ בַּלָּיְלָה.',tr:'haššémeš baššāmáyim wəḡam-hayyārēaḥ šām, haššémeš bayyôm wəhayyārēaḥ balláylāh.',pl:'Słońce jest na niebie i księżyc też tam jest; słońce za dnia, a księżyc w nocy.'},
+ {lesson:11,heb:'גַּם־בַּלַּיְלָה יֵשׁ כּוֹכָבִים רַבִּים וְיָפִים.',tr:'gam-balláylāh yēš kôḵāḇîm rabbîm wəyāp̄îm.',pl:'Także w nocy jest wiele pięknych gwiazd.'},
+ {lesson:11,heb:'בַּשָּׁנָה הַהִיא נָפְלוּ גִּבּוֹרִים רַבִּים.',tr:'baššānāh hahîʾ nāp̄əlû gibbôrîm rabbîm.',pl:'W tamtym roku padło wielu wojowników.'},
+ {lesson:11,heb:'שָׁלַח עָנָן גָּדוֹל אֲשֶׁר עָמַד לִפְנֵי הָעָם.',tr:'šālaḥ ʿānān gāḏôl ʾăšer ʿāmaḏ lip̄nê hāʿām.',pl:'Posłał wielki obłok, który stanął przed ludem.'},
+ {lesson:11,heb:'אָמַר לוֹ הַמֶּלֶךְ לֵאמֹר הֲשָׁלַחְתָּ אֶת־הָאִישׁ אֶל־הָהָר.',tr:'ʾāmar lô hammélek lēʾmōr hăšāláḥtā ʾeṯ-hāʾîš ʾel-hāhār?',pl:'Król powiedział do niego: Czy posłałeś tego człowieka na górę?'},
+ {lesson:11,heb:'מִי בָּרָא אֶת־הָאָרֶץ וּמִי בָּרָא אֶת־הַשָּׁמַיִם.',tr:'mî bārāʾ ʾeṯ-hāʾāreṣ ûmî bārāʾ ʾeṯ-haššāmáyim?',pl:'Kto stworzył ziemię i kto stworzył niebo?'},
+ {lesson:11,heb:'טוֹבָה הַתּוֹרָה וְטוֹבִים הַדְּבָרִים אֲשֶׁר בָּהּ.',tr:'ṭôḇāh hattôrāh wəṭôḇîm haddəḇārîm ʾăšer bāh.',pl:'Prawo (Tora) jest dobre i dobre są słowa, które są w nim.'},
+ {lesson:11,heb:'יָצָא קוֹל מִתּוֹךְ הֶעָנָן.',tr:'yāṣāʾ qôl mittôḵ heʿānān.',pl:'Głos wyszedł ze środka obłoku.'},
+ {lesson:11,heb:'הֲיְצָאתֶם מֵהָעִיר הָרָעָה.',tr:'hayəṣāʾtem mēhāʿîr hārāʿāh?',pl:'Czy wyszliście ze złego miasta?'},
+ {lesson:11,heb:'קָרָא הַנָּבִיא אֶל־הָעָם בְּקוֹל גָּדוֹל לֵאמֹר רָעִים מְאֹד הַדְּבָרִים אֲשֶׁר אֲמַרְתֶּם.',tr:'qārāʾ hannāḇîʾ ʾel-hāʿām bəqôl gāḏôl lēʾmōr rāʿîm məʾōḏ haddəḇārîm ʾăšer ʾămartem.',pl:'Prorok zawołał do ludu donośnym głosem: Bardzo złe są słowa, które wypowiedzieliście.'},
+
+ {lesson:12,heb:'עָשָׂה הַגִּבּוֹר יְשׁוּעָה גְדוֹלָה לָעָם.',tr:'ʿāśāh haggibbôr yəšûʿāh ḡəḏôlāh lāʿām.',pl:'Wojownik dokonał wielkiego wybawienia dla ludu.'},
+ {lesson:12,heb:'אֵין יְשׁוּעָה בֵּאלֹהִים לָאִישׁ הָרַע.',tr:'ʾēn yəšûʿāh bēʾlōhîm lāʾîš hāraʿ.',pl:'Nie ma w Bogu zbawienia dla złego człowieka.'},
+ {lesson:12,heb:'הֶעָשִׂיתָ אֶת־הַדָּבָר הַזֶּה.',tr:'heʿāśîṯā ʾeṯ-haddāḇār hazzeh?',pl:'Czy uczyniłeś tę rzecz?'},
+ {lesson:12,heb:'הַזְּכַרְתֶּם אֶת־הַבְּרִית אֲשֶׁר כָּרַת יהוה אֶת־הָעָם.',tr:'hazzəḵartem ʾeṯ-habbərîṯ ʾăšer kāraṯ Yhwh ʾeṯ-hāʿām?',pl:'Czy pamiętaliście o przymierzu, które Pan zawarł z ludem?'},
+ {lesson:12,heb:'יֵשׁ שִׂמְחָה גְדוֹלָה בִּירוּשָׁלִַם כִּי יהוה שָׁם.',tr:'yēš śimḥāh ḡəḏôlāh bîrûšāláim kî Yhwh šām.',pl:'Jest wielka radość w Jerozolimie, ponieważ Pan tam jest.'},
+ {lesson:12,heb:'גְּדוֹלָה הָעִיר אֲשֶׁר בָּנִינוּ בָּאָרֶץ הַזֹּאת.',tr:'gəḏôlāh hāʿîr ʾăšer bānînû bāʾāreṣ hazzōʾṯ.',pl:'Wielkie jest miasto, które zbudowaliśmy w tej ziemi.'},
+ {lesson:12,heb:'רָאִיתִי אֵשׁ יֹרֶדֶת מֵהַשָּׁמַיִם וְנֹפֶלֶת אַרְצָה.',tr:'rāʾîṯî ʾēš yōréḏeṯ mēhaššāmáyim wənōp̄éleṯ ʾárṣāh.',pl:'Widziałem ogień schodzący z nieba i spadający na ziemię.'},
+ {lesson:12,heb:'נָסַע הַזָּקֵן הָעִירָה.',tr:'nāsaʿ hazzāqēn hāʿîrāh.',pl:'Starzec wyruszył do miasta.'},
+ {lesson:12,heb:'עָשָׂה אֱלֹהִים אֶת־הַשָּׁמַיִם וְאֶת־הָאָרֶץ.',tr:'ʿāśāh ʾĕlōhîm ʾeṯ-haššāmáyim wəʾeṯ-hāʾāreṣ.',pl:'Bóg uczynił niebo i ziemię.'},
+ {lesson:12,heb:'עָלְתָה הָאִשָּׁה יְרוּשָׁלַיְמָה כִּי שָׁם הַשֹּׁפֵט.',tr:'ʿāləṯāh hāʾiššāh yərûšáláymāh kî šām haššōp̄ēṭ.',pl:'Kobieta wstąpiła do Jerozolimy, ponieważ tam jest sędzia.'},
+ {lesson:12,heb:'לֹא זָכַרְתָּ אֶת־הַבְּרִית אֲשֶׁר כָּרַתְנוּ עִם־הָעָם.',tr:'lōʾ zāḵártā ʾeṯ-habbərîṯ ʾăšer kāráṯnû ʿim-hāʿām.',pl:'Nie pamiętałeś o przymierzu, które zawarliśmy z ludem.'},
+
+ {lesson:13,heb:'לָכְדוּ אֶת־הֶעָרִים אֲשֶׁר בָּאָרֶץ הַהִיא וְגַם־אֶת־הָעָם אֲשֶׁר בָּהֶן.',tr:'lāḵəḏû ʾeṯ-heʿārîm ʾăšer bāʾāreṣ hahîʾ wəḡam-ʾeṯ-hāʿām ʾăšer bāhen.',pl:'Zdobyli miasta, które były w tamtej ziemi, a także lud, który był w nich.'},
+ {lesson:13,heb:'בַּלַּיְלָה חָלַמְתִּי חֲלוֹם וְזֶה הַחֲלוֹם אֲשֶׁר חָלָמְתִּי.',tr:'balláylāh ḥālámtî ḥălôm wəzeh haḥălôm ʾăšer ḥālámtî.',pl:'W nocy śniłem sen i oto sen, który śniłem.'},
+ {lesson:13,heb:'שָׁלְחָה הָאִשָּׁה אֶת־הַשִּׁפְחָה אֶל־הַנָּבִיא.',tr:'šāləḥāh hāʾiššāh ʾeṯ-haššip̄ḥāh ʾel-hannāḇîʾ.',pl:'Kobieta posłała służącą do proroka.'},
+ {lesson:13,heb:'נָפְלָה אֵימָה גְדוֹלָה עַל־הָעָם כִּי חָטְאוּ לַיהוה.',tr:'nāp̄əlāh ʾêmāh ḡəḏôlāh ʿal-hāʿām kî ḥāṭəʾû laYhwh.',pl:'Wielki strach padł na lud, ponieważ zgrzeszyli przeciwko Panu.'},
+ {lesson:13,heb:'יֵשׁ לִי בָּנוֹת רַבּוֹת וְיָפוֹת.',tr:'yēš lî bānôṯ rabbôṯ wəyāp̄ôṯ.',pl:'Mam wiele pięknych córek.'},
+ {lesson:13,heb:'לֹא הָיִינוּ רָעִים בְּעֵינֵי הַנָּבִיא.',tr:'lōʾ hāyînû rāʿîm bəʿênê hannāḇîʾ.',pl:'Nie byliśmy źli w oczach proroka.'},
+ {lesson:13,heb:'אֵימָה נֹפֶלֶת עַל־הָאָרֶץ כִּי לָכַדְנוּ אֶת־הֶעָרִים.',tr:'ʾêmāh nōp̄éleṯ ʿal-hāʾāreṣ kî lāḵáḏnû ʾeṯ-heʿārîm.',pl:'Strach pada na ziemię, ponieważ zdobyliśmy miasta.'},
+ {lesson:13,heb:'רַבּוֹת הַחַטָּאוֹת אֲשֶׁר חָטָאתָ לֵאלֹהִים.',tr:'rabbôṯ haḥaṭṭāʾôṯ ʾăšer ḥāṭāʾṯā lēʾlōhîm.',pl:'Liczne są grzechy, którymi zgrzeszyłeś przeciwko Bogu.'},
+ {lesson:13,heb:'כָּתַב בַּסֵּפֶר אֶת־הַדְּבָרִים אֲשֶׁר רָאָה בַּחֲלוֹם אֲשֶׁר חָלָם.',tr:'kāṯaḇ bassēp̄er ʾeṯ-haddəḇārîm ʾăšer rāʾāh baḥălôm ʾăšer ḥālām.',pl:'Zapisał w księdze słowa, które widział we śnie, który śnił.'},
+
+ {lesson:14,heb:'נָפַל הַמֶּלֶךְ אַרְצָה וְלֹא קָם כָּל־הַיּוֹם הַהוּא עַד־הָעֶרֶב.',tr:'nāp̄al hammélek ʾárṣāh wəlōʾ qām kol-hayyôm hahûʾ ʿaḏ-hāʿéreḇ.',pl:'Król upadł na ziemię i nie wstał przez cały tamten dzień aż do wieczora.'},
+ {lesson:14,heb:'שָׂמְנוּ אֶת־הַכֵּלִים עַל־הַשֻּׁלְחָן, הֲלֹא מְצָאתֶם אֹתָם שָׁם.',tr:'śámnû ʾeṯ-hakkēlîm ʿal-haššulḥān, hălōʾ məṣāʾtem ʾōṯām šām?',pl:'Położyliśmy naczynia na stole; czyż nie znaleźliście ich tam?'},
+ {lesson:14,heb:'עָשׂוּ אֶת־הַכֵּלִים מִזָּהָב וּמִכֶּסֶף כִּי הֵם הָיוּ לַהֵיכָל הַגָּדוֹל אֲשֶׁר בִּירוּשָׁלִַם.',tr:'ʿāśû ʾeṯ-hakkēlîm mizzāhāḇ ûmikkésep̄ kî hēm hāyû lahêḵāl haggāḏôl ʾăšer bîrûšāláim.',pl:'Zrobili naczynia ze złota i ze srebra, ponieważ były przeznaczone dla wielkiej świątyni w Jerozolimie.'},
+ {lesson:14,heb:'בָּאוּ הָעָם הָעִירָה בְּשִׂמְחָה גְדוֹלָה כִּי לָהֶם הָיְתָה יְשׁוּעָה בַּמִּלְחָמָה.',tr:'bāʾû hāʿām hāʿîrāh bəśimḥāh ḡəḏôlāh kî lāhem hāyəṯāh yəšûʿāh bammilḥāmāh.',pl:'Lud przyszedł do miasta z wielką radością, ponieważ odnieśli zwycięstwo w bitwie.'},
+ {lesson:14,heb:'צָמְנוּ כָּל־הַיּוֹם וְלֹא אָכַלְנוּ לֶחֶם וְלֹא שָׁתִינוּ מָיִם.',tr:'ṣámnû kol-hayyôm wəlōʾ ʾāḵálnû léḥem wəlōʾ šāṯînû máyim.',pl:'Pościliśmy cały dzień i nie jedliśmy chleba ani nie piliśmy wody.'},
+ {lesson:14,heb:'אֵלֶּה הָאֲנָשִׁים הַגָּרִים בְּתוֹךְ הָעָם הַזֶּה.',tr:'ʾēlleh hāʾănāšîm haggārîm bəṯôḵ hāʿām hazzeh.',pl:'To są ludzie mieszkający pośród tego ludu.'},
+ {lesson:14,heb:'אֵיפֹה שַׂמְתָּ אֶת־הַפְּרִי אֲשֶׁר לָקַחְתָּ מֵהָעֵץ.',tr:'ʾêp̄ōh śámtā ʾeṯ-happərî ʾăšer lāqáḥtā mēhāʿēṣ?',pl:'Gdzie położyłeś owoc, który wziąłeś z drzewa?'},
+ {lesson:14,heb:'בָּאוּ כָּל־הַגִּבּוֹרִים הֵנָּה כִּי יָדְעוּ כִּי פֹה הַמֶּלֶךְ.',tr:'bāʾû kol-haggibbôrîm hénnāh kî yāḏəʿû kî p̄ōh hammélek.',pl:'Wszyscy wojownicy przyszli tutaj, ponieważ wiedzieli, że tu jest król.'},
+ {lesson:14,heb:'שָׁתוּ הָאֲנָשִׁים מַיִם וְגַם־אָכְלוּ לֶחֶם.',tr:'šāṯû hāʾănāšîm máyim wəḡam-ʾāḵəlû léḥem.',pl:'Ludzie pili wodę, a także jedli chleb.'},
+ {lesson:14,heb:'זֶה הָאִישׁ אֲשֶׁר בְּחַרְתֶּם לָכֶם לְמֶלֶךְ.',tr:'zeh hāʾîš ʾăšer bəḥartem lāḵem ləmélek.',pl:'To jest człowiek, którego wybraliście sobie na króla.'},
+
+ {lesson:15,heb:'עָבַרְנוּ אֶת־הַמִּצְוֹת אֲשֶׁר שָׂם הַנָּבִיא לִפְנֵי הָעָם.',tr:'ʿāḇárnû ʾeṯ-hammiṣwōṯ ʾăšer śām hannāḇîʾ lip̄nê hāʿām.',pl:'Przekroczyliśmy przykazania, które prorok położył przed ludem.'},
+ {lesson:15,heb:'הֶעָזַבְתָּ אֹתִי וְאֶת־הָעָם אֲשֶׁר אִתִּי.',tr:'heʿāzáḇtā ʾōṯî wəʾeṯ-hāʿām ʾăšer ʾittî?',pl:'Czy opuściłeś mnie i lud, który jest ze mną?'},
+ {lesson:15,heb:'זֹאת הָאָרֶץ אֲשֶׁר יָרַשְׁנוּ כַּאֲשֶׁר אָמַר לָנוּ הָאֱלֹהִים.',tr:'zōʾṯ hāʾāreṣ ʾăšer yārášnû kaʾăšer ʾāmar lā́nû hāʾĕlōhîm.',pl:'To jest ziemia, którą odziedziczyliśmy, tak jak nam powiedział Bóg.'},
+ {lesson:15,heb:'בַּלַּיְלָה הַהוּא חָלַמְתִּי חֲלוֹם וּבוֹ רָאִיתִי אֶת־הַכּוֹכָבִים אֲשֶׁר בַּשָּׁמַיִם.',tr:'balláylāh hahûʾ ḥālámtî ḥălôm ûḇô rāʾîṯî ʾeṯ-hakkôḵāḇîm ʾăšer baššāmáyim.',pl:'Tamtej nocy śniłem sen, w którym widziałem gwiazdy na niebie.'},
+ {lesson:15,heb:'הָעָם הֹלְכִים בְּחֹשֶׁךְ כִּי אֵין לָהֶם אוֹר.',tr:'hāʿām hōləḵîm bəḥṓšeḵ kî ʾēn lāhem ʾôr.',pl:'Lud chodzi w ciemności, ponieważ nie ma światła.'},
+ {lesson:15,heb:'קָרָא אֱלֹהִים לַחֹשֶׁךְ לַיְלָה וְלָאוֹר קָרָא יוֹם.',tr:'qārāʾ ʾĕlōhîm laḥṓšeḵ láylāh wəlāʾôr qārāʾ yôm.',pl:'Bóg nazwał ciemność nocą, a światło nazwał dniem.'},
+ {lesson:15,heb:'הָאֹיְבִים סָבְבוּ אֹתִי וְאֵין לִי יְשׁוּעָה מֵיהוה כִּי חָטָאתִי חַטָּאוֹת רַבּוֹת לַיהוה וְהוּא אָרַר אֹתִי וְאֶת־הָעָם אֲשֶׁר עִמִּי.',tr:'hāʾōyəḇîm sāḇəḇû ʾōṯî wəʾēn lî yəšûʿāh mēYhwh kî ḥāṭāʾṯî ḥaṭṭāʾôṯ rabbôṯ laYhwh wəhûʾ ʾārar ʾōṯî wəʾeṯ-hāʿām ʾăšer ʿimmî.',pl:'Wrogowie mnie otoczyli i nie ma dla mnie zbawienia od Pana, ponieważ zgrzeszyłem wieloma grzechami przeciwko Panu, a On przeklął mnie i lud, który jest ze mną.'},
+ {lesson:15,heb:'עָמַדְנוּ עַל־הַגִּבְעָה וּמִשָּׁם רָאִינוּ כִּי סָבְבוּ הָאֹיְבִים אֶת־הָעִיר וְהָרְגוּ אֶת־כָּל־הָעָם.',tr:'ʿāmáḏnû ʿal-haggiḇʿāh ûmiššām rāʾînû kî sāḇəḇû hāʾōyəḇîm ʾeṯ-hāʿîr wəhārəḡû ʾeṯ-kol-hāʿām.',pl:'Staliśmy na wzgórzu i stamtąd widzieliśmy, że wrogowie otoczyli miasto i zabili cały lud.'},
+ {lesson:15,heb:'לָכְדוּ אֶת־הָעִיר וְגַם־לָקְחוּ אֶת־כָּל־הַכֵּלִים מֵהַהֵיכָל.',tr:'lāḵəḏû ʾeṯ-hāʿîr wəḡam-lāqəḥû ʾeṯ-kol-hakkēlîm mēhahêḵāl.',pl:'Zdobyli miasto i zabrali też wszystkie naczynia ze świątyni.'},
+ {lesson:15,heb:'בַּבֹּקֶר עָבַר אֶת־הַנָּהָר הוּא וְכָל־הָעָם אִתּוֹ כַּמִּצְוָה אֲשֶׁר אָמַר אֱלֹהִים לָהֶם.',tr:'babbṓqer ʿāḇar ʾeṯ-hannāhār hûʾ wəḵol-hāʿām ʾittô kammiṣwāh ʾăšer ʾāmar ʾĕlōhîm lāhem.',pl:'Rankiem przeszedł przez rzekę on i cały lud z nim, zgodnie z przykazaniem, które Bóg im wypowiedział.'},
+
+ {lesson:16,heb:'לֹא שָׁמְעוּ הָעָם לְקוֹל הַנָּבִיא כִּי הָיוּ רְשָׁעִים מְאֹד.',tr:'lōʾ šāməʿû hāʿām ləqôl hannāḇîʾ kî hāyû rəšāʿîm məʾōḏ.',pl:'Lud nie usłuchał głosu proroka, ponieważ byli bardzo niegodziwi.'},
+ {lesson:16,heb:'שָׁבַר הַנָּבִיא אֶת־לוּחַ הָאֶבֶן וְלֹא נָתַן אֹתוֹ לָעָם.',tr:'šāḇar hannāḇîʾ ʾeṯ-lûaḥ hāʾéḇen wəlōʾ nāṯan ʾōṯô lāʿām.',pl:'Prorok rozbił kamienną tablicę i nie dał jej ludowi.'},
+ {lesson:16,heb:'לָמָּה שְׁבַתֶּם מֵהַמְּלָאכָה.',tr:'lāmmāh šəḇattem mēhamməlāʾḵāh?',pl:'Dlaczego zaprzestaliście pracy?'},
+ {lesson:16,heb:'בָּעִיר הָרָעָה רָאִינוּ צֶלֶם גָּדוֹל וְלֹא יָדַעְנוּ מִי הוּא.',tr:'bāʿîr hārāʿāh rāʾînû ṣélem gāḏôl wəlōʾ yāḏáʿnû mî hûʾ.',pl:'W złym mieście widzieliśmy wielki posąg i nie wiedzieliśmy, kim on jest.'},
+ {lesson:16,heb:'הַאֲכַלְתֶּם אֶת־הַדָּגִים אֲשֶׁר נָתַנּוּ לָכֶם.',tr:'haʾăḵaltem ʾeṯ-haddāḡîm ʾăšer nāṯánnû lāḵem?',pl:'Czy zjedliście ryby, które wam daliśmy?'},
+ {lesson:16,heb:'עוֹף הַשָּׁמַיִם יָפֶה מְאֹד.',tr:'ʿôp̄ haššāmáyim yāp̄eh məʾōḏ.',pl:'Ptactwo niebieskie jest bardzo piękne.'},
+ {lesson:16,heb:'יָצָא חֲצִי הַמַּחֲנֶה לַמִּלְחָמָה.',tr:'yāṣāʾ ḥăṣî hammaḥăneh lammilḥāmāh.',pl:'Połowa obozu wyruszyła na wojnę.'},
+ {lesson:16,heb:'בָּאנוּ הָעִירָה וְלֹא מָצָאנוּ שָׁם אֶת־נְבִיא הָאֱלֹהִים.',tr:'bāʾnû hāʿîrāh wəlōʾ māṣāʾnû šām ʾeṯ-nəḇîʾ hāʾĕlōhîm.',pl:'Przyszliśmy do miasta i nie znaleźliśmy tam proroka Bożego.'},
+ {lesson:16,heb:'שָׂם הַכֹּהֵן אֶת־סֵפֶר הַתּוֹרָה עַל־הַשֻּׁלְחָן.',tr:'śām hakkōhēn ʾeṯ-sēp̄er hattôrāh ʿal-haššulḥān.',pl:'Kapłan położył księgę Prawa (Tory) na stole.'},
+ {lesson:16,heb:'קַמְתִּי בַּבֹּקֶר וְלֹא זָכַרְתִּי אֶת־הַצֶּלֶם אֲשֶׁר רָאִיתִי בַחֲלוֹם אֲשֶׁר חָלָמְתִּי.',tr:'qámtî babbṓqer wəlōʾ zāḵártî ʾeṯ-haṣṣélem ʾăšer rāʾîṯî ḇaḥălôm ʾăšer ḥālámtî.',pl:'Wstałem rankiem i nie pamiętałem posągu, który widziałem we śnie, który śniłem.'},
+ {lesson:16,heb:'זֶה הַמֶּלֶךְ אֲשֶׁר שָׂם הָעָם עַל־הַכִּסֵּא.',tr:'zeh hammélek ʾăšer śām hāʿām ʿal-hakkissēʾ.',pl:'To jest król, którego lud posadził na tronie.'},
+ {lesson:16,heb:'בָּאָה הָאִשָּׁה לִפְנֵי הַמֶּלֶךְ וְהַמֶּלֶךְ לֹא שָׁמַע אֶל־קוֹל הָאִשָּׁה.',tr:'bāʾāh hāʾiššāh lip̄nê hammélek wəhammélek lōʾ šāmaʿ ʾel-qôl hāʾiššāh.',pl:'Kobieta przyszła przed króla, a król nie wysłuchał głosu kobiety.'},
+ {lesson:16,heb:'בַּלַּיְלָה וּבָאוֹר הַיּוֹם הָעָם שֹׁמְעִים אֶל־קוֹל הָאֱלֹהִים וְהֹלְכִים בְּדֶרֶךְ יהוה כַּמִּצְוָה אֲשֶׁר נָתַן לָהֶם.',tr:'balláylāh ûḇāʾôr hayyôm hāʿām šōməʿîm ʾel-qôl hāʾĕlōhîm wəhōləḵîm bəḏérek Yhwh kammiṣwāh ʾăšer nāṯan lāhem.',pl:'W nocy i w świetle dnia lud słucha głosu Boga i chodzi drogą Pana, zgodnie z przykazaniem, które im dał.'},
+
+ {lesson:17,heb:'בַּיּוֹם הָרִאשׁוֹן בָּרָא אֱלֹהִים אֶת־הַשָּׁמַיִם וְאֶת־הָאָרֶץ.',tr:'bayyôm hāriʾšôn bārāʾ ʾĕlōhîm ʾeṯ-haššāmáyim wəʾeṯ-hāʾāreṣ.',pl:'[Stworzenie świata] Pierwszego dnia Bóg stworzył niebo i ziemię.'},
+ {lesson:17,heb:'הָאָרֶץ הָיְתָה תֹהוּ וָבֹהוּ וְחֹשֶׁךְ הָיָה עַל־פְּנֵי הַמָּיִם.',tr:'hāʾāreṣ hāyəṯāh tōhû wāḇōhû wəḥṓšeḵ hāyāh ʿal-pənê hammáyim.',pl:'Ziemia była bezładem i pustkowiem (tōhû wāḇōhû), a ciemność była nad powierzchnią wód.'},
+ {lesson:17,heb:'בָּרָא אֱלֹהִים אֶת־הָאוֹר.',tr:'bārāʾ ʾĕlōhîm ʾeṯ-hāʾôr.',pl:'Bóg stworzył światło.'},
+ {lesson:17,heb:'קָרָא לָאוֹר יוֹם וְלַחֹשֶׁךְ קָרָא לָיְלָה.',tr:'qārāʾ lāʾôr yôm wəlaḥṓšeḵ qārāʾ láylāh.',pl:'Światło nazwał dniem, a ciemność nazwał nocą.'},
+ {lesson:17,heb:'כֵּן עָשָׂה אֱלֹהִים בַּיּוֹם הָרִאשׁוֹן.',tr:'kēn ʿāśāh ʾĕlōhîm bayyôm hāriʾšôn.',pl:'Tak uczynił Bóg pierwszego dnia.'},
+ {lesson:17,heb:'בַּיּוֹם הַשֵּׁנִי עָשָׂה אֱלֹהִים רָקִיעַ בְּתוֹךְ הַמַּיִם וְהָרָקִיעַ עָמַד בֵּין הַמַּיִם אֲשֶׁר תַּחַת הַשָּׁמַיִם וּבֵין הַמַּיִם אֲשֶׁר עַל־הַשָּׁמַיִם.',tr:'bayyôm haššēnî ʿāśāh ʾĕlōhîm rāqîaʿ bəṯôḵ hammáyim wəhārāqîaʿ ʿāmaḏ bên hammáyim ʾăšer táḥaṯ haššāmáyim ûḇên hammáyim ʾăšer ʿal-haššāmáyim.',pl:'Drugiego dnia Bóg uczynił sklepienie pośród wód, a sklepienie stanęło między wodami pod niebem a wodami nad niebem.'},
+ {lesson:17,heb:'קָרָא לָרָקִיעַ שָׁמַיִם.',tr:'qārāʾ lārāqîaʿ šāmáyim.',pl:'Sklepienie nazwał niebem.'},
+ {lesson:17,heb:'כֵּן עָשָׂה בַּיּוֹם הַשֵּׁנִי.',tr:'kēn ʿāśāh bayyôm haššēnî.',pl:'Tak uczynił drugiego dnia.'},
+ {lesson:17,heb:'בַּיּוֹם הַשְּׁלִישִׁי קָבַץ אֱלֹהִים אֶת־הַמַּיִם אֲשֶׁר תַּחַת הַשָּׁמַיִם אֶל־מָקוֹם אֶחָד.',tr:'bayyôm haššəlîšî qāḇaṣ ʾĕlōhîm ʾeṯ-hammáyim ʾăšer táḥaṯ haššāmáyim ʾel-māqôm ʾeḥāḏ.',pl:'Trzeciego dnia Bóg zgromadził wody pod niebem w jedno miejsce.'},
+ {lesson:17,heb:'לַיַּבָּשָׁה קָרָא אֱלֹהִים אֶרֶץ וְלַמַּיִם קָרָא יַמִּים.',tr:'layyabbāšāh qārāʾ ʾĕlōhîm ʾéreṣ wəlammáyim qārāʾ yammîm.',pl:'Suchy ląd Bóg nazwał ziemią, a wody nazwał morzami.'},
+ {lesson:17,heb:'גַּם־בַּיּוֹם הַשְּׁלִישִׁי בָּרָא אֶת־כָּל־עֵשֶׂב הָאָרֶץ וְאֶת־כָּל־עֵץ.',tr:'gam-bayyôm haššəlîšî bārāʾ ʾeṯ-kol-ʿēśeḇ hāʾāreṣ wəʾeṯ-kol-ʿēṣ.',pl:'Także trzeciego dnia stworzył wszelką roślinność ziemi i wszelkie drzewo.'},
+
+ {lesson:18,heb:'בַּיּוֹם הָרְבִיעִי בָּרָא אֱלֹהִים אֶת־הַשֶּׁמֶשׁ וְאֶת־הַיָּרֵחַ.',tr:'bayyôm hārəḇîʿî bārāʾ ʾĕlōhîm ʾeṯ-haššémeš wəʾeṯ-hayyārēaḥ.',pl:'[Stworzenie świata, dok.] Czwartego dnia Bóg stworzył słońce i księżyc.'},
+ {lesson:18,heb:'הַשֶּׁמֶשׁ הוּא הָאוֹר הַגָּדוֹל אֲשֶׁר לַיּוֹם וְהַיָּרֵחַ הוּא הָאוֹר הַקָּטֹן אֲשֶׁר לַלָּיְלָה.',tr:'haššémeš hûʾ hāʾôr haggāḏôl ʾăšer layyôm wəhayyārēaḥ hûʾ hāʾôr haqqāṭōn ʾăšer lalláylāh.',pl:'Słońce to wielkie światło dla dnia, a księżyc to małe światło dla nocy.'},
+ {lesson:18,heb:'עָשָׂה גַּם־אֶת־הַכּוֹכָבִים וְנָתַן אֹתָם בִּרְקִיעַ הַשָּׁמָיִם.',tr:'ʿāśāh gam-ʾeṯ-hakkôḵāḇîm wənāṯan ʾōṯām birqîaʿ haššāmáyim.',pl:'Uczynił także gwiazdy i umieścił je na sklepieniu nieba.'},
+ {lesson:18,heb:'בַּיּוֹם הַחֲמִישִׁי בָּרָא אֱלֹהִים אֶת־הַדָּגִים אֲשֶׁר בַּיַּמִּים וּבַנְּהָרוֹת וּבְכָל־הַמַּיִם הָאֲחֵרִים אֲשֶׁר עַל־הָאָרֶץ.',tr:'bayyôm haḥămîšî bārāʾ ʾĕlōhîm ʾeṯ-haddāḡîm ʾăšer bayyammîm ûḇannəhārôṯ ûḇəḵol-hammáyim hāʾăḥērîm ʾăšer ʿal-hāʾāreṣ.',pl:'Piątego dnia Bóg stworzył ryby, które są w morzach, w rzekach i we wszystkich innych wodach na ziemi.'},
+ {lesson:18,heb:'עָשָׂה אֶת־הָעוֹף אֲשֶׁר עַל־הָאָרֶץ וְעַל־פְּנֵי רְקִיעַ הַשָּׁמָיִם.',tr:'ʿāśāh ʾeṯ-hāʿôp̄ ʾăšer ʿal-hāʾāreṣ wəʿal-pənê rəqîaʿ haššāmáyim.',pl:'Uczynił ptactwo, które jest na ziemi i nad powierzchnią sklepienia nieba.'},
+ {lesson:18,heb:'בַּיּוֹם הַשִּׁשִּׁי עָשָׂה אֱלֹהִים אֶת־חַיַּת הָאָרֶץ אֶת־כָּל־בְּהֵמָה וְאֶת־כָּל־רֶמֶשׂ.',tr:'bayyôm haššiššî ʿāśāh ʾĕlōhîm ʾeṯ-ḥayyaṯ hāʾāreṣ ʾeṯ-kol-bəhēmāh wəʾeṯ-kol-rémeś.',pl:'Szóstego dnia Bóg uczynił zwierzęta ziemi, wszelkie bydło i wszelkie istoty pełzające.'},
+ {lesson:18,heb:'יָצַר אֶת־הָאָדָם מֵהָאֲדָמָה בְּצֶלֶם אֱלֹהִים. זָכָר וּנְקֵבָה בָּרָא אֹתָם.',tr:'yāṣar ʾeṯ-hāʾāḏām mēhāʾăḏāmāh bəṣélem ʾĕlōhîm. zāḵār ûnəqēḇāh bārāʾ ʾōṯām.',pl:'Ukształtował człowieka z ziemi na obraz Boga. Mężczyznę i kobietę ich stworzył.'},
+ {lesson:18,heb:'בַּיּוֹם הַשְּׁבִיעִי שָׁבַת אֱלֹהִים מִכָּל־הַמְּלָאכָה אֲשֶׁר עָשָׂה.',tr:'bayyôm haššəḇîʿî šāḇaṯ ʾĕlōhîm mikkol-hamməlāʾḵāh ʾăšer ʿāśāh.',pl:'Siódmego dnia Bóg odpoczął od wszelkiej pracy, którą wykonał.'},
+ {lesson:18,heb:'הַיּוֹם הַשְּׁבִיעִי אֲשֶׁר שָׁבַת אֱלֹהִים בּוֹ הוּא יוֹם הַשַּׁבָּת.',tr:'hayyôm haššəḇîʿî ʾăšer šāḇaṯ ʾĕlōhîm bô hûʾ yôm haššabbāṯ.',pl:'(Siódmy dzień, w którym Bóg odpoczął, to dzień szabatu.)'},
+
+ {lesson:19,heb:'אֲנַחְנוּ הֹלְכִים הָעִירָה.',tr:'ʾănáḥnû hōləḵîm hāʿîrāh.',pl:'My idziemy do miasta.'},
+ {lesson:19,heb:'הַאַתֶּם עֹלִים יְרוּשָׁלַיְמָה.',tr:'haʾattem ʿōlîm yərûšáláymāh?',pl:'Czy wy wstępujecie do Jerozolimy?'},
+ {lesson:19,heb:'לָמָּה אַתָּה צֹעֵק.',tr:'lāmmāh ʾattāh ṣōʿēq?',pl:'Dlaczego krzyczysz?'},
+ {lesson:19,heb:'מָה אַתְּ שֹׁתָה וּמָה אַתְּ אֹכֶלֶת.',tr:'māh ʾatt šōṯāh ûmāh ʾatt ʾōḵéleṯ?',pl:'Co pijesz i co jesz? (do kobiety)'},
+ {lesson:19,heb:'אֲנִי כֹתֵב אֶת־הַדְּבָרִים הָהֵם.',tr:'ʾănî ḵōṯēḇ ʾeṯ-haddəḇārîm hāhēm.',pl:'Ja piszę tamte słowa.'},
+ {lesson:19,heb:'הַאַתֶּן גָּרוֹת בְּתוֹךְ הָעָם הַזֶּה.',tr:'haʾatten gārôṯ bəṯôḵ hāʿām hazzeh?',pl:'Czy wy (kobiety) mieszkacie pośród tego ludu?'},
+ {lesson:19,heb:'מַה־יָּצַר אֱלֹהִים מֵהָאֲדָמָה.',tr:'mah-yāṣar ʾĕlōhîm mēhāʾăḏāmāh?',pl:'Co Bóg ukształtował z ziemi?'},
+ {lesson:19,heb:'מִי זָכָר וּמִי נְקֵבָה.',tr:'mî zāḵār ûmî nəqēḇāh?',pl:'Kto jest mężczyzną (samcem), a kto kobietą (samicą)?'},
+ {lesson:19,heb:'מַה־יּוֹם הַשַּׁבָּת.',tr:'mah-yôm haššabbāṯ?',pl:'Czym jest dzień szabatu?'},
+ {lesson:19,heb:'אֲנַחְנוּ צָמִים וְהֵם אֹכְלִים.',tr:'ʾănáḥnû ṣāmîm wəhēm ʾōḵəlîm.',pl:'My pościmy, a oni jedzą.'},
+ {lesson:19,heb:'הֲהֵם קֹרְאִים אֶל־הַנָּבִיא.',tr:'hăhēm qōrəʾîm ʾel-hannāḇîʾ?',pl:'Czy oni wołają do proroka?'},
+ {lesson:19,heb:'שָׁמְעוּ הַנְּעָרִים אֶל־קוֹל הַגִּבּוֹר כִּי הוּא הָיָה חָכָם מִכָּל־הָאֲנָשִׁים.',tr:'šāməʿû hannəʿārîm ʾel-qôl haggibbôr kî hûʾ hāyāh ḥāḵām mikkol-hāʾănāšîm.',pl:'Młodzieńcy słuchali głosu wojownika, ponieważ był mądrzejszy od wszystkich ludzi.'},
+ {lesson:19,heb:'יָפֶה וְנֶחְמָד הַגַּן אֲשֶׁר נָטַעְתָּ בַּמָּקוֹם הַזֶּה.',tr:'yāp̄eh wəneḥmāḏ haggan ʾăšer nāṭáʿtā bammāqôm hazzeh.',pl:'Piękny i miły jest ogród, który zasadziłeś w tym miejscu.'},
+ {lesson:19,heb:'אֲרוּרִים הָאֲנָשִׁים הָהֵם כִּי חָטְאוּ לַיהוה אֱלֹהִים.',tr:'ʾărûrîm hāʾănāšîm hāhēm kî ḥāṭəʾû laYhwh ʾĕlōhîm.',pl:'Przeklęci są tamci ludzie, ponieważ zgrzeszyli przeciwko Panu Bogu.'},
+ {lesson:19,heb:'אָכַלְנוּ מִבְּשַׂר הַבָּקָר וּמִמֵּי הַנָּהָר שָׁתִינוּ.',tr:'ʾāḵálnû mibbəśar habbāqār ûmimmê hannāhār šāṯînû.',pl:'Jedliśmy z mięsa bydła i piliśmy z wód rzeki.'},
+ {lesson:19,heb:'לָמָּה לֹא נָתַתָּ אֶת־חֲצִי הַבָּשָׂר לַדַּלִּים כִּי הָיָה לָהֶם רָעָב.',tr:'lāmmāh lōʾ nāṯáttā ʾeṯ-ḥăṣî habbāśār laddallîm kî hāyāh lāhem rāʿāḇ.',pl:'Dlaczego nie dałeś połowy mięsa ubogim, skoro byli głodni?'},
+ {lesson:19,heb:'אַיֵּה שַׂמְתָּ אֶת־הָאֶבֶן הָאַחֶרֶת.',tr:'ʾayyēh śámtā ʾeṯ-hāʾéḇen hāʾaḥéreṯ?',pl:'Gdzie położyłeś ten drugi kamień?'},
+ {lesson:19,heb:'מִי שָׁבַר אֶת־הַכֵּלִים הָאֵלֶּה אֲשֶׁר יָצַרְתִּי אֶתְמוֹל.',tr:'mî šāḇar ʾeṯ-hakkēlîm hāʾēlleh ʾăšer yāṣártî ʾeṯmôl?',pl:'Kto rozbił te naczynia, które wczoraj ukształtowałem?'},
+ {lesson:19,heb:'אֵלֶּה דִּבְרֵי הַשִּׁיר אֲשֶׁר שָׁר הַמֶּלֶךְ עַל־מוֹת הַגִּבּוֹרִים הַגְּדוֹלִים.',tr:'ʾēlleh diḇrê haššîr ʾăšer šār hammélek ʿal-môṯ haggibbôrîm haggəḏôlîm.',pl:'To są słowa pieśni, którą król śpiewał o śmierci wielkich wojowników.'},
+ {lesson:19,heb:'אָכְלָה הַבְּהֵמָה מֵעֵשֶׂב הַשָּׂדֶה.',tr:'ʾāḵəlāh habbəhēmāh mēʿēśeḇ haśśāḏeh.',pl:'Zwierzę (bydło) jadło z trawy pola.'},
+ {lesson:19,heb:'מָה הַמְּלָאכָה אֲשֶׁר עֲשִׂיתֶם אֶתְמוֹל.',tr:'māh hamməlāʾḵāh ʾăšer ʿăśîṯem ʾeṯmôl?',pl:'Jaka jest praca, którą wykonaliście wczoraj?'},
+ {lesson:19,heb:'יֵשְׁבוּ שָׁם כָּל־יְמֵי חַיֵּי הַנָּבִיא.',tr:'yēšəḇû šām kol-yəmê ḥayyê hannāḇîʾ.',pl:'Mieszkali tam przez wszystkie dni życia proroka.'},
+ {lesson:19,heb:'קָרָא הָאָדָם שֵׁמוֹת לְכָל־הַבְּהֵמָה וּלְעוֹף הַשָּׁמַיִם וּלְכָל־חַיַּת הַשָּׂדֶה וְלָאָדָם לֹא הָיָה עֵזֶר כְּנֶגְדּוֹ.',tr:'qārāʾ hāʾāḏām šēmôṯ ləḵol-habbəhēmāh ûləʿôp̄ haššāmáyim ûləḵol-ḥayyaṯ haśśāḏeh wəlāʾāḏām lōʾ hāyāh ʿēzer kəneḡdô.',pl:'[W ogrodzie Eden] Człowiek nadał imiona wszelkiemu bydłu, ptactwu nieba i wszelkiej zwierzynie pola, lecz dla człowieka nie było pomocy odpowiedniej dla niego.'},
+ {lesson:19,heb:'בָּנָה יהוה אֱלֹהִים אֶת־הַצֵּלָע אֲשֶׁר לָקַח מִן־הָאָדָם לְאִשָּׁה.',tr:'bānāh Yhwh ʾĕlōhîm ʾeṯ-haṣṣēlāʿ ʾăšer lāqaḥ min-hāʾāḏām ləʾiššāh.',pl:'Pan Bóg uczynił z żebra, które wziął z człowieka, kobietę.'},
+ {lesson:19,heb:'הָיְתָה הָאִשָּׁה אֶת־הָאִישׁ בַּגָּן.',tr:'hāyəṯāh hāʾiššāh ʾeṯ-hāʾîš baggān.',pl:'Kobieta była z mężczyzną w ogrodzie.'},
+ {lesson:19,heb:'הַנָּחָשׁ הָיָה עָרוּם מִכָּל־חַיַּת הַשָּׂדֶה אֲשֶׁר עָשָׂה יהוה אֱלֹהִים.',tr:'hannāḥāš hāyāh ʿārûm mikkol-ḥayyaṯ haśśāḏeh ʾăšer ʿāśāh Yhwh ʾĕlōhîm.',pl:'Wąż był przebieglejszy od wszelkiej zwierzyny pola, którą uczynił Pan Bóg.'},
+ {lesson:19,heb:'שָׁמְעָה הָאִשָּׁה אֶל־קוֹל הַנָּחָשׁ וּמִפְּרִי הָעֵץ אֲשֶׁר בְּתוֹךְ הַגָּן אָכְלָה כִּי רָאֲתָה כִּי טוֹב וְנֶחְמָד הָעֵץ.',tr:'šāməʿāh hāʾiššāh ʾel-qôl hannāḥāš ûmippərî hāʿēṣ ʾăšer bəṯôḵ haggān ʾāḵəlāh kî rāʾăṯāh kî ṭôḇ wəneḥmāḏ hāʿēṣ.',pl:'Kobieta usłuchała głosu węża i zjadła z owocu drzewa pośrodku ogrodu, bo zobaczyła, że drzewo jest dobre i miłe.'},
+ {lesson:19,heb:'אָכַל גַּם־הָאָדָם אֶת־הַפְּרִי אֲשֶׁר נָתְנָה לוֹ הָאִשָּׁה.',tr:'ʾāḵal gam-hāʾāḏām ʾeṯ-happərî ʾăšer nāṯənāh lô hāʾiššāh.',pl:'Także człowiek zjadł owoc, który dała mu kobieta.'},
+ {lesson:19,heb:'אָמַר אֱלֹהִים אֶל־הָאָדָם לֵאמֹר הֲמִן־הָעֵץ אֲשֶׁר בְּתוֹךְ־הַגָּן אֲשֶׁר אָכָלְתָּ.',tr:'ʾāmar ʾĕlōhîm ʾel-hāʾāḏām lēʾmōr hămin-hāʿēṣ ʾăšer bəṯôḵ-haggān ʾăšer ʾāḵáltā?',pl:'Bóg powiedział do człowieka: Czy jadłeś z drzewa, które jest pośrodku ogrodu?'},
+ {lesson:19,heb:'אָמַר הָאָדָם לֵאמֹר הָאִשָּׁה אֲשֶׁר נָתַתָּ עִמָּדִי הִיא נָתְנָה לִי מִן־הָעֵץ.',tr:'ʾāmar hāʾāḏām lēʾmōr hāʾiššāh ʾăšer nāṯáttā ʿimmāḏî hîʾ nāṯənāh lî min-hāʿēṣ.',pl:'Człowiek powiedział: Kobieta, którą postawiłeś przy mnie, ona dała mi z drzewa.'},
+ {lesson:19,heb:'אָמַר יהוה אֱלֹהִים לָאִשָּׁה מַה־זֹּאת עָשִׂית וְהִיא אָמְרָה לוֹ אֶת־כָּל־אֲשֶׁר אָמַר הַנָּחָשׁ אֵלֶיהָ.',tr:'ʾāmar Yhwh ʾĕlōhîm lāʾiššāh mah-zōʾṯ ʿāśîṯ wəhîʾ ʾāmərāh lô ʾeṯ-kol-ʾăšer ʾāmar hannāḥāš ʾēléhā.',pl:'Pan Bóg powiedział do kobiety: Cóż to uczyniłaś? A ona powiedziała mu wszystko, co wąż jej powiedział.'},
+ {lesson:19,heb:'אָמַר יהוה אֶל־הַנָּחָשׁ כִּי עָשִׂיתָ זֹאת אָרוּר אַתָּה מִכָּל־הַבְּהֵמָה וּמִכָּל־חַיַּת הַשָּׂדֶה.',tr:'ʾāmar Yhwh ʾel-hannāḥāš kî ʿāśîṯā zōʾṯ ʾārûr ʾattāh mikkol-habbəhēmāh ûmikkol-ḥayyaṯ haśśāḏeh.',pl:'Pan powiedział do węża: Ponieważ to uczyniłeś, przeklęty jesteś spośród wszelkiego bydła i wszelkiej zwierzyny pola.'},
+ {lesson:19,heb:'יָצְאוּ הָאָדָם וְהָאִשָּׁה מִן־הַגָּן כִּי חָטְאוּ חַטָּאת לַיהוה אֱלֹהִים.',tr:'yāṣəʾû hāʾāḏām wəhāʾiššāh min-haggān kî ḥāṭəʾû ḥaṭṭāʾṯ laYhwh ʾĕlōhîm.',pl:'Człowiek i kobieta wyszli z ogrodu, ponieważ popełnili grzech przeciwko Panu Bogu.'},
+
+ {lesson:20,heb:'אֵין מִסְפָּר לְחֵיל הָאֹיֵב. יֵשׁ לָהֶם גִּבּוֹרִים כְּמִסְפַּר כּוֹכְבֵי הַשָּׁמָיִם.',tr:'ʾên mispār ləḥêl hāʾōyēḇ. yēš lāhem gibbôrîm kəmispar kôḵəḇê haššāmáyim.',pl:'Wojsko wroga jest niezliczone. Mają tylu wojowników, ile gwiazd na niebie.'},
+ {lesson:20,heb:'אֵין כָּל־חָדָשׁ תַּחַת הַשָּׁמֶשׁ.',tr:'ʾên kol-ḥāḏāš táḥaṯ haššámeš.',pl:'Nie ma nic nowego pod słońcem.'},
+ {lesson:20,heb:'קָם מֶלֶךְ חָדָשׁ עַל־הָאָרֶץ.',tr:'qām mélek ḥāḏāš ʿal-hāʾāreṣ.',pl:'Powstał nowy król nad krajem.'},
+ {lesson:20,heb:'חָזָק הוּא מִמֶּנִּי.',tr:'ḥāzāq hûʾ mimménnî.',pl:'On jest silniejszy ode mnie.'},
+ {lesson:20,heb:'אָנֹכִי בָּא אֵלֶיךָ בְּשֵׁם יהוה צְבָאוֹת.',tr:'ʾānōḵî bāʾ ʾēléḵā bəšēm Yhwh ṣəḇāʾôṯ.',pl:'Ja przychodzę do ciebie w imię Pana Zastępów.'},
+ {lesson:20,heb:'שָׁלַח הַמֶּלֶךְ אֶת־סוּסָיו אֶת־מַרְכְּבוֹתָיו וְאֶת־פָּרָשָׁיו.',tr:'šālaḥ hammélek ʾeṯ-sûsāyw ʾeṯ-markəḇôṯāyw wəʾeṯ-pārāšāyw.',pl:'Król wysłał swoje konie, swoje rydwany i swoich jeźdźców.'},
+ {lesson:20,heb:'שָׁרוּ אֶת־שִׁירָם הֶחָדָשׁ לַיהוה.',tr:'šārû ʾeṯ-šîrām heḥāḏāš laYhwh.',pl:'Śpiewali swoją nową pieśń Panu.'},
+ {lesson:20,heb:'רָאִיתִי אֶת־הַשֶּׁמֶשׁ וְאֶת־הַיָּרֵחַ וְאֶת־הַכּוֹכָבִים וְאֶת־כָּל־צְבָא הַשָּׁמָיִם.',tr:'rāʾîṯî ʾeṯ-haššémeš wəʾeṯ-hayyārēaḥ wəʾeṯ-hakkôḵāḇîm wəʾeṯ-kol-ṣəḇā haššāmáyim.',pl:'Widziałem słońce, księżyc, gwiazdy i cały zastęp niebios.'},
+ {lesson:20,heb:'אֵלֶּה שְׁמוֹת כָּל־גִּבּוֹרֵי הַחַיִל אֲשֶׁר נָפְלוּ בַּמִּלְחָמָה הַהִיא.',tr:'ʾēlleh šəmôṯ kol-gibbôrê haḥáyil ʾăšer nāp̄əlû bammilḥāmāh hahîʾ.',pl:'To są imiona wszystkich dzielnych wojowników, którzy padli w tamtej bitwie.'},
+ {lesson:20,heb:'בָּנוּ בַּיִת חָדָשׁ בְּעִירָם.',tr:'bānû báyiṯ ḥāḏāš bəʿîrām.',pl:'Zbudowali nowy dom w swoim mieście.'},
+ {lesson:20,heb:'הָרָעָב הָיָה חָזָק בָּאָרֶץ וְלֹא הָיָה לֶחֶם לָעָם.',tr:'hārāʿāḇ hāyāh ḥāzāq bāʾāreṣ wəlōʾ hāyāh léḥem lāʿām.',pl:'Głód był silny w kraju i lud nie miał chleba.'},
+ {lesson:20,heb:'אָמַר אֵלָיו הַמַּלְאָךְ: יהוה עִמְּךָ גִּבּוֹר הֶחָיִל.',tr:'ʾāmar ʾēlāyw hammalʾāḵ: Yhwh ʿimməḵā gibbôr heḥáyil.',pl:'Anioł powiedział do niego: Pan z tobą, dzielny wojowniku.'},
+ {lesson:20,heb:'שָׁבְרָה רוּחַ גְּדוֹלָה וַחֲזָקָה אֶת־צוּרֵי הֶהָרִים.',tr:'šāḇərāh rûaḥ gəḏôlāh waḥăzāqāh ʾeṯ-ṣûrê hehārîm.',pl:'Wielki i potężny wiatr rozbił skały gór.'},
+ {lesson:20,heb:'אֲרוּרִים אֲנָשֶׁיךָ כִּי חָטְאוּ בְּעֵינֵי יהוה.',tr:'ʾărûrîm ʾănāšéḵā kî ḥāṭəʾû bəʿênê Yhwh.',pl:'Przeklęci są twoi ludzie, ponieważ zgrzeszyli w oczach Pana.'},
+ {lesson:20,heb:'רָאִינוּ אֶת־הָאֲנָשִׁים רֹכְבִים עַל־סוּסֵיהֶם.',tr:'rāʾînû ʾeṯ-hāʾănāšîm rōḵəḇîm ʿal-sûsêhem.',pl:'Widzieliśmy ludzi jadących na swoich koniach.'},
+ {lesson:20,heb:'מִי גִּבּוֹר הֶחַיִל הָרֹכֵב עַל־הַמֶּרְכָּבָה.',tr:'mî gibbôr heḥáyil hārōḵēḇ ʿal-hammerkāḇāh?',pl:'Kim jest dzielny wojownik jadący na rydwanie?'},
+
+ {lesson:21,heb:'אָבִיו מֵת.',tr:'ʾāḇîw mēṯ.',pl:'Jego ojciec umarł.'},
+ {lesson:21,heb:'הַכְּלִי מָלֵא דָם.',tr:'hakkəlî mālēʾ ḏām.',pl:'Naczynie jest pełne krwi.'},
+ {lesson:21,heb:'מָלֵא הַהֵיכָל כְּבוֹד יהוה.',tr:'mālēʾ hahêḵāl kəḇôḏ Yhwh.',pl:'Świątynia napełniła się chwałą Pana.'},
+ {lesson:21,heb:'מֵתוּ הָאֲנָשִׁים.',tr:'mēṯû hāʾănāšîm.',pl:'Ludzie umarli.'},
+ {lesson:21,heb:'הָאִשָּׁה מֵתָה.',tr:'hāʾiššāh mēṯāh.',pl:'Kobieta umarła.'},
+ {lesson:21,heb:'כָּבֵד הָרָעָב.',tr:'kāḇēḏ hārāʿāḇ.',pl:'Głód był ciężki (dotkliwy).'},
+ {lesson:21,heb:'בֹּשְׁנוּ כִּי חָטָאנוּ.',tr:'bōšnû kî ḥāṭāʾnû.',pl:'Zawstydziliśmy się, ponieważ zgrzeszyliśmy.'},
+ {lesson:21,heb:'הָאֲנָשִׁים מֵתִים.',tr:'hāʾănāšîm mēṯîm.',pl:'Ludzie umierają (są martwi).'},
+ {lesson:21,heb:'כָּבְדָה הָאֶבֶן מִמֶּנִּי.',tr:'kāḇəḏāh hāʾéḇen mimménnî.',pl:'Kamień był cięższy ode mnie.'},
+ {lesson:21,heb:'הַמַּיִם מָלְאוּ דָגִים.',tr:'hammáyim māləʾû ḏāḡîm.',pl:'Wody były pełne ryb.'},
+ {lesson:21,heb:'מָלֵאנוּ שִׂמְחָה.',tr:'mālēʾnû śimḥāh.',pl:'Byliśmy pełni radości.'},
+ {lesson:21,heb:'יָדַע הָאָדָם אֶת־חַוָּה. יָלְדָה חַוָּה בֵּן לְאִישָׁהּ וְקָרְאָה אֶת־שֵׁם הַיֶּלֶד קַיִן.',tr:'yāḏaʿ hāʾāḏām ʾeṯ-ḥawwāh. yāləḏāh ḥawwāh bēn ləʾîšāh wəqārəʾāh ʾeṯ-šēm hayyéleḏ qáyin.',pl:'[Kain i Abel] Adam poznał Ewę. Ewa urodziła mężowi syna i nadała chłopcu imię Kain.'},
+ {lesson:21,heb:'יָלְדָה גַּם־אֶת־הֶבֶל אֲחִי קַיִן.',tr:'yāləḏāh gam-ʾeṯ-héḇel ʾăḥî qáyin.',pl:'Urodziła także Abla, brata Kaina.'},
+ {lesson:21,heb:'קַיִן הָיָה עֹבֵד אֶת־הָאֲדָמָה וְהֶבֶל הָיָה רֹעֶה צֹאן.',tr:'qáyin hāyāh ʿōḇēḏ ʾeṯ-hāʾăḏāmāh wəhéḇel hāyāh rōʿeh ṣōʾn.',pl:'Kain uprawiał ziemię, a Abel był pasterzem owiec.'},
+ {lesson:21,heb:'הֵבִיא קַיִן מִפְּרִי הָאֲדָמָה מִנְחָה לַיהוה וְהֶבֶל הֵבִיא גַּם־הוּא מִבְּכֹרוֹת צֹאנוֹ.',tr:'hēḇîʾ qáyin mippərî hāʾăḏāmāh minḥāh laYhwh wəhéḇel hēḇîʾ gam-hûʾ mibbəḵōrôṯ ṣōʾnô.',pl:'Kain przyniósł z owocu ziemi ofiarę dla Pana, a Abel także przyniósł z pierworodnych swojej trzody.'},
+ {lesson:21,heb:'הָיְתָה מִנְחַת הֶבֶל טוֹבָה בְּעֵינֵי יהוה וּמִנְחַת קַיִן לֹא הָיְתָה טוֹבָה.',tr:'hāyəṯāh minḥaṯ héḇel ṭôḇāh bəʿênê Yhwh ûminḥaṯ qáyin lōʾ hāyəṯāh ṭôḇāh.',pl:'Ofiara Abla była dobra w oczach Pana, a ofiara Kaina nie była dobra.'},
+ {lesson:21,heb:'חָרָה לְקַיִן מְאֹד. הָרַג קַיִן אֶת־הֶבֶל אָחִיו בַּשָּׂדֶה.',tr:'ḥārāh ləqáyin məʾōḏ. hāraḡ qáyin ʾeṯ-héḇel ʾāḥîw baśśāḏeh.',pl:'Kain bardzo się rozgniewał. Kain zabił na polu Abla, swojego brata.'},
+ {lesson:21,heb:'אָמַר יהוה אֶל־קַיִן: אַיֵּה הֶבֶל אָחִיךָ.',tr:'ʾāmar Yhwh ʾel-qáyin: ʾayyēh héḇel ʾāḥîḵā?',pl:'Pan powiedział do Kaina: Gdzie jest Abel, twój brat?'},
+ {lesson:21,heb:'אָמַר קַיִן: לֹא יָדַעְתִּי. הֲשֹׁמֵר אָחִי אָנֹכִי.',tr:'ʾāmar qáyin: lōʾ yāḏáʿtî. hăšōmēr ʾāḥî ʾānōḵî?',pl:'Kain powiedział: Nie wiem. Czyż jestem stróżem mojego brata?'},
+ {lesson:21,heb:'אָמַר יהוה: מֶה־עָשִׂיתָ. קוֹל דְּמֵי אָחִיךָ צֹעֲקִים אֵלַי מִן־הָאֲדָמָה.',tr:'ʾāmar Yhwh: meh-ʿāśîṯā. qôl dəmê ʾāḥîḵā ṣōʿăqîm ʾēlay min-hāʾăḏāmāh.',pl:'Pan powiedział: Cóż uczyniłeś? Głos krwi twojego brata woła do mnie z ziemi.'},
+ {lesson:21,heb:'וְאַתָּה אָרוּר אַתָּה מִן־הָאֲדָמָה אֲשֶׁר לָקְחָה אֶת־דְּמֵי אָחִיךָ מִיָּדֶךָ.',tr:'wəʾattāh ʾārûr ʾattāh min-hāʾăḏāmāh ʾăšer lāqəḥāh ʾeṯ-dəmê ʾāḥîḵā miyyāḏéḵā.',pl:'A ty — przeklęty jesteś przez ziemię, która wzięła krew twojego brata z twojej ręki.'},
+ {lesson:21,heb:'אָמַר קַיִן אֶל־יהוה: עֲוֹנִי גָּדוֹל מִמֶּנִּי.',tr:'ʾāmar qáyin ʾel-Yhwh: ʿăwōnî gāḏôl mimménnî.',pl:'Kain powiedział do Pana: Moja wina jest większa, niż mogę unieść.'},
+
+ {lesson:22,heb:'יִשְׂרְפוּ אֶת־הַבַּיִת.',tr:'yiśrəp̄û ʾeṯ-habbáyiṯ.',pl:'Spalą dom.'},
+ {lesson:22,heb:'נִזְכֹּר אֹתוֹ.',tr:'nizkōr ʾōṯô.',pl:'Będziemy go pamiętać.'},
+ {lesson:22,heb:'יִקְבְּרוּ אֹתָנוּ.',tr:'yiqbərû ʾōṯānû.',pl:'Pogrzebią nas.'},
+ {lesson:22,heb:'תִּמְכֹּרְנָה אֹתָם.',tr:'timkōrnāh ʾōṯām.',pl:'One sprzedadzą ich.'},
+ {lesson:22,heb:'אֶדְרֹשׁ כֶּסֶף מִמֶּנּוּ.',tr:'ʾeḏrōš késep̄ mimménnû.',pl:'Zażądam od niego srebra.'},
+ {lesson:22,heb:'תִּשְׁמְרִי אֹתִי.',tr:'tišmərî ʾōṯî.',pl:'Będziesz mnie strzec. (do kobiety)'},
+ {lesson:22,heb:'תִּמְכְּרוּ אֹתוֹ.',tr:'timkərû ʾōṯô.',pl:'Sprzedacie go.'},
+ {lesson:22,heb:'תִּכְרְתוּ בְּרִית אִתָּנוּ.',tr:'tiḵrəṯû bərîṯ ʾittānû.',pl:'Zawrzecie z nami przymierze.'},
+ {lesson:22,heb:'תִּכְתְּבִי אֵלֵינוּ.',tr:'tiḵtəḇî ʾēlênû.',pl:'Będziesz do nas pisać. (do kobiety)'},
+ {lesson:22,heb:'יִשְׂרֹף אֹתָהּ.',tr:'yiśrōp̄ ʾōṯāh.',pl:'Spali ją.'},
+ {lesson:22,heb:'הָיָה יהוה עִם־הַמֶּלֶךְ כִּי אֶת־אֱלֹהֵי אָבִיו דָּרַשׁ וּבְמִצְוֹתָיו הָלַךְ.',tr:'hāyāh Yhwh ʿim-hammélek kî ʾeṯ-ʾĕlōhê ʾāḇîw dāraš ûḇəmiṣwōṯāyw hālāḵ.',pl:'Pan był z królem, ponieważ szukał Boga swego ojca i chodził według Jego przykazań.'},
+ {lesson:22,heb:'יִשְׂרְפוּ אֶת־הָאִשָּׁה הָרָעָה בָּאֵשׁ מִחוּץ לָעִיר.',tr:'yiśrəp̄û ʾeṯ-hāʾiššāh hārāʿāh bāʾēš miḥûṣ lāʿîr.',pl:'Spalą złą kobietę w ogniu poza miastem.'},
+ {lesson:22,heb:'יִמְכְּרוּ אֶת־אֲחִיהֶם הַקָּטֹן בְּיַד הָאֲנָשִׁים הַיֹּרְדִים מִצְרַיְמָה.',tr:'yimkərû ʾeṯ-ʾăḥîhem haqqāṭōn bəyaḏ hāʾănāšîm hayyōrəḏîm miṣráymāh.',pl:'Sprzedadzą swojego młodszego brata w ręce ludzi schodzących do Egiptu.'},
+ {lesson:22,heb:'עָשָׂה הָאִישׁ אֶת־כָּל־מְלֶאכֶת עֲבוֹדַת בֵּית יהוה.',tr:'ʿāśāh hāʾîš ʾeṯ-kol-məléʾḵeṯ ʿăḇôḏaṯ bêṯ Yhwh.',pl:'Mężczyzna wykonał całą pracę służby domu Pańskiego.'},
+ {lesson:22,heb:'בַּיּוֹם הַהוּא תִּשְׁבֹּת מִכָּל־מְלָאכָה אֲשֶׁר אַתָּה עֹשֶׂה כִּי יוֹם הַשַּׁבָּת הוּא.',tr:'bayyôm hahûʾ tišbōṯ mikkol-məlāʾḵāh ʾăšer ʾattāh ʿōśeh kî yôm haššabbāṯ hûʾ.',pl:'W tym dniu odpoczniesz od wszelkiej pracy, którą wykonujesz, ponieważ jest to dzień szabatu.'},
+ {lesson:22,heb:'אֶדְרֹשׁ אֶת־יהוה כָּל־יְמֵי חַיַּי כִּי צוּרִי וִישׁוּעָתִי הוּא.',tr:'ʾeḏrōš ʾeṯ-Yhwh kol-yəmê ḥayyay kî ṣûrî wîšûʿāṯî hûʾ.',pl:'Będę szukał Pana przez wszystkie dni mojego życia, ponieważ On jest moją opoką i moim zbawieniem.'},
+ {lesson:22,heb:'הֲתִמְכְּרוּ אֹתִי בְּיַד אֹיְבַי.',tr:'hătimkərû ʾōṯî bəyaḏ ʾōyəḇay?',pl:'Czy sprzedacie mnie w ręce moich wrogów?'},
+ {lesson:22,heb:'מַה־מְּלֶאכֶת אָחִיךָ.',tr:'mah-mməléʾḵeṯ ʾāḥîḵā?',pl:'Jakie jest zajęcie twojego brata?'},
+ {lesson:22,heb:'שָׂרְפוּ אֹיְבָיו אֶת־בֵּית יהוה וְאֶת־בֵּית הַמֶּלֶךְ וְאֶת־כָּל־בַּיִת גָּדוֹל שָׂרְפוּ בָּאֵשׁ.',tr:'śārəp̄û ʾōyəḇāyw ʾeṯ-bêṯ Yhwh wəʾeṯ-bêṯ hammélek wəʾeṯ-kol-báyiṯ gāḏôl śārəp̄û bāʾēš.',pl:'Jego wrogowie spalili dom Pański i dom królewski, i wszystkie wielkie domy spalili w ogniu.'},
+ {lesson:22,heb:'לַיּוֹם הַהוּא קָרְאוּ שַׁבָּת כִּי בוֹ שָׁבַת יהוה מֵהַמְּלָאכָה.',tr:'layyôm hahûʾ qārəʾû šabbāṯ kî ḇô šāḇaṯ Yhwh mēhamməlāʾḵāh.',pl:'Ten dzień nazwali szabatem, ponieważ w nim Pan odpoczął od pracy.'},
+
+ {lesson:23,heb:'אָנָה תִּשְׁלַח אֹתִי.',tr:'ʾā́nāh tišlaḥ ʾōṯî?',pl:'Dokąd mnie poślesz?'},
+ {lesson:23,heb:'אֶל־מִי תִּקְרָאוּ.',tr:'ʾel-mî tiqrāʾû?',pl:'Do kogo będziecie wołać?'},
+ {lesson:23,heb:'אֵיפֹה תִּמְצֶאנָה הַנָּשִׁים לֶחֶם לִבְנֵיהֶן וְלִבְנוֹתֵיהֶן.',tr:'ʾêp̄ōh timṣeʾnāh hannāšîm léḥem liḇnêhen wəliḇnôṯêhen?',pl:'Gdzie kobiety znajdą chleb dla swoich synów i córek?'},
+ {lesson:23,heb:'לָמָּה תִּשְׂמַחְנָה בְּנוֹת יְרוּשָׁלִַם.',tr:'lāmmāh tiśmaḥnāh bənôṯ yərûšāláim?',pl:'Dlaczego radują się córki Jerozolimy?'},
+ {lesson:23,heb:'יִבְחֲרוּ לָהֶם בְּמֶלֶךְ.',tr:'yiḇḥărû lāhem bəmélek.',pl:'Wybiorą sobie króla.'},
+ {lesson:23,heb:'לֹא אֶבְטַח בְּךָ וּבְדִבְרֵי פִּיךָ.',tr:'lōʾ ʾeḇṭaḥ bəḵā ûḇəḏiḇrê pîḵā.',pl:'Nie zaufam tobie ani słowom twoich ust.'},
+ {lesson:23,heb:'מִי יִגְאַל אֹתִי מִידֵי אֹיְבַי.',tr:'mî yiḡʾal ʾōṯî mîḏê ʾōyəḇay?',pl:'Kto wykupi mnie z rąk moich wrogów?'},
+ {lesson:23,heb:'מֵאַיִן בָּאתָ בְּנִי.',tr:'mēʾáyin bāʾṯā bənî?',pl:'Skąd przyszedłeś, mój synu?'},
+ {lesson:23,heb:'מִקֶּדֶם לָעִיר בָּאתִי אָבִי.',tr:'miqqéḏem lāʿîr bāʾṯî ʾāḇî.',pl:'Przyszedłem na wschód od miasta, mój ojcze.'},
+ {lesson:23,heb:'אָנָה אַתָּה הֹלֵךְ.',tr:'ʾā́nāh ʾattāh hōlēḵ?',pl:'Dokąd idziesz?'},
+ {lesson:23,heb:'יִשְׂמַח כָּל־בֹּטֵחַ בְּךָ כִּי יְשׁוּעַת עַמֵּנוּ אַתָּה.',tr:'yiśmaḥ kol-bōṭēaḥ bəḵā kî yəšûʿaṯ ʿamménû ʾattāh.',pl:'Niech raduje się każdy, kto tobie ufa, bo Ty jesteś zbawieniem naszego ludu.'},
+ {lesson:23,heb:'יִשְׁכְּבוּ הָאֲנָשִׁים שָׁם עַד־הַבֹּקֶר.',tr:'yiškəḇû hāʾănāšîm šām ʿaḏ-habbṓqer.',pl:'Ludzie będą leżeć tam aż do rana.'},
+ {lesson:23,heb:'טוֹב הָאִישׁ אֲשֶׁר יִבְטַח בְּשֵׁם יהוה.',tr:'ṭôḇ hāʾîš ʾăšer yiḇṭaḥ bəšēm Yhwh.',pl:'Dobry jest człowiek, który ufa imieniu Pana.'},
+ {lesson:23,heb:'יִכְבַּד שֵׁם הָאִישׁ הַזֶּה מִשֵּׁם כָּל־אִישׁ יֹשֵׁב בָּאָרֶץ הַזֹּאת.',tr:'yiḵbaḏ šēm hāʾîš hazzeh miššēm kol-ʾîš yōšēḇ bāʾāreṣ hazzōʾṯ.',pl:'Imię tego człowieka będzie sławniejsze niż imię każdego mieszkańca tej ziemi.'},
+ {lesson:23,heb:'לֹא יִשְׁמְעוּ בְּנֵי הַזָּקֵן אֶל־קוֹל אֲבִיהֶם כִּי רָעִים הֵם מְאֹד.',tr:'lōʾ yišməʿû bənê hazzāqēn ʾel-qôl ʾăḇîhem kî rāʿîm hēm məʾōḏ.',pl:'Synowie starca nie będą słuchać głosu swojego ojca, ponieważ są bardzo niegodziwi.'},
+ {lesson:23,heb:'יָדַעְתִּי כִּי הוּא יִגְאַל אֶת־עַמִּי.',tr:'yāḏáʿtî kî hûʾ yiḡʾal ʾeṯ-ʿammî.',pl:'Wiedziałem, że on wykupi mój lud.'},
+ {lesson:23,heb:'שָׂמַחְתִּי כַּאֲשֶׁר רָאִיתִי אֶת־כָּל־אֲשֶׁר עָשָׂה לָנוּ יהוה.',tr:'śāmáḥtî kaʾăšer rāʾîṯî ʾeṯ-kol-ʾăšer ʿāśāh lā́nû Yhwh.',pl:'Uradowałem się, gdy zobaczyłem wszystko, co uczynił dla nas Pan.'},
+ {lesson:23,heb:'מִי יִגְאַל אֹתָנוּ מִיַּד הָאֹיְבִים.',tr:'mî yiḡʾal ʾōṯānû miyyaḏ hāʾōyəḇîm?',pl:'Kto wykupi nas z ręki wrogów?'},
+ {lesson:23,heb:'תִּכְבַּד הָעֲבוֹדָה עָלֶיךָ וְתִצְעַק אֵלַי בְּקוֹל גָּדוֹל וְלֹא אֶשְׁמַע לְקוֹלֶךָ.',tr:'tiḵbaḏ hāʿăḇôḏāh ʿāléḵā wəṯiṣʿaq ʾēlay bəqôl gāḏôl wəlōʾ ʾešmaʿ ləqôléḵā.',pl:'Praca będzie dla ciebie ciężka i będziesz wołać do mnie donośnym głosem, lecz nie wysłucham twojego głosu.'},
+ {lesson:23,heb:'אֶבְחַר מִכֶּם אִישׁ לִי לְנָבִיא.',tr:'ʾeḇḥar mikkem ʾîš lî lənāḇîʾ.',pl:'Wybiorę sobie spośród was człowieka na proroka.'},
+ {lesson:23,heb:'יָשְׁבוּ אַבְרָם בֶּן־תֶּרַח וְלוֹט בֶּן־חָרָן בֶּן־תֶּרַח בְּאוּר כַּשְׂדִּים.',tr:'yāšəḇû ʾaḇrām ben-téraḥ wəlôṭ ben-ḥārān ben-téraḥ bəʾûr kaśdîm.',pl:'[Abraham] Abram, syn Teracha, i Lot, syn Harana, syna Teracha, mieszkali w Ur Chaldejskim.'},
+ {lesson:23,heb:'יָצָא תֶּרַח אֶת־אַבְרָם בְּנוֹ וְאֶת־לוֹט בֶּן־בְּנוֹ וְאֶת־שָׂרַי אֵשֶׁת אַבְרָם לָלֶכֶת אַרְצָה כְּנַעַן.',tr:'yāṣāʾ téraḥ ʾeṯ-ʾaḇrām bənô wəʾeṯ-lôṭ ben-bənô wəʾeṯ-śāray ʾēšeṯ ʾaḇrām lāléḵeṯ ʾárṣāh kənáʿan.',pl:'Terach wyprowadził Abrama, swojego syna, Lota, syna swojego syna, i Saraj, żonę Abrama, aby iść do ziemi Kanaan.'},
+ {lesson:23,heb:'יָשְׁבוּ בְחָרָן וְשָׁם מֵת תֶּרַח אֲבִי אַבְרָם.',tr:'yāšəḇû ḇəḥārān wəšām mēṯ téraḥ ʾăḇî ʾaḇrām.',pl:'Zamieszkali w Haranie i tam umarł Terach, ojciec Abrama.'},
+ {lesson:23,heb:'הָלַךְ אַבְרָם מֵחָרָן כַּאֲשֶׁר אָמַר לוֹ יהוה.',tr:'hālaḵ ʾaḇrām mēḥārān kaʾăšer ʾāmar lô Yhwh.',pl:'Abram wyruszył z Haranu, jak mu powiedział Pan.'},
+ {lesson:23,heb:'לָקַח אַבְרָם אֶת־שָׂרַי וְאֶת־לוֹט בֶּן־אָחִיו אִתּוֹ וְגַם־אֶת־כָּל־הָרְכוּשׁ אֲשֶׁר הָיָה לָהֶם בְּחָרָן.',tr:'lāqaḥ ʾaḇrām ʾeṯ-śāray wəʾeṯ-lôṭ ben-ʾāḥîw ʾittô wəḡam-ʾeṯ-kol-hārəḵûš ʾăšer hāyāh lāhem bəḥārān.',pl:'Abram wziął ze sobą Saraj i Lota, syna swojego brata, a także cały dobytek, który mieli w Haranie.'},
+ {lesson:23,heb:'בָּאוּ אַרְצָה כְּנַעַן.',tr:'bāʾû ʾárṣāh kənáʿan.',pl:'Przyszli do ziemi Kanaan.'},
+ {lesson:23,heb:'עָבַר אַבְרָם בָּאָרֶץ עַד־מְקוֹם שְׁכֶם.',tr:'ʿāḇar ʾaḇrām bāʾāreṣ ʿaḏ-məqôm šəḵem.',pl:'Abram przeszedł przez kraj aż do miejsca Sychem.'},
+ {lesson:23,heb:'הָיָה הַכְּנַעֲנִי אָז בָּאָרֶץ.',tr:'hāyāh hakkənaʿănî ʾāz bāʾāreṣ.',pl:'Kananejczyk był wówczas w kraju.'},
+ {lesson:23,heb:'אָמַר יהוה אֶל־אַבְרָם בִּשְׁכֶם: אֲנִי נֹתֵן אֶת־הָאָרֶץ הַזֹּאת לְזַרְעֶךָ.',tr:'ʾāmar Yhwh ʾel-ʾaḇrām bišḵem: ʾănî nōṯēn ʾeṯ-hāʾāreṣ hazzōʾṯ ləzarʿéḵā.',pl:'Pan powiedział do Abrama w Sychem: Ja daję tę ziemię twojemu potomstwu.'},
+ {lesson:23,heb:'בָּנָה אַבְרָם מִזְבֵּחַ לַיהוה שָׁם.',tr:'bānāh ʾaḇrām mizbēaḥ laYhwh šām.',pl:'Abram zbudował tam ołtarz dla Pana.'},
+ {lesson:23,heb:'נָסַע מִשָּׁם הָהָרָה מִקֶּדֶם לְבֵית־אֵל.',tr:'nāsaʿ miššām hāhārāh miqqéḏem ləḇêṯ-ʾēl.',pl:'Wyruszył stamtąd ku górom, na wschód od Betel.'},
+ {lesson:23,heb:'גַּם־שָׁם בָּנָה מִזְבֵּחַ וְקָרָא שָׁם בְּשֵׁם יהוה.',tr:'gam-šām bānāh mizbēaḥ wəqārāʾ šām bəšēm Yhwh.',pl:'Także tam zbudował ołtarz i wzywał tam imienia Pana.'},
+
+ {lesson:24,heb:'הָרְגוּ אֶת־מַלְכֵּנוּ וַיִּקְבְּרוּ אֹתוֹ מִחוּץ לָעִיר.',tr:'hārəḡû ʾeṯ-malkēnû wayyiqbərû ʾōṯô miḥûṣ lāʿîr.',pl:'Zabili naszego króla i pogrzebali go poza miastem.'},
+ {lesson:24,heb:'נָגַף אֱלֹהִים אֶת־הָעָם וַיִּשְׁלַח אֶת־נְבִיאָיו אֲלֵיהֶם.',tr:'nāḡap̄ ʾĕlōhîm ʾeṯ-hāʿām wayyišlaḥ ʾeṯ-nəḇîʾāyw ʾălêhem.',pl:'Bóg dotknął lud plagą i posłał do nich swoich proroków.'},
+ {lesson:24,heb:'לָכְדוּ אֶת־רְכוּשׁוֹ וַיִּשְׂרְפוּ אֶת־בֵּיתוֹ.',tr:'lāḵəḏû ʾeṯ-rəḵûšô wayyiśrəp̄û ʾeṯ-bêṯô.',pl:'Zagarnęli jego mienie i spalili jego dom.'},
+ {lesson:24,heb:'יִקְרְאוּ אֵלָיו וְלָקְחוּ אֹתוֹ וּמָכְרוּ אֹתוֹ בִּידֵי אֹיְבָיו.',tr:'yiqrəʾû ʾēlāyw wəlāqəḥû ʾōṯô ûmāḵərû ʾōṯô bîḏê ʾōyəḇāyw.',pl:'Zawołają do niego, wezmą go i sprzedadzą go w ręce jego wrogów.'},
+ {lesson:24,heb:'בָּאוּ אֶל־בֵּית הָאִשָּׁה וַיִּשְׁכְּבוּ שָׁם כָּל־הַלָּיְלָה.',tr:'bāʾû ʾel-bêṯ hāʾiššāh wayyiškəḇû šām kol-halláylāh.',pl:'Przyszli do domu kobiety i leżeli tam przez całą noc.'},
+ {lesson:24,heb:'שָׁמַעְנוּ אֶל־קוֹלֶךָ וַנִּבְטַח בִּדְבָרֶיךָ.',tr:'šāmáʿnû ʾel-qôléḵā wannivṭaḥ biḏḇāréḵā.',pl:'Usłuchaliśmy twojego głosu i zaufaliśmy twoim słowom.'},
+ {lesson:24,heb:'קָמוּ וַיִּבְחֲרוּ לָהֶם מֶלֶךְ.',tr:'qāmû wayyiḇḥărû lāhem mélek.',pl:'Powstali i wybrali sobie króla.'},
+ {lesson:24,heb:'בַּצָּהֳרַיִם נִרְכַּב עַל־חֲמוֹרֵינוּ הַמִּדְבָּרָה.',tr:'baṣṣohŏráyim nirkaḇ ʿal-ḥămôrênû hammiḏbārāh.',pl:'W południe pojedziemy na naszych osłach na pustynię.'},
+ {lesson:24,heb:'תִּקְרְאוּ בְּקוֹל גָּדוֹל וְסַבּוֹתֶם אֶת־הָעִיר פַּעֲמַיִם.',tr:'tiqrəʾû bəqôl gāḏôl wəsabbôṯem ʾeṯ-hāʿîr paʿămáyim.',pl:'Będziecie wołać donośnym głosem i okrążycie miasto dwukrotnie.'},
+ {lesson:24,heb:'הֲלֹא שָׁמַעְתָּ בְּאָזְנֶיךָ אֶת־דִּבְרֵי נְבִיאָי.',tr:'hălōʾ šāmáʿtā bəʾoznéḵā ʾeṯ-diḇrê nəḇîʾāy?',pl:'Czyż nie słyszałeś na własne uszy słów moich proroków?'},
+ {lesson:24,heb:'טוֹבָה אַרְצֵנוּ וְטוֹבִים כְּרָמֵינוּ.',tr:'ṭôḇāh ʾarṣēnû wəṭôḇîm kərāmênû.',pl:'Dobra jest nasza ziemia i dobre są nasze winnice.'},
+ {lesson:24,heb:'נִשְׁבֹּר אֶת־צַלְמוֹ.',tr:'nišbōr ʾeṯ-ṣalmô.',pl:'Rozbijemy jego posąg.'},
+ {lesson:24,heb:'זָכַרְנוּ אֶת־חַסְדְּךָ אֲשֶׁר עָשִׂיתָ אִתָּנוּ.',tr:'zāḵárnû ʾeṯ-ḥasdəḵā ʾăšer ʿāśîṯā ʾittānû.',pl:'Pamiętaliśmy o twojej łaskawości, którą nam okazałeś.'},
+ {lesson:24,heb:'הָאֵלֶּה יְלָדֶיךָ.',tr:'hāʾēlleh yəlāḏéḵā?',pl:'Czy to są twoje dzieci?'},
+ {lesson:24,heb:'נָגַף יהוה אֶת־מֶלֶךְ מִצְרַיִם כִּי עָשָׂה אֶת־הָרַע בְּעֵינָיו.',tr:'nāḡap̄ Yhwh ʾeṯ-mélek miṣráyim kî ʿāśāh ʾeṯ-hāraʿ bəʿênāyw.',pl:'Pan dotknął plagą króla Egiptu, ponieważ czynił zło w Jego oczach.'},
+ {lesson:24,heb:'בָּעֶרֶב שָׂמָה הָאִשָּׁה לֶחֶם וּמַיִם לְפָנָיו עַל־הַשֻּׁלְחָן וְלֹא אָכַל וְלֹא שָׁתָה.',tr:'bāʿéreḇ śāmāh hāʾiššāh léḥem ûmáyim ləp̄ānāyw ʿal-haššulḥān wəlōʾ ʾāḵal wəlōʾ šāṯāh.',pl:'Wieczorem kobieta położyła przed nim chleb i wodę na stole, lecz nie jadł i nie pił.'},
+ {lesson:24,heb:'בָּאוּ הַבַּיְתָה וַיִּשְׁכְּבוּ שָׁם עַד־הַבֹּקֶר.',tr:'bāʾû habbáyṯāh wayyiškəḇû šām ʿaḏ-habbṓqer.',pl:'Przyszli do domu i leżeli tam aż do rana.'},
+ {lesson:24,heb:'לָקְחוּ הַכֹּהֲנִים אֶת־הַבָּשָׂר מֵעַל־הַמִּזְבֵּחַ.',tr:'lāqəḥû hakkōhănîm ʾeṯ-habbāśār mēʿal-hammizbēaḥ.',pl:'Kapłani wzięli mięso znad ołtarza.'},
+ {lesson:24,heb:'קָבְרוּ אֶת־אֲבִיהֶם בַּמָּקוֹם אֲשֶׁר קָבַר בּוֹ אֲבִיהֶם אֶת־אֲבִיהוּ.',tr:'qāḇərû ʾeṯ-ʾăḇîhem bammāqôm ʾăšer qāḇar bô ʾăḇîhem ʾeṯ-ʾăḇîhû.',pl:'Pogrzebali swojego ojca w miejscu, w którym ich ojciec pogrzebał swojego ojca.'},
+ {lesson:24,heb:'הָלְכוּ הָאֲנָשִׁים אֶל־הַהֵיכָל וַיִּקְרְאוּ בְּקוֹל גָּדוֹל לִפְנֵי הַמֶּלֶךְ וַיִּשְׁמַע הַמֶּלֶךְ אֶל־קוֹלָם.',tr:'hāləḵû hāʾănāšîm ʾel-hahêḵāl wayyiqrəʾû bəqôl gāḏôl lip̄nê hammélek wayyišmaʿ hammélek ʾel-qôlām.',pl:'Ludzie poszli do świątyni i zawołali donośnym głosem przed królem, a król wysłuchał ich głosu.'},
+ {lesson:24,heb:'אֶשְׁלַח אֶת־הַכֶּסֶף אֵלֶיךָ בַּעֲבוּר בִּנְךָ הַקָּטֹן.',tr:'ʾešlaḥ ʾeṯ-hakkésep̄ ʾēléḵā baʿăḇûr binḵā haqqāṭōn.',pl:'Poślę ci srebro ze względu na twojego małego syna.'},
+ {lesson:24,heb:'עָשִׂיתָ חֶסֶד עִמָּנוּ וְעִם־עַמֵּנוּ.',tr:'ʿāśîṯā ḥéseḏ ʿimmānû wəʿim-ʿamménû.',pl:'Okazałeś łaskawość nam i naszemu ludowi.'},
+ {lesson:24,heb:'לָקְחוּ אֶת־אֲחִיהֶם וַיִּמְכְּרוּ אֹתוֹ בִּידֵי הָאֲנָשִׁים הַיֹּרְדִים מִצְרַיְמָה וְהֵם מָכְרוּ אֹתוֹ בִּידֵי הַמִּצְרִים.',tr:'lāqəḥû ʾeṯ-ʾăḥîhem wayyimkərû ʾōṯô bîḏê hāʾănāšîm hayyōrəḏîm miṣráymāh wəhēm māḵərû ʾōṯô bîḏê hammiṣrîm.',pl:'Wzięli swojego brata i sprzedali go w ręce ludzi schodzących do Egiptu, a oni sprzedali go w ręce Egipcjan.'},
+ {lesson:24,heb:'רָכַב עַל־חֲמוֹרוֹ הָעִירָה וּבְנוֹ אִתּוֹ.',tr:'rāḵaḇ ʿal-ḥămôrô hāʿîrāh ûḇənô ʾittô.',pl:'Pojechał na swoim ośle do miasta, a jego syn z nim.'},
+ {lesson:24,heb:'יָרַד אַבְרָהָם מִצְרַיְמָה כִּי כָבֵד הָרָעָב בְּאֶרֶץ כְּנָעַן.',tr:'yāraḏ ʾaḇrāhām miṣráymāh kî ḵāḇēḏ hārāʿāḇ bəʾereṣ kənáʿan.',pl:'[Abraham w Egipcie] Abraham zszedł do Egiptu, ponieważ głód był ciężki w ziemi Kanaan.'},
+ {lesson:24,heb:'אָמַר אַבְרָהָם לְשָׂרָה כַּאֲשֶׁר בָּאוּ מִצְרַיְמָה: יָדַעְתִּי כִּי אִשָּׁה יְפַת מַרְאֶה אָתְּ.',tr:'ʾāmar ʾaḇrāhām ləśārāh kaʾăšer bāʾû miṣráymāh: yāḏáʿtî kî ʾiššāh yəp̄aṯ marʾeh ʾātt.',pl:'Abraham powiedział do Sary, gdy przyszli do Egiptu: Wiem, że jesteś kobietą piękną z wyglądu.'},
+ {lesson:24,heb:'יִרְאוּ אֹתָךְ הַמִּצְרִים וְאָמְרוּ אֵשֶׁת הָאִישׁ הַהוּא זֹאת וְהָרְגוּ אֹתִי וְלָקְחוּ אֹתָךְ.',tr:'yirʾû ʾōṯāḵ hammiṣrîm wəʾāmərû ʾēšeṯ hāʾîš hahûʾ zōʾṯ wəhārəḡû ʾōṯî wəlāqəḥû ʾōṯāḵ.',pl:'Egipcjanie zobaczą cię i powiedzą: To jest żona tego człowieka — i zabiją mnie, a ciebie wezmą.'},
+ {lesson:24,heb:'אִמְרִי כִּי אֲחוֹתִי אָתְּ לְמַעַן יִיטַב לִי בַּעֲבוּרֵךְ.',tr:'ʾimrî kî ʾăḥôṯî ʾātt ləmáʿan yîṭaḇ lî baʿăḇûrēḵ.',pl:'Mów, że jesteś moją siostrą, aby mi się dobrze powodziło ze względu na ciebie.'},
+ {lesson:24,heb:'כֵּן עָשְׂתָה שָׂרָה כַּאֲשֶׁר בָּאוּ מִצְרַיְמָה. אָמְרָה אֶל־הַמִּצְרִים כַּדְּבָרִים אֲשֶׁר אָמַר לָהּ אִישָׁהּ.',tr:'kēn ʿāśəṯāh śārāh kaʾăšer bāʾû miṣráymāh. ʾāmərāh ʾel-hammiṣrîm kaddəḇārîm ʾăšer ʾāmar lāh ʾîšāh.',pl:'Tak uczyniła Sara, gdy przyszli do Egiptu. Powiedziała Egipcjanom słowa, które jej powiedział jej mąż.'},
+ {lesson:24,heb:'לָקְחוּ הַמִּצְרִים אֹתָהּ אֶל־בֵּית פַּרְעֹה וְלֹא הָרְגוּ אֶת־אַבְרָהָם.',tr:'lāqəḥû hammiṣrîm ʾōṯāh ʾel-bêṯ parʿōh wəlōʾ hārəḡû ʾeṯ-ʾaḇrāhām.',pl:'Egipcjanie wzięli ją do domu faraona i nie zabili Abrahama.'},
+ {lesson:24,heb:'נָתְנוּ לְאַבְרָהָם צֹאן וּבָקָר וַחֲמוֹרִים וַעֲבָדִים וּשְׁפָחוֹת וַאֲתוֹנוֹת וּגְמַלִּים בַּעֲבוּר שָׂרָה.',tr:'nāṯənû ləʾaḇrāhām ṣōʾn ûḇāqār waḥămôrîm waʿăḇāḏîm ûšəp̄āḥôṯ waʾăṯônôṯ ûḡəmallîm baʿăḇûr śārāh.',pl:'Dali Abrahamowi owce, bydło, osły, sługi, służące, oślice i wielbłądy ze względu na Sarę.'},
+ {lesson:24,heb:'נָגַף יהוה אֶת־פַּרְעֹה מַגֵּפוֹת גְּדוֹלוֹת עַל־דְּבַר שָׂרָה אֵשֶׁת אַבְרָהָם.',tr:'nāḡap̄ Yhwh ʾeṯ-parʿōh maggēp̄ôṯ gəḏôlôṯ ʿal-dəḇar śārāh ʾēšeṯ ʾaḇrāhām.',pl:'Pan dotknął faraona wielkimi plagami z powodu Sary, żony Abrahama.'},
+ {lesson:24,heb:'וַיִּקְרָא פַרְעֹה לְאַבְרָהָם לֵאמֹר: מַה־זֹּאת עָשִׂיתָ לִי. לָמָּה אָמַרְתָּ אֲחוֹתִי הִיא.',tr:'wayyiqrāʾ p̄arʿōh ləʾaḇrāhām lēʾmōr: mah-zōʾṯ ʿāśîṯā lî. lāmmāh ʾāmártā ʾăḥôṯî hîʾ.',pl:'Faraon zawołał Abrahama i rzekł: Cóż mi uczyniłeś? Dlaczego powiedziałeś: To jest moja siostra?'},
+ {lesson:24,heb:'וַיְשַׁלַּח אֶת־אַבְרָהָם וְאֶת־שָׂרָה וְאֶת־כָּל־אֲשֶׁר לוֹ.',tr:'wayšallaḥ ʾeṯ-ʾaḇrāhām wəʾeṯ-śārāh wəʾeṯ-kol-ʾăšer lô.',pl:'I odprawił (wygnał) Abrahama, Sarę i wszystko, co miał.'},
+ {lesson:24,heb:'עָלָה אַבְרָהָם מִמִּצְרַיִם הוּא וְשָׂרָה וְכָל־אֲשֶׁר־לוֹ וְלוֹט עִמּוֹ הַנֶּגְבָּה.',tr:'ʿālāh ʾaḇrāhām mimmiṣráyim hûʾ wəśārāh wəḵol-ʾăšer-lô wəlôṭ ʿimmô hannéḡbāh.',pl:'Abraham wyszedł z Egiptu, on, Sara i wszystko, co miał, a Lot z nim, w stronę Negewu.'},
+ {lesson:24,heb:'אַבְרָהָם כָּבֵד מְאֹד בַּמִּקְנֶה בַּכֶּסֶף וּבַזָּהָב.',tr:'ʾaḇrāhām kāḇēḏ məʾōḏ bammiqneh bakkésep̄ ûḇazzāhāḇ.',pl:'Abraham był bardzo bogaty w bydło, srebro i złoto.'},
+];
+
+const CONSTRUCTS = [
+ {lesson:16,heb:'פְּרִי הָעֵץ',tr:'pərî hāʿēṣ',pl:'owoc drzewa'},
+ {lesson:16,heb:'עֵץ הַגָּן',tr:'ʿēṣ haggān',pl:'drzewo ogrodu'},
+ {lesson:16,heb:'גַּן הָאִישׁ הַקָּטֹן',tr:'gan hāʾîš haqqāṭōn',pl:'mały ogród człowieka',pl2:'ogród małego człowieka',amb:true},
+ {lesson:16,heb:'אִישׁ הָאִשָּׁה הָרַע',tr:'ʾîš hāʾiššāh hāraʿ',pl:'zły mąż kobiety',note:'הָרַע r.m. → odnosi się do אִישׁ'},
+ {lesson:16,heb:'אִישׁ הָאִשָּׁה הָרָעָה',tr:'ʾîš hāʾiššāh hārāʿāh',pl:'mąż złej kobiety',note:'הָרָעָה r.ż. → odnosi się do אִשָּׁה'},
+ {lesson:16,heb:'שֹׁפֵט הָעָם הַיָּשָׁר',tr:'šōp̄ēṭ hāʿām hayyāšār',pl:'prawy sędzia ludu',pl2:'sędzia prawego ludu',amb:true},
+ {lesson:16,heb:'קוֹל הַנָּבִיא',tr:'qôl hannāḇîʾ',pl:'głos proroka'},
+ {lesson:16,heb:'עֶבֶד הַמֶּלֶךְ הַטּוֹב',tr:'ʿéḇeḏ hammélek haṭṭôḇ',pl:'dobry sługa króla',pl2:'sługa dobrego króla',amb:true},
+ {lesson:16,heb:'אִישׁ הָעִיר הֶעָשִׁיר',tr:'ʾîš hāʿîr heʿāšîr',pl:'bogaty człowiek miasta',note:'הֶעָשִׁיר r.m. → odnosi się do אִישׁ (nie do עִיר, r.ż.)'},
+ {lesson:16,heb:'רְעַב הַדַּלִּים',tr:'rəʿaḇ haddallîm',pl:'głód ubogich'},
+ {lesson:16,heb:'עֲנַן הַשָּׁמַיִם הַגָּדוֹל',tr:'ʿănan haššāmáyim haggāḏôl',pl:'wielki obłok niebios',note:'הַגָּדוֹל l.poj. → odnosi się do עֲנַן (nie do שָׁמַיִם, l.mn.)'},
+ {lesson:16,heb:'זְהַב הַהֵיכָל הַיָּקָר',tr:'zəhaḇ hahêḵāl hayyāqār',pl:'drogocenne złoto świątyni',pl2:'złoto drogocennej świątyni',amb:true},
+
+ {lesson:17,heb:'בֵּית הַנָּבִיא',tr:'bêṯ hannāḇîʾ',pl:'dom proroka'},
+ {lesson:17,heb:'עֲצַת הַמֶּלֶךְ',tr:'ʿăṣaṯ hammélek',pl:'rada króla'},
+ {lesson:17,heb:'שְׁנַת הַמִּלְחָמָה הַגְּדוֹלָה',tr:'šənaṯ hammilḥāmāh haggəḏôlāh',pl:'rok wielkiej wojny',pl2:'wielki rok wojny',amb:true},
+ {lesson:17,heb:'בִּרְכַּת הָאָבוֹת',tr:'birkaṯ hāʾāḇôṯ',pl:'błogosławieństwo ojców'},
+ {lesson:17,heb:'מַלְכַּת הַשָּׁמַיִם',tr:'malkaṯ haššāmáyim',pl:'królowa niebios'},
+ {lesson:17,heb:'תּוֹרַת הָאֱלֹהִים',tr:'tôraṯ hāʾĕlōhîm',pl:'Prawo Boga'},
+ {lesson:17,heb:'שִׂמְחַת הָעָם הַגְּדוֹלָה',tr:'śimḥaṯ hāʿām haggəḏôlāh',pl:'wielka radość ludu',note:'הַגְּדוֹלָה r.ż. → odnosi się do שִׂמְחָה (nie do עָם, r.m.)'},
+ {lesson:17,heb:'עֲבוֹדַת הָאִישׁ הַקָּשָׁה',tr:'ʿăḇôḏaṯ hāʾîš haqqāšāh',pl:'ciężka praca człowieka',note:'הַקָּשָׁה r.ż. → odnosi się do עֲבוֹדָה (nie do אִישׁ, r.m.)'},
+ {lesson:17,heb:'יְשׁוּעַת הַגִּבּוֹרִים',tr:'yəšûʿaṯ haggibbôrîm',pl:'zwycięstwo wojowników'},
+ {lesson:17,heb:'גִּבְעַת הָאָרֶץ הַהִיא',tr:'giḇʿaṯ hāʾāreṣ hahîʾ',pl:'wzgórze tamtej ziemi',pl2:'tamto wzgórze ziemi',amb:true},
+ {lesson:17,heb:'בֶּן־הַשֹּׁפֵט',tr:'ben-haššōp̄ēṭ',pl:'syn sędziego'},
+ {lesson:17,heb:'בַּת הָאִישׁ הַדַּל',tr:'baṯ hāʾîš haddal',pl:'córka ubogiego człowieka',note:'הַדַּל r.m. → odnosi się do אִישׁ (nie do בַּת, r.ż.)'},
+ {lesson:17,heb:'שֵׁם הָאָרֶץ הַזֹּאת',tr:'šēm hāʾāreṣ hazzōʾṯ',pl:'nazwa tej ziemi',note:'הַזֹּאת r.ż. → odnosi się do אֶרֶץ (nie do שֵׁם, r.m.)'},
+ {lesson:17,heb:'מַחֲנֵה הָאֹיְבִים',tr:'maḥănēh hāʾōyəḇîm',pl:'obóz wrogów'},
+
+ {lesson:18,heb:'אַנְשֵׁי הָעִיר',tr:'ʾanšê hāʿîr',pl:'ludzie (mężczyźni) miasta'},
+ {lesson:18,heb:'נְשֵׁי הַמֶּלֶךְ',tr:'nəšê hammélek',pl:'żony (kobiety) króla'},
+ {lesson:18,heb:'אֹיְבֵי הָעָם',tr:'ʾōyəḇê hāʿām',pl:'wrogowie ludu'},
+ {lesson:18,heb:'בָּתֵּי הָעִיר',tr:'bāttê hāʿîr',pl:'domy miasta'},
+ {lesson:18,heb:'גִּבְעוֹת הָאָרֶץ',tr:'giḇʿôṯ hāʾāreṣ',pl:'wzgórza ziemi'},
+ {lesson:18,heb:'דִּבְרֵי הַסֵּפֶר',tr:'diḇrê hassēp̄er',pl:'słowa księgi'},
+ {lesson:18,heb:'הֵיכְלֵי הָעִיר',tr:'hêḵəlê hāʿîr',pl:'pałace miasta'},
+ {lesson:18,heb:'הָרֵי הָאָרֶץ',tr:'hārê hāʾāreṣ',pl:'góry ziemi'},
+ {lesson:18,heb:'מַלְכֵי הָאָרֶץ',tr:'malḵê hāʾāreṣ',pl:'królowie ziemi'},
+ {lesson:18,heb:'כּוֹכְבֵי הַשָּׁמַיִם',tr:'kôḵəḇê haššāmáyim',pl:'gwiazdy niebios'},
+ {lesson:18,heb:'בֶּהֱמַת הַשָּׂדֶה',tr:'behĕmaṯ haśśāḏeh',pl:'zwierzęta (bydło) pola'},
+ {lesson:18,heb:'חַיַּת הָאָרֶץ',tr:'ḥayyaṯ hāʾāreṣ',pl:'zwierzęta (dzika zwierzyna) ziemi'},
+ {lesson:18,heb:'חַיֵּי הָאִישׁ',tr:'ḥayyê hāʾîš',pl:'życie człowieka'},
+ {lesson:18,heb:'אַבְנֵי הָהָר',tr:'ʾaḇnê hāhār',pl:'kamienie góry'},
+ {lesson:18,heb:'דְּגֵי הַיָּם',tr:'dəḡê hayyām',pl:'ryby morza'},
+ {lesson:18,heb:'לוּחוֹת הַתּוֹרָה',tr:'lûḥôṯ hattôrāh',pl:'tablice Prawa (Tory)'},
+ {lesson:18,heb:'צַלְמֵי הָאֱלֹהִים',tr:'ṣalmê hāʾĕlōhîm',pl:'posągi (obrazy) Boga'},
+ {lesson:18,heb:'בְּנוֹת הָעָם',tr:'bənôṯ hāʿām',pl:'córki ludu'},
+ {lesson:18,heb:'דַּרְכֵי הֶהָרִים',tr:'darḵê hehārîm',pl:'drogi gór'},
+ {lesson:18,heb:'בִּרְכוֹת הַנְּבִיאִים',tr:'birḵôṯ hannəḇîʾîm',pl:'błogosławieństwa proroków'},
+ {lesson:18,heb:'גְּמַלֵּי הֶעָשִׁיר',tr:'gəmallê heʿāšîr',pl:'wielbłądy bogacza'},
+ {lesson:18,heb:'גִּבּוֹרֵי הָעָם',tr:'gibbôrê hāʿām',pl:'wojownicy ludu'},
+ {lesson:18,heb:'זִקְנֵי הָעִיר',tr:'ziqnê hāʿîr',pl:'starsi (starszyzna) miasta'},
+ {lesson:18,heb:'חֲלוֹמוֹת הַנַּעַר',tr:'ḥălômôṯ hannáʿar',pl:'sny młodzieńca'},
+ {lesson:18,heb:'יַלְדֵי הַנָּשִׁים',tr:'yalḏê hannāšîm',pl:'dzieci kobiet'},
+ {lesson:18,heb:'יְמֵי הַמְּלָכִים',tr:'yəmê hamməlāḵîm',pl:'dni królów'},
+ {lesson:18,heb:'כְּלֵי הַהֵיכָל',tr:'kəlê hahêḵāl',pl:'naczynia świątyni'},
+ {lesson:18,heb:'מַלְאֲכֵי הַמֶּלֶךְ',tr:'malʾăḵê hammélek',pl:'posłańcy króla'},
+
+ {lesson:21,heb:'כְּפִי דְבָרֶיךָ',tr:'kəp̄î ḏəḇāréḵā',pl:'według twoich słów'},
+ {lesson:21,heb:'מִפִּי אָבִיהוּ',tr:'mippî ʾāḇîhû',pl:'z ust jego ojca'},
+ {lesson:21,heb:'דִּבְרֵי פִּיךָ',tr:'diḇrê pîḵā',pl:'słowa twoich ust'},
+ {lesson:21,heb:'לְפִי דִבְרֵי אָחִיךָ',tr:'ləp̄î ḏiḇrê ʾāḥîḵā',pl:'według słów twojego brata'},
+ {lesson:21,heb:'כְּפִי אֲשֶׁר אָמַרְתָּ',tr:'kəp̄î ʾăšer ʾāmártā',pl:'według tego, co powiedziałeś'},
+ {lesson:21,heb:'עִם־אֶחָיו',tr:'ʿim-ʾeḥāyw',pl:'z jego braćmi'},
+ {lesson:21,heb:'מִתּוֹךְ אַחַי',tr:'mittôḵ ʾaḥay',pl:'spośród moich braci'},
+ {lesson:21,heb:'אַחֵי אָבִינוּ',tr:'ʾaḥê ʾāḇînû',pl:'bracia naszego ojca'},
+];
+
+const ROMAN=['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI','XXII','XXIII','XXIV'];
+
+/* ---------- progress ---------- */
+const KEY='lambdin:known:v2';
+let known=new Set();
+async function loadKnown(){try{const r=await window.storage.get(KEY,false);if(r&&r.value)known=new Set(JSON.parse(r.value));}catch(e){}}
+async function saveKnown(){try{await window.storage.set(KEY,JSON.stringify([...known]),false);}catch(e){}}
+
+/* ---------- state ---------- */
+let mode='cards', lessonFilter='all';
+let pool=[], idx=0, flipped=false;
+let quizItem=null, answered=false, qScore=0, qTotal=0;
+let spool=[], sidx=0, showTr=false, showPl=false;
+let cpool=[], cidx=0, cShowTr=false, cShowPl=false;
+
+const stage=document.getElementById('stage');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const HEBRX=/([\u0590-\u05FF]+)/g;
+
+function buildPool(){
+  pool=DATA.filter(d=>lessonFilter==='all'||d.lesson==+lessonFilter);
+  if(mode==='cards') pool=shuffle(pool);
+  idx=0; flipped=false;
+  spool=SENTENCES.filter(s=>lessonFilter==='all'||s.lesson==+lessonFilter);
+  sidx=0; showTr=false; showPl=false;
+  cpool=CONSTRUCTS.filter(c=>lessonFilter==='all'||c.lesson==+lessonFilter);
+  cidx=0; cShowTr=false; cShowPl=false;
+}
+
+/* ---------- chips ---------- */
+document.getElementById('modes').addEventListener('click',e=>{
+  const b=e.target.closest('[data-mode]'); if(!b)return;
+  mode=b.dataset.mode;
+  [...e.currentTarget.querySelectorAll('.chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  buildPool(); if(mode==='quiz') nextQuiz(); render();
+});
+document.getElementById('lessons').addEventListener('click',e=>{
+  const b=e.target.closest('[data-lesson]'); if(!b)return;
+  lessonFilter=b.dataset.lesson;
+  [...e.currentTarget.querySelectorAll('.chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));
+  buildPool(); if(mode==='quiz') nextQuiz(); render();
+});
+document.getElementById('reset').addEventListener('click',async()=>{known=new Set();await saveKnown();render();});
+
+/* ---------- render ---------- */
+function render(){
+  if(mode==='cards') renderCards();
+  else if(mode==='quiz') renderQuiz();
+  else if(mode==='zdania') renderSentences();
+  else if(mode==='frazy') renderConstructs();
+  else renderList();
+}
+function noteHTML(n){if(!n)return '';return '<div class="note-wrap">'+esc(n).replace(HEBRX,'<span class="note">$1</span>')+'</div>';}
+
+function renderCards(){
+  if(!pool.length){stage.innerHTML='<p class="empty">Brak haseł.</p>';return;}
+  const d=pool[idx], isK=known.has(d.id);
+  stage.innerHTML=`
+    <div class="deckbar">
+      <span>${idx+1} / ${pool.length}</span>
+      <span class="meter"><i style="width:${Math.round(known.size/DATA.length*100)}%"></i></span>
+      <span>${known.size}/${DATA.length} umiem</span>
+    </div>
+    <div class="card ${isK?'is-known':''}" id="card">
+      <span class="corner l">Lekcja ${d.lesson}</span>
+      <span class="corner r"><span class="pos">${esc(d.pos)}</span></span>
+      <div class="he">${d.heb}</div>
+      ${flipped?`<div class="back"><div class="translit">${esc(d.tr)}</div><div class="pl">${esc(d.pl)}</div>${noteHTML(d.note)}</div>`:`<div class="hint">dotknij, aby odsłonić</div>`}
+      <div class="known-flag">✦ umiem</div>
+    </div>
+    <div class="deck-actions">
+      <button class="btn again" id="again">Powtórz</button>
+      <button class="btn know" id="know">Umiem ✓</button>
+    </div>
+    <div class="navmini">
+      <button id="prev" ${idx===0?'disabled':''}>‹ poprzednia</button>
+      <button id="next" ${idx===pool.length-1?'disabled':''}>następna ›</button>
+    </div>`;
+  document.getElementById('card').onclick=()=>{flipped=!flipped;renderCards();};
+  document.getElementById('again').onclick=async()=>{known.delete(d.id);await saveKnown();advance();};
+  document.getElementById('know').onclick=async()=>{known.add(d.id);await saveKnown();advance();};
+  document.getElementById('prev').onclick=()=>{if(idx>0){idx--;flipped=false;renderCards();}};
+  document.getElementById('next').onclick=()=>{if(idx<pool.length-1){idx++;flipped=false;renderCards();}};
+}
+function advance(){idx=idx<pool.length-1?idx+1:0;flipped=false;renderCards();}
+
+/* ---------- quiz: sesje po 10 pytań ---------- */
+let QLEN = 10;
+let qs = null;
+const QSTATS_KEY = 'lambdin:quizstats:v1';
+let qstats = {sessions:0, asked:0, correct:0, best:0};
+(async function(){ try{ const r = await window.storage.get(QSTATS_KEY,false); if(r&&r.value) qstats = Object.assign(qstats, JSON.parse(r.value)); }catch(e){} })();
+async function saveQStats(){ try{ await window.storage.set(QSTATS_KEY, JSON.stringify(qstats), false); }catch(e){} }
+
+function quizPool(){ return DATA.filter(d => lessonFilter==='all' || d.lesson==+lessonFilter); }
+
+function nextQuiz(subset){
+  const isSub = !!(subset && subset.length);
+  const p = isSub ? subset : quizPool();
+  if(!isSub && p.length < 2){ qs = null; return; }
+  const items = shuffle([...p]).slice(0, Math.min(QLEN, p.length));
+  qs = {items, i:0, ok:0, wrong:[], answered:false, opts:[], done:false};
+  buildOpts();
+}
+function buildOpts(){
+  const p = quizPool(), d = qs.items[qs.i];
+  const others = shuffle(p.filter(x => x.id!==d.id && x.pl!==d.pl)).slice(0,3);
+  qs.opts = shuffle([d, ...others]);
+  qs.answered = false;
+}
+function quizLenBar(){
+  return '<div class="qlen"><span>Długość sesji</span>' +
+    [10,20,30].map(n => '<button data-len="'+n+'" class="'+(QLEN===n?'on':'')+'">'+n+'</button>').join('') +
+    '</div>';
+}
+function bindLenBar(){
+  const bar = stage.querySelector('.qlen'); if(!bar) return;
+  bar.addEventListener('click', e => {
+    const b = e.target.closest('button[data-len]'); if(!b) return;
+    QLEN = +b.dataset.len; nextQuiz(); renderQuiz();
+  });
+}
+
+function renderQuiz(){
+  if(!qs){ stage.innerHTML = '<p class="empty">Wybierz przynajmniej dwa hasła.</p>'; return; }
+  if(qs.done){ renderQuizSummary(); return; }
+  const d = qs.items[qs.i];
+  const pct = Math.round(qs.i / qs.items.length * 100);
+  stage.innerHTML = `
+    ${quizLenBar()}
+    <div class="deckbar"><span>Pytanie ${qs.i+1} / ${qs.items.length}</span><span class="meter"><i style="width:${pct}%"></i></span><span>${qs.ok} poprawnych</span></div>
+    <div class="q-card quiz">
+      <span class="corner" style="position:static;display:block;margin-bottom:6px">Co znaczy?</span>
+      <div class="he">${d.heb}</div>
+      <div class="translit" style="margin-top:6px">${qs.answered?esc(d.tr):'&nbsp;'}</div>
+      <div class="options" id="opts">${qs.opts.map(o=>`<button class="opt" data-id="${o.id}">${esc(o.pl)}</button>`).join('')}</div>
+    </div>
+    <div class="next-q" id="nextwrap"></div>`;
+  bindLenBar();
+  document.getElementById('opts').addEventListener('click', e => {
+    const b = e.target.closest('.opt'); if(!b || qs.answered) return;
+    qs.answered = true;
+    const good = b.dataset.id === d.id;
+    if(good) qs.ok++;
+    else qs.wrong.push({id:d.id, heb:d.heb, tr:d.tr, correct:d.pl, chosen:(qs.opts.find(o=>o.id===b.dataset.id)||{}).pl || '—', lesson:d.lesson});
+    [...document.querySelectorAll('.opt')].forEach(o => { o.disabled = true;
+      if(o.dataset.id===d.id) o.classList.add('correct'); else if(o===b) o.classList.add('wrong'); });
+    document.querySelector('.translit').innerHTML = esc(d.tr);
+    const last = qs.i >= qs.items.length - 1;
+    document.getElementById('nextwrap').innerHTML =
+      '<button class="btn know" style="max-width:240px;margin:0 auto" id="qn">' + (last ? 'Podsumowanie →' : 'Następne →') + '</button>';
+    document.getElementById('qn').onclick = () => {
+      if(last){ qs.done = true;
+        qstats.sessions++; qstats.asked += qs.items.length; qstats.correct += qs.ok;
+        const p = Math.round(qs.ok / qs.items.length * 100);
+        if(p > (qstats.best||0)) qstats.best = p;
+        saveQStats();
+      } else { qs.i++; buildOpts(); }
+      renderQuiz();
+    };
+  });
+}
+
+function renderQuizSummary(){
+  const n = qs.items.length, ok = qs.ok, bad = n - ok;
+  const pct = Math.round(ok / n * 100);
+  const verdict = pct === 100 ? 'Komplet — bezbłędnie!' : pct >= 80 ? 'Bardzo dobrze' : pct >= 60 ? 'Nieźle, warto powtórzyć' : 'Ten materiał wymaga powtórki';
+  const masteredPct = Math.round(known.size / DATA.length * 100);
+  const lifePct = qstats.asked ? Math.round(qstats.correct / qstats.asked * 100) : 0;
+  const misses = qs.wrong.map(w => `
+    <div class="miss">
+      <div class="mhe">${w.heb}</div>
+      <div class="mtr">${esc(w.tr)} · lekcja ${w.lesson}</div>
+      <div class="mrow">poprawnie: <span class="good">${esc(w.correct)}</span></div>
+      <div class="mrow">Twoja odpowiedź: <span class="bad">${esc(w.chosen)}</span></div>
+    </div>`).join('');
+  stage.innerHTML = `
+    <div class="qsum">
+      <div class="ring">
+        <div class="big">${pct}<small>%</small></div>
+        <div>
+          <div class="verdict">${verdict}</div>
+          <div style="font-family:var(--sans);font-size:12.5px;color:var(--muted);margin-top:4px">Sesja: ${n} pytań</div>
+        </div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><b>${ok}</b><span>poprawnie</span></div>
+        <div class="tile"><b>${bad}</b><span>błędów</span></div>
+        <div class="tile"><b>${masteredPct}%</b><span>opanowane słownictwo</span></div>
+      </div>
+      ${bad ? '<h4>Do powtórki</h4><div class="misses">'+misses+'</div>'
+            : '<div class="allgood">Wszystkie odpowiedzi poprawne — świetna sesja.</div>'}
+      <div class="acts">
+        <button class="btn know" id="qnew" style="max-width:220px">Nowa sesja (${QLEN})</button>
+        ${bad ? '<button class="btn" id="qredo" style="max-width:220px">Powtórz błędy ('+bad+')</button>' : ''}
+        ${ok ? '<button class="btn" id="qmark" style="max-width:260px">Dodaj poprawne do „umiem”</button>' : ''}
+      </div>
+      <div class="lifetime">Łącznie: ${qstats.sessions} ${qstats.sessions===1?'sesja':(qstats.sessions%10>=2&&qstats.sessions%10<=4&&(qstats.sessions%100<10||qstats.sessions%100>=20))?'sesje':'sesji'} · ${qstats.correct}/${qstats.asked} poprawnych (${lifePct}%) · najlepszy wynik: ${qstats.best||0}%</div>
+    </div>`;
+  document.getElementById('qnew').onclick = () => { nextQuiz(); renderQuiz(); };
+  const redo = document.getElementById('qredo');
+  if(redo) redo.onclick = () => {
+    const ids = new Set(qs.wrong.map(w => w.id));
+    const subset = DATA.filter(d => ids.has(d.id));
+    nextQuiz(subset); renderQuiz();
+  };
+  const mark = document.getElementById('qmark');
+  if(mark) mark.onclick = async () => {
+    const wrongIds = new Set(qs.wrong.map(w => w.id));
+    qs.items.filter(d => !wrongIds.has(d.id)).forEach(d => known.add(d.id));
+    await saveKnown();
+    mark.textContent = 'Dodano ✓'; mark.disabled = true;
+  };
+}
+
+/* ---------- sentences ---------- */
+function renderSentences(){
+  if(!spool.length){stage.innerHTML='<p class="empty">Brak zdań dla wybranej lekcji.<br>Wybierz inną lekcję albo „Wszystkie”.</p>';return;}
+  const s=spool[sidx];
+  stage.innerHTML=`
+    <div class="deckbar"><span>Zdanie ${sidx+1} / ${spool.length}</span><span>Lekcja ${s.lesson}</span></div>
+    <div class="s-card">
+      <div class="s-he">${s.heb}</div>
+      <div class="s-tr ${showTr?'show':''}" id="str">${esc(s.tr)}</div>
+      <div class="s-pl ${showPl?'show':''}" id="spl">${esc(s.pl)}</div>
+      <div class="s-actions">
+        <button class="btn ghost" id="bt">${showTr?'Ukryj':'Pokaż'} transliterację</button>
+        <button class="btn know" id="bp">${showPl?'Ukryj':'Pokaż'} tłumaczenie</button>
+      </div>
+      <div class="navmini">
+        <button id="sprev" ${sidx===0?'disabled':''}>‹ poprzednie</button>
+        <button id="snext" ${sidx===spool.length-1?'disabled':''}>następne ›</button>
+      </div>
+    </div>`;
+  document.getElementById('bt').onclick=()=>{showTr=!showTr;renderSentences();};
+  document.getElementById('bp').onclick=()=>{showPl=!showPl;renderSentences();};
+  document.getElementById('sprev').onclick=()=>{if(sidx>0){sidx--;showTr=showPl=false;renderSentences();}};
+  document.getElementById('snext').onclick=()=>{if(sidx<spool.length-1){sidx++;showTr=showPl=false;renderSentences();}};
+}
+
+/* ---------- list ---------- */
+function renderConstructs(){
+  if(!cpool.length){stage.innerHTML='<p class="empty">Frazy w status constructus pojawiają się od lekcji 16.<br>Wybierz lekcję 16 (albo „Wszystkie”).</p>';return;}
+  const c=cpool[cidx];
+  const plBlock = c.amb
+    ? `<div class="pl-amb"><span class="amb-badge">dwuznaczne</span>${esc(c.pl)}<span class="alt">albo: ${esc(c.pl2)}</span></div>`
+    : `${esc(c.pl)}${c.note?`<div class="note-wrap" style="margin-top:8px">${esc(c.note).replace(HEBRX,'<span class="note">$1</span>')}</div>`:''}`;
+  stage.innerHTML=`
+    <div class="deckbar"><span>Fraza ${cidx+1} / ${cpool.length}</span><span>Lekcja ${c.lesson} · st. constructus</span></div>
+    <div class="s-card">
+      <div class="s-he">${c.heb}</div>
+      <div class="s-tr ${cShowTr?'show':''}" id="ctr">${esc(c.tr)}</div>
+      <div class="s-pl ${cShowPl?'show':''}" id="cpl">${plBlock}</div>
+      <div class="s-actions">
+        <button class="btn ghost" id="cbt">${cShowTr?'Ukryj':'Pokaż'} transliterację</button>
+        <button class="btn know" id="cbp">${cShowPl?'Ukryj':'Pokaż'} tłumaczenie</button>
+      </div>
+      <div class="navmini">
+        <button id="cprev" ${cidx===0?'disabled':''}>‹ poprzednia</button>
+        <button id="cnext" ${cidx===cpool.length-1?'disabled':''}>następna ›</button>
+      </div>
+    </div>`;
+  document.getElementById('cbt').onclick=()=>{cShowTr=!cShowTr;renderConstructs();};
+  document.getElementById('cbp').onclick=()=>{cShowPl=!cShowPl;renderConstructs();};
+  document.getElementById('cprev').onclick=()=>{if(cidx>0){cidx--;cShowTr=cShowPl=false;renderConstructs();}};
+  document.getElementById('cnext').onclick=()=>{if(cidx<cpool.length-1){cidx++;cShowTr=cShowPl=false;renderConstructs();}};
+}
+
+/* ---------- list ---------- */
+function renderList(){
+  const lessons=lessonFilter==="all"?[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]:[+lessonFilter];
+  stage.innerHTML=lessons.map(L=>{
+    const rows=DATA.filter(d=>d.lesson===L).map(d=>`
+      <tr><td class="hcell">${d.heb}</td><td class="tcell">${esc(d.tr)}</td>
+      <td class="pcell">${esc(d.pl)}${d.note?`<span class="nt">${esc(d.note).replace(HEBRX,'<b>$1</b>')}</span>`:''}</td></tr>`).join('');
+    return `<div class="lessongroup"><h3>Lekcja ${L} · Słowniczek ${ROMAN[L]}</h3><table>${rows}</table></div>`;
+  }).join('');
+}
+
+(async()=>{await loadKnown();buildPool();render();})();
+</script>

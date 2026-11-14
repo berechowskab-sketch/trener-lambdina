@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trener Lambdina — hebrajszczyzna biblijna</title>
+<meta name="description" content="Trener słownictwa i morfologii hebrajszczyzny biblijnej według podręcznika Lambdina — trzy poziomy, fiszki, quizy, rozbiór form. Działa offline.">
+<meta name="theme-color" content="#F1EBDD">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232A3450'/%3E%3Ctext x='32' y='47' font-size='44' text-anchor='middle' fill='%23F6F2E7' font-family='serif'%3E%D7%90%3C/text%3E%3C/svg%3E">
+<style id="fonts">/*FONTS*/</style>
+<style>
+  :root{
+    --paper:#F1EBDD;--surface:#FBF7EE;--surface-2:#F6F0E3;
+    --ink:#22262F;--indigo:#2A3450;--verdigris:#2C6E63;--gold:#A9803A;
+    --muted:#8A8270;--line:#DCD3BF;
+    --shadow:0 1px 2px rgba(40,30,10,.05),0 12px 30px -18px rgba(40,30,10,.35);
+    --he:'Frank Ruhl Libre',serif;--serif:'Spectral',Georgia,serif;--sans:'Inter',system-ui,sans-serif;
+    --barH:60px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:radial-gradient(120% 80% at 50% -12%, #F8F3E8 0%, var(--paper) 58%) fixed;
+    color:var(--ink);font-family:var(--serif);-webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;min-height:100dvh;}
+
+  .appbar{position:sticky;top:0;z-index:20;background:rgba(251,247,238,.9);
+    backdrop-filter:saturate(1.1) blur(7px);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:9px clamp(12px,3vw,22px);}
+  .brand{display:flex;flex-direction:column;line-height:1.05;margin-right:auto;cursor:pointer}
+  .brand .k{font-family:var(--sans);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--verdigris);font-weight:600}
+  .brand .n{font-family:var(--serif);font-weight:600;font-size:16px;letter-spacing:-.01em}
+  .tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .tabs .tlabel{font-family:var(--sans);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+  .tab{font-family:var(--sans);font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+    padding:6px 13px;border-radius:999px;cursor:pointer;transition:.15s}
+  .tab:hover{border-color:var(--verdigris)}
+  .tab[aria-pressed="true"]{background:var(--indigo);border-color:var(--indigo);color:#F6F2E7}
+  .menubtn,.iconbtn{font-family:var(--sans);font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);
+    color:var(--indigo);padding:6px 13px;border-radius:999px;cursor:pointer;transition:.15s}
+  .menubtn:hover,.iconbtn:hover{border-color:var(--verdigris)}
+  .menubtn{display:none}
+  body[data-view="level"] .menubtn{display:inline-block}
+  .menubtn .mb-short{display:none}
+
+  .menu{flex:1;width:100%}
+  body[data-view="level"] .menu{display:none}
+
+  .cover{min-height:calc(100dvh - var(--barH));display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:40px 20px 30px;position:relative;overflow:hidden}
+  .cover::after{content:"";position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:1px;height:34px;
+    background:linear-gradient(var(--line),transparent)}
+  .cover .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--verdigris);font-weight:600;margin-bottom:20px}
+  .hero-he{font-family:var(--he);direction:rtl;unicode-bidi:isolate;font-size:clamp(66px,17vw,148px);line-height:1.05;font-weight:500;letter-spacing:.01em}
+  .hero-gloss{font-family:var(--serif);font-style:italic;font-size:clamp(14px,3.4vw,18px);color:var(--verdigris);margin-top:14px}
+  .hero-gloss b{font-style:normal;font-weight:600;color:var(--muted)}
+  .cover .rule{height:1px;width:min(320px,72vw);background:linear-gradient(90deg,transparent,var(--line),transparent);margin:30px auto 24px}
+  .cover h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,7vw,50px);margin:0;letter-spacing:-.015em}
+  .cover .tagline{font-family:var(--sans);font-size:clamp(13px,3.2vw,15px);color:var(--muted);margin-top:12px;max-width:46ch;line-height:1.6}
+  .cover .start{margin-top:30px;font-family:var(--sans);font-size:14px;font-weight:600;border:1px solid var(--verdigris);
+    background:var(--surface);color:var(--verdigris);padding:12px 24px;border-radius:999px;cursor:pointer;transition:.16s}
+  .cover .start:hover{background:var(--verdigris);color:#F6F2E7;transform:translateY(-1px)}
+
+  .rise{opacity:0;transform:translateY(14px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards}
+  .rise.d1{animation-delay:.05s}.rise.d2{animation-delay:.16s}.rise.d3{animation-delay:.28s}
+  .rise.d4{animation-delay:.4s}.rise.d5{animation-delay:.52s}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .picker{max-width:820px;margin:0 auto;width:100%;padding:8px 18px 64px}
+  .picker-head{text-align:center;margin:6px 0 22px}
+  .picker-head .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--verdigris);font-weight:600}
+  .picker-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(20px,4.6vw,27px);margin:.25em 0 .1em}
+  .picker-head p{font-family:var(--sans);font-size:13px;color:var(--muted);max-width:52ch;margin:0 auto;line-height:1.6}
+
+  .cards{display:flex;flex-direction:column;gap:16px;margin-top:18px}
+  .card{display:flex;align-items:stretch;text-align:left;background:var(--surface);border:1px solid var(--line);
+    border-radius:16px;box-shadow:var(--shadow);padding:0;cursor:pointer;overflow:hidden;transition:.18s;
+    font-family:var(--serif);color:var(--ink);width:100%}
+  .card:hover{transform:translateY(-2px);border-color:var(--verdigris)}
+  .card:focus-visible{outline:2px solid var(--verdigris);outline-offset:3px}
+  .card-num{flex:0 0 auto;width:64px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);
+    font-size:30px;font-weight:600;color:#F6F2E7;background:linear-gradient(160deg,var(--indigo),#1c2438)}
+  .card[data-go="l1"] .card-num{background:linear-gradient(160deg,var(--verdigris),#1f5049)}
+  .card[data-go="l3"] .card-num{background:linear-gradient(160deg,var(--gold),#7f5f26)}
+  .card-body{flex:1;padding:18px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
+  .card-kicker{font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--verdigris);font-weight:600}
+  .card-title{font-family:var(--serif);font-size:21px;font-weight:600}
+  .card-desc{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.55}
+  .card-modes{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .mode{font-family:var(--sans);font-size:11px;color:var(--indigo);border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:3px 9px}
+  .card-open{flex:0 0 auto;align-self:center;padding:0 18px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--verdigris);white-space:nowrap}
+  .prog{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .prog-bar{flex:1;height:5px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;overflow:hidden;max-width:220px}
+  .prog-bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verdigris),var(--gold));transition:width .4s}
+  .prog-txt{font-family:var(--sans);font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+  .menu-tools{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .menu-note{font-family:var(--sans);font-size:12.5px;color:var(--verdigris);text-align:center;min-height:18px;margin-top:22px}
+  .linkbtn{font-family:var(--sans);font-size:12.5px;color:var(--muted);background:none;border:0;cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px;padding:6px 8px;border-radius:8px}
+  .linkbtn:hover{color:var(--verdigris)}
+
+  .stage{flex:1;display:none;width:100%}
+  body[data-view="level"] .stage{display:block}
+  .framewrap{position:relative;width:100%;height:calc(100dvh - var(--barH))}
+  .framewrap iframe{width:100%;height:100%;border:0;display:block;background:var(--paper)}
+  .framewrap iframe:not(.active){display:none}
+  .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--sans);
+    font-size:13px;color:var(--muted);pointer-events:none;background:var(--paper);transition:opacity .25s}
+  .loading.hide{opacity:0}
+
+  /* ---- modal zgłaszania błędu ---- */
+  .overlay{position:fixed;inset:0;z-index:60;background:rgba(34,38,47,.45);display:none;align-items:center;justify-content:center;padding:18px}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 60px -20px rgba(30,20,5,.5);
+    width:min(560px,100%);max-height:88dvh;overflow:auto;padding:22px}
+  .modal h3{font-family:var(--serif);font-size:21px;font-weight:600;margin:0 0 4px}
+  .modal .sub{font-family:var(--sans);font-size:12.5px;color:var(--muted);margin:0 0 16px;line-height:1.55}
+  .modal label{display:block;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--verdigris);font-weight:600;margin:14px 0 6px}
+  .modal textarea,.modal input,.modal select{width:100%;font-family:var(--sans);font-size:13.5px;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical}
+  .modal textarea{min-height:96px}
+  .modal textarea:focus,.modal input:focus,.modal select:focus{outline:2px solid var(--verdigris);outline-offset:1px}
+  .ctx{font-family:var(--sans);font-size:11.5px;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line);
+    border-radius:10px;padding:10px 12px;margin-top:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+  .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+  .btn{font-family:var(--sans);font-size:13px;font-weight:600;border-radius:999px;padding:10px 18px;cursor:pointer;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--indigo);transition:.15s}
+  .btn:hover{border-color:var(--verdigris)}
+  .btn.primary{background:var(--verdigris);border-color:var(--verdigris);color:#F6F2E7}
+  .btn.primary:hover{filter:brightness(1.07)}
+  .btn.ghost{background:none;border-color:transparent;color:var(--muted);margin-left:auto}
+  .toast{font-family:var(--sans);font-size:12.5px;color:var(--verdigris);margin-top:10px;min-height:18px}
+
+  footer{font-family:var(--sans);font-size:11.5px;color:var(--muted);text-align:center;padding:18px;line-height:1.7;border-top:1px solid var(--line)}
+  body[data-view="level"] footer{display:none}
+
+  @media (max-width:560px){
+    .card{flex-wrap:wrap}.card-num{width:100%;height:44px;font-size:20px}.card-open{display:none}
+    .appbar{gap:8px;padding:8px 12px}
+    .brand .k{display:none}.brand .n{font-size:15px}
+    .tabs .tlabel{display:none}
+    .tab{padding:6px 11px;font-size:12.5px;min-height:36px}
+    .menubtn{min-height:36px}
+    body[data-view="level"] .appbar{flex-wrap:nowrap;align-items:center}
+    body[data-view="level"] .brand{display:none}
+    body[data-view="level"] .menubtn{padding:6px 12px;font-size:16px;line-height:1;margin-right:auto}
+    .menubtn .mb-full{display:none}
+    .menubtn .mb-short{display:inline}
+    #reportTop{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}.rise{animation:none;opacity:1;transform:none}}
+</style>
+</head>
+<body data-view="menu">
+
+  <div class="appbar">
+    <div class="brand" id="brand" role="button" tabindex="0" aria-label="Strona tytułowa">
+      <span class="k">Lambdin · Hebrajszczyzna biblijna</span>
+      <span class="n">Trener Lambdina</span>
+    </div>
+    <button class="menubtn" id="toMenu" aria-label="Strona tytułowa"><span class="mb-full">☰ Strona tytułowa</span><span class="mb-short" aria-hidden="true">‹</span></button>
+    <button class="iconbtn" id="reportTop" title="Zgłoś błąd w materiale">⚑ Zgłoś błąd</button>
+    <div class="tabs">
+      <span class="tlabel">Poziom</span>
+      <button class="tab" data-go="l1" aria-pressed="false">1–24</button>
+      <button class="tab" data-go="l2" aria-pressed="false">25–37</button>
+      <button class="tab" data-go="l3" aria-pressed="false">38–55</button>
+    </div>
+  </div>
+
+  <main class="menu" id="menu">
+    <section class="cover">
+      <div class="eyebrow rise d1">Hebrajszczyzna biblijna · według podręcznika Lambdina</div>
+      <div class="hero-he rise d2">בְּרֵאשִׁית</div>
+      <div class="hero-gloss rise d3">bərēšîṯ · <b>«na początku»</b> — pierwsze słowo Biblii hebrajskiej</div>
+      <div class="rule rise d3"></div>
+      <h1 class="rise d4">Trener Lambdina</h1>
+      <p class="tagline rise d4">Słownictwo i morfologia hebrajszczyzny biblijnej w trzech poziomach — fiszki, quizy, zdania i rozbiór gramatyczny form.</p>
+      <button class="start rise d5" id="startBtn">Wybierz poziom ↓</button>
+    </section>
+
+    <div class="picker" id="picker">
+      <div class="picker-head">
+        <div class="eyebrow">Trzy poziomy nauki</div>
+        <h2>Od słownictwa do pełnej morfologii</h2>
+        <p>Poziomy odpowiadają lekcjom podręcznika. Postęp („umiem") zapisuje się w tej przeglądarce.</p>
+      </div>
+      <div class="cards">
+      <button class="card" data-go="l1" aria-label="Otwórz poziom: Lekcje 1–24">
+        <span class="card-num" aria-hidden="true">I</span>
+        <span class="card-body">
+          <span class="card-kicker">Poziom podstawowy</span>
+          <span class="card-title">Lekcje 1–24</span>
+          <span class="card-desc">Słownictwo z pełną wokalizacją. Nauka hebrajski → polski.</span>
+          <span class="card-modes"><span class="mode">Fiszki</span><span class="mode">Quiz</span><span class="mode">Zdania</span><span class="mode">Frazy</span><span class="mode">Lista</span></span>
+          <span class="prog" data-prog="l1">
+            <span class="prog-bar"><i></i></span>
+            <span class="prog-txt">—</span>
+          </span>
+        </span>
+        <span class="card-open">Otwórz →</span>
+      </button>
+      <button class="card" data-go="l2" aria-label="Otwórz poziom: Lekcje 25–37">
+        <span class="card-num" aria-hidden="true">II</span>
+        <span class="card-body">
+          <span class="card-kicker">Poziom zaawansowany · morfologia</span>
+          <span class="card-title">Lekcje 25–37</span>
+          <span class="card-desc">Rozbiór form: klasy słabe i biniany, imiesłów bierny, liczebniki, składnia, partykuły, NIFAL.</span>
+          <span class="card-modes"><span class="mode">Rozbiór</span><span class="mode">Słownik</span><span class="mode">Paradygmaty</span><span class="mode">Lista</span></span>
+          <span class="prog" data-prog="l2">
+            <span class="prog-bar"><i></i></span>
+            <span class="prog-txt">—</span>
+          </span>
+        </span>
+        <span class="card-open">Otwórz →</span>
+      </button>
+      <button class="card" data-go="l3" aria-label="Otwórz poziom: Lekcje 38–55">
+        <span class="card-num" aria-hidden="true">III</span>
+        <span class="card-body">
+          <span class="card-kicker">Poziom zaawansowany · morfologia</span>
+          <span class="card-title">Lekcje 38–55</span>
+          <span class="card-desc">Pełny system binianów, przyrostki dopełnienia bliższego, składnia warunkowa.</span>
+          <span class="card-modes"><span class="mode">Rozbiór</span><span class="mode">Słownik</span><span class="mode">Paradygmaty</span><span class="mode">Lista</span></span>
+          <span class="prog" data-prog="l3">
+            <span class="prog-bar"><i></i></span>
+            <span class="prog-txt">—</span>
+          </span>
+        </span>
+        <span class="card-open">Otwórz →</span>
+      </button>
+      </div>
+      <div class="menu-note" id="menuNote" role="status"></div>
+      <div class="menu-tools">
+        <button class="linkbtn" id="reportBtn">⚑ Zgłoś błąd lub uwagę</button>
+        <button class="linkbtn" id="exportBtn">⭳ Zapisz postęp do pliku</button>
+        <button class="linkbtn" id="importBtn">⭱ Wczytaj postęp z pliku</button>
+        <button class="linkbtn" id="resetBtn">↺ Wyczyść zapisany postęp</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+      </div>
+    </div>
+  </main>
+
+  <section class="stage" id="stage" aria-label="Trener">
+    <div class="framewrap" id="framewrap">
+      <div class="loading" id="loading">Wczytywanie poziomu…</div>
+    </div>
+  </section>
+
+  <footer>Trener Lambdina · hebrajszczyzna biblijna · działa offline · postęp zapisywany lokalnie w tej przeglądarce · wersja <span id="verLabel"></span></footer>
+
+  <!-- MODAL: zgłoszenie błędu -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="repTitle">
+    <div class="modal">
+      <h3 id="repTitle">Zgłoś błąd lub uwagę</h3>
+      <p class="sub">Znalazłaś/-eś literówkę, złe tłumaczenie albo błąd w rozbiorze? Opisz to krótko — do zgłoszenia dołączymy automatycznie miejsce, w którym jesteś.</p>
+
+      <label for="repWhat">Czego dotyczy</label>
+      <select id="repWhat">
+        <option>Błąd w tłumaczeniu</option>
+        <option>Błąd w zapisie hebrajskim / wokalizacji</option>
+        <option>Błąd w transliteracji</option>
+        <option>Błąd w rozbiorze gramatycznym</option>
+        <option>Literówka / interpunkcja</option>
+        <option>Problem techniczny (aplikacja)</option>
+        <option>Propozycja / inne</option>
+      </select>
+
+      <label for="repText">Opis</label>
+      <textarea id="repText" placeholder="Np.: lekcja 12, hasło אֱלֹהִים — w tłumaczeniu powinno być…"></textarea>
+
+      <label for="repFrom">Twój e-mail (opcjonalnie, do odpowiedzi)</label>
+      <input id="repFrom" type="email" placeholder="np. anna@example.com">
+
+      <div class="ctx" id="repCtx">—</div>
+
+      <div class="actions">
+        <button class="btn primary" id="sendMail">✉ Wyślij e-mailem</button>
+        <button class="btn" id="copyRep">⧉ Skopiuj zgłoszenie</button>
+        <button class="btn" id="openForm" style="display:none">↗ Otwórz formularz</button>
+        <button class="btn ghost" id="closeRep">Zamknij</button>
+      </div>
+      <div class="toast" id="repToast"></div>
+    </div>
+  </div>
+
+<!-- kod wstrzykiwany do ramek: dostarcza trenerom brakujące API window.storage -->
+<script type="text/plain" id="embedCss">
+/* warstwa powłoki: zwarty nagłówek i zwijane filtry na telefonie */
+.flt-toggle{display:none;font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--indigo);background:var(--surface);
+  border:1px dashed var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;align-self:center;max-width:100%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:560px){
+  header.masthead .eyebrow, header.masthead .sub{display:none}
+  header.masthead{margin-bottom:10px}
+  header.masthead h1{font-size:20px;margin:0}
+  .chip{min-height:36px}
+  .flt-toggle{display:block}
+  .controls.flt-collapsed .row:not(.modes):not(.sub-toggle){display:none!important}
+}
+</script>
+<script type="text/plain" id="embedJs">
+(function(){
+  function init(){
+    var c=document.querySelector('.controls'); if(!c) return;
+    var rows=[].slice.call(c.querySelectorAll('.row')).filter(function(r){return !r.classList.contains('modes')&&!r.classList.contains('sub-toggle');});
+    if(!rows.length) return;
+    var b=document.createElement('button'); b.type='button'; b.className='flt-toggle';
+    c.insertBefore(b, rows[0]);
+    function summary(){
+      var parts=[];
+      rows.forEach(function(r){
+        if(r.style.display==='none') return;
+        var lab=r.querySelector('.label'), on=r.querySelector('.chip[aria-pressed="true"]');
+        if(lab&&on&&!/^wszystkie$/i.test(on.textContent.trim())) parts.push(lab.textContent.trim()+': '+on.textContent.trim());
+      });
+      return parts.join(' · ');
+    }
+    function paint(){
+      var open=!c.classList.contains('flt-collapsed'), s=summary();
+      b.setAttribute('aria-expanded', open?'true':'false');
+      b.textContent = open ? 'Ukryj filtry ▴' : ('Filtry' + (s ? ' · ' + s : '') + ' ▾');
+    }
+    c.classList.add('flt-collapsed');
+    b.addEventListener('click', function(){ c.classList.toggle('flt-collapsed'); paint(); });
+    c.addEventListener('click', function(e){ if(e.target.closest && e.target.closest('.chip')) setTimeout(paint,0); });
+    paint();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+<script type="text/plain" id="storageShim">
+(function(){
+  var LS=null;
+  try{ localStorage.setItem('__probe__','1'); localStorage.removeItem('__probe__'); LS=localStorage; }catch(e){}
+  if(!LS){ try{ if(window.parent && window.parent!==window){ window.parent.localStorage.setItem('__probe__','1'); window.parent.localStorage.removeItem('__probe__'); LS=window.parent.localStorage; } }catch(e){} }
+  var mem={};
+  function rd(k){ try{ return LS?LS.getItem(k):(k in mem?mem[k]:null); }catch(e){ return (k in mem?mem[k]:null); } }
+  function wr(k,v){ try{ if(LS){LS.setItem(k,v);} else {mem[k]=v;} }catch(e){ mem[k]=v; } }
+  function rm(k){ try{ if(LS){LS.removeItem(k);} else {delete mem[k];} }catch(e){ delete mem[k]; } }
+  window.storage={
+    get:function(k){ var v=rd(k); return Promise.resolve(v==null?null:{key:k,value:v,shared:false}); },
+    set:function(k,v){ v=String(v); wr(k,v); try{ if(window.parent&&window.parent!==window&&window.parent.onProgressChanged) window.parent.onProgressChanged(); }catch(e){} return Promise.resolve({key:k,value:v,shared:false}); },
+    delete:function(k){ rm(k); try{ if(window.parent&&window.parent!==window&&window.parent.onProgressChanged) window.parent.onProgressChanged(); }catch(e){} return Promise.resolve({key:k,deleted:true,shared:false}); },
+    list:function(prefix){ var keys=[]; try{ if(LS){ for(var i=0;i<LS.length;i++){ var k=LS.key(i); if(!prefix||k.indexOf(prefix)===0) keys.push(k); } } else { for(var k2 in mem){ if(!prefix||k2.indexOf(prefix)===0) keys.push(k2); } } }catch(e){}
+      return Promise.resolve({keys:keys,prefix:prefix||'',shared:false}); }
+  };
+})();
+</script>
+
+<script>
+  /* ====================== KONFIGURACJA — do ustawienia ======================
+     reportEmail    – Twój adres; przycisk „Wyślij e-mailem" otworzy program pocztowy
+                      z gotową treścią. Zostaw pusty, jeśli nie chcesz podawać adresu.
+     reportFormUrl  – ewentualny link do formularza Google. Jeśli podasz, pojawi się
+                      dodatkowy przycisk „Otwórz formularz".
+     formFields     – identyfikatory pól formularza (entry.XXXXXXX). Jeśli je uzupełnisz,
+                      formularz otworzy się JUŻ WYPEŁNIONY: rodzajem błędu, opisem,
+                      kontaktem i kontekstem (poziom / tryb / hasło / data / wersja).
+                      Skąd je wziąć — patrz instrukcja obok pliku.
+     ======================================================================== */
+  const CONFIG = {
+    reportEmail: "",
+    reportFormUrl: "",
+    formFields: {
+      what:    "",   // np. "entry.1234567890"  — pytanie „Czego dotyczy"
+      desc:    "",   // np. "entry.2345678901"  — pytanie „Opis"
+      contact: "",   // np. "entry.3456789012"  — pytanie „Twój e-mail"
+      context: ""    // np. "entry.4567890123"  — pytanie „Kontekst (wypełnia się samo)"
+    },
+    version: "3.3"
+  };
+
+  const B64 = {/*B64*/};
+  const LEVELS = [
+    {id:"l1",label:"Lekcje 1–24",key:"lambdin:known:v2",statsKey:"lambdin:quizstats:v1",kind:"array",total:308,unit:"słów"},
+    {id:"l2",label:"Lekcje 25–37",key:"lambdin:adv:known:v1",statsKey:"lambdin:adv:quizstats:v1",kind:"map",total:405,unit:"form"},
+    {id:"l3",label:"Lekcje 38–55",key:"lambdin:adv-merged:38-55:known:v1",statsKey:"lambdin:adv-merged:38-55:quizstats:v1",kind:"map",total:357,unit:"form"}
+  ];
+  const FONT_CSS = document.getElementById("fonts").textContent;
+  const SHIM_CODE = document.getElementById("storageShim").textContent;
+  const EMBED_CSS = document.getElementById("embedCss").textContent;
+  const EMBED_JS = document.getElementById("embedJs").textContent;
+  const IDS = LEVELS.map(l => l.id);
+  const frames = {};
+  const body = document.body;
+  const wrap = document.getElementById("framewrap");
+  const loading = document.getElementById("loading");
+  const tabs = [...document.querySelectorAll(".tab")];
+
+  function b64ToUtf8(b64){
+    const bin = atob(b64), bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+
+  /* --- przygotowanie trenera: offline + wstrzyknięcie window.storage --- */
+  function prepare(id){
+    let doc = b64ToUtf8(B64[id]);
+    doc = doc.replace(/<link\b[^>]*(?:fonts\.googleapis\.com|fonts\.gstatic\.com)[^>]*>/gi, "");
+    doc = doc.replace(/<link\b[^>]*rel=["']preconnect["'][^>]*>/gi, "");
+    doc = doc.replace(/<style>/i, "<style>" + FONT_CSS + "</style>\n<style>");
+    const tag = "<style>" + EMBED_CSS + "</style>" +
+                "<scr"+"ipt>" + SHIM_CODE + "</scr"+"ipt>" +
+                "<scr"+"ipt>" + EMBED_JS + "</scr"+"ipt>";
+    if(/<\/head>/i.test(doc)) doc = doc.replace(/<\/head>/i, tag + "</head>");
+    else doc = tag + doc;
+    return doc;
+  }
+
+  /* ------------------------- POSTĘP ------------------------- */
+  function safeLS(){ try{ localStorage.setItem("__p__","1"); localStorage.removeItem("__p__"); return localStorage; }catch(e){ return null; } }
+  const LS = safeLS();
+
+  function countKnown(l){
+    try{
+      const raw = LS ? LS.getItem(l.key) : null;
+      if(!raw) return 0;
+      const v = JSON.parse(raw);
+      if(l.kind === "array") return Array.isArray(v) ? v.length : 0;
+      return Object.values(v).filter(Boolean).length;
+    }catch(e){ return 0; }
+  }
+
+  function renderProgress(){
+    LEVELS.forEach(l => {
+      const el = document.querySelector('[data-prog="'+l.id+'"]');
+      if(!el) return;
+      const n = countKnown(l), pct = l.total ? Math.min(100, Math.round(n/l.total*100)) : 0;
+      el.querySelector("i").style.width = pct + "%";
+      el.querySelector(".prog-txt").textContent = n ? (n + " / " + l.total + " " + l.unit + " · " + pct + "%") : ("0 / " + l.total + " " + l.unit);
+    });
+  }
+  // wywoływane z wnętrza ramki po każdym zapisie
+  window.onProgressChanged = function(){ renderProgress(); };
+
+  const menuNote = document.getElementById("menuNote");
+  function note(t){ menuNote.textContent = t; }
+  // po zmianie zapisanych danych: wczytaj trenery od nowa, żeby odczytały aktualny stan
+  function reloadFrames(){
+    Object.keys(frames).forEach(id => { try{ frames[id].remove(); }catch(e){} delete frames[id]; });
+    renderProgress();
+  }
+  const DATA_KEYS = () => LEVELS.flatMap(l => [l.key, l.statsKey]);
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if(!confirm("Wyczyścić zapisany postęp i statystyki quizów we wszystkich trzech poziomach?")) return;
+    try{ DATA_KEYS().forEach(k => LS && LS.removeItem(k)); }catch(e){}
+    reloadFrames();
+    note("Postęp wyczyszczony.");
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", () => {
+    const data = {};
+    try{ DATA_KEYS().forEach(k => { const v = LS ? LS.getItem(k) : null; if(v != null) data[k] = v; }); }catch(e){}
+    if(!Object.keys(data).length){ note("Nie ma jeszcze postępu do zapisania."); return; }
+    const payload = {app:"trener-lambdina", version:CONFIG.version, exported:new Date().toISOString(), data};
+    const blob = new Blob([JSON.stringify(payload, null, 1)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "trener-lambdina-postep-" + new Date().toISOString().slice(0,10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    note("Zapisano plik z postępem — wczytasz go w innej przeglądarce lub na innym urządzeniu.");
+  });
+
+  const importFile = document.getElementById("importFile");
+  document.getElementById("importBtn").addEventListener("click", () => { importFile.value = ""; importFile.click(); });
+  importFile.addEventListener("change", async () => {
+    const file = importFile.files && importFile.files[0];
+    if(!file) return;
+    try{
+      const payload = JSON.parse(await file.text());
+      if(!payload || payload.app !== "trener-lambdina" || typeof payload.data !== "object") throw new Error("format");
+      const allowed = new Set(DATA_KEYS());
+      const entries = Object.entries(payload.data).filter(([k,v]) => allowed.has(k) && typeof v === "string");
+      if(!entries.length) throw new Error("pusty");
+      entries.forEach(([k,v]) => JSON.parse(v));            // każda wartość musi być poprawnym JSON-em
+      if(!LS) throw new Error("storage");
+      if(!confirm("Wczytać postęp z pliku? Zastąpi on postęp zapisany w tej przeglądarce.")) return;
+      entries.forEach(([k,v]) => LS.setItem(k, v));
+      reloadFrames();
+      note("Postęp wczytany z pliku.");
+    }catch(e){
+      note(e.message === "storage" ? "Ta przeglądarka nie pozwala zapisać postępu." : "To nie jest plik z postępem Trenera Lambdina.");
+    }
+  });
+
+  /* ------------------------- NAWIGACJA ------------------------- */
+  function measureBar(){
+    const bar = document.querySelector(".appbar");
+    if(bar) document.documentElement.style.setProperty("--barH", bar.offsetHeight + "px");
+  }
+  function ensureFrame(id){
+    if(frames[id]) return frames[id];
+    const f = document.createElement("iframe");
+    f.title = "Trener — " + id;
+    f.addEventListener("load", () => { loading.classList.add("hide"); renderProgress(); });
+    f.srcdoc = prepare(id);
+    wrap.appendChild(f);
+    frames[id] = f;
+    return f;
+  }
+  function showMenu(){
+    body.dataset.view = "menu";
+    tabs.forEach(t => t.setAttribute("aria-pressed","false"));
+    if(location.hash) history.replaceState(null,"","#");
+    renderProgress();
+    window.scrollTo(0,0);
+  }
+  function openLevel(id, push=true){
+    if(!IDS.includes(id)) return;
+    body.dataset.view = "level";
+    measureBar();
+    loading.classList.remove("hide");
+    const f = ensureFrame(id);
+    Object.values(frames).forEach(fr => fr.classList.remove("active"));
+    f.classList.add("active");
+    try{ if(f.contentDocument && f.contentDocument.readyState === "complete") loading.classList.add("hide"); }catch(e){}
+    tabs.forEach(t => t.setAttribute("aria-pressed", t.dataset.go===id ? "true":"false"));
+    if(push && location.hash !== "#"+id) history.pushState({id}, "", "#"+id);
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll("[data-go]").forEach(el => el.addEventListener("click", () => openLevel(el.dataset.go)));
+  document.getElementById("toMenu").addEventListener("click", showMenu);
+  document.getElementById("startBtn").addEventListener("click", () => document.getElementById("picker").scrollIntoView({behavior:"smooth", block:"start"}));
+  const brand = document.getElementById("brand");
+  brand.addEventListener("click", showMenu);
+  brand.addEventListener("keydown", e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); showMenu(); } });
+  window.addEventListener("popstate", () => {
+    const id = location.hash.replace("#","");
+    if(IDS.includes(id)) openLevel(id, false); else showMenu();
+  });
+  window.addEventListener("resize", () => { if(body.dataset.view==="level") measureBar(); });
+  window.addEventListener("load", measureBar);
+
+  /* ------------------------- ZGŁASZANIE BŁĘDÓW ------------------------- */
+  const overlay = document.getElementById("overlay");
+  const repToast = document.getElementById("repToast");
+
+  function currentContext(){
+    const lvl = IDS.find(id => frames[id] && frames[id].classList.contains("active") && body.dataset.view==="level");
+    const meta = LEVELS.find(l => l.id === lvl);
+    let mode = "—", entry = "—", filter = "";
+    try{
+      if(lvl){
+        const d = frames[lvl].contentDocument;
+        const pressed = sel => [...d.querySelectorAll(sel)].find(b => b.getAttribute("aria-pressed")==="true" && b.offsetParent !== null);
+        const act = pressed("[data-mode]");
+        if(act) mode = act.textContent.trim();
+        const sub = pressed("[data-pmode]");
+        if(sub) mode += " (" + sub.textContent.trim() + ")";
+        const les = pressed("[data-lesson]");
+        if(les && !/^wszystkie$/i.test(les.textContent.trim())) filter = "lekcja " + les.textContent.trim();
+        const st = d.getElementById("stage") || d.body;
+        if(st.querySelector(".qsum")) entry = "podsumowanie quizu";
+        else {
+          const box = st.querySelector(".card, .q-card, .s-card");
+          const he = box && box.querySelector(".he, .s-he");
+          if(he){
+            entry = he.textContent.trim();
+            const m = (box.innerText + " " + ((st.querySelector(".deckbar")||{}).innerText || "")).match(/lekcja\s+\d+/i);
+            if(m) entry += "  (" + m[0].toLowerCase() + ")";
+          }
+        }
+      }
+    }catch(e){}
+    return {
+      level: meta ? meta.label : "strona tytułowa / wybór poziomu",
+      mode, entry, filter,
+      when: new Date().toLocaleString("pl-PL"),
+      ua: navigator.userAgent,
+      ver: CONFIG.version
+    };
+  }
+
+  function fillContext(){
+    const c = currentContext();
+    document.getElementById("repCtx").textContent =
+      "Miejsce: " + c.level + "\nTryb: " + c.mode + (c.filter ? "\nFiltr: " + c.filter : "") + "\nHasło na ekranie: " + c.entry +
+      "\nData: " + c.when + "\nWersja: " + c.ver;
+    return c;
+  }
+
+  function buildReport(){
+    const c = currentContext();
+    const what = document.getElementById("repWhat").value;
+    const text = document.getElementById("repText").value.trim();
+    const from = document.getElementById("repFrom").value.trim();
+    return "ZGŁOSZENIE — Trener Lambdina\n" +
+      "--------------------------------\n" +
+      "Rodzaj: " + what + "\n" +
+      "Opis: " + (text || "(nie wpisano)") + "\n" +
+      (from ? "Kontakt: " + from + "\n" : "") +
+      "--------------------------------\n" +
+      "Miejsce: " + c.level + "\n" +
+      "Tryb: " + c.mode + "\n" +
+      (c.filter ? "Filtr: " + c.filter + "\n" : "") +
+      "Hasło na ekranie: " + c.entry + "\n" +
+      "Data: " + c.when + "\n" +
+      "Wersja: " + c.ver + "\n" +
+      "Przeglądarka: " + c.ua + "\n";
+  }
+
+  function openReport(){
+    fillContext();
+    repToast.textContent = "";
+    overlay.classList.add("open");
+    document.getElementById("repText").focus();
+  }
+  function closeReport(){ overlay.classList.remove("open"); }
+
+  document.getElementById("reportBtn").addEventListener("click", openReport);
+  document.getElementById("reportTop").addEventListener("click", openReport);
+  document.getElementById("closeRep").addEventListener("click", closeReport);
+  overlay.addEventListener("click", e => { if(e.target === overlay) closeReport(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && overlay.classList.contains("open")) closeReport(); });
+
+  document.getElementById("sendMail").addEventListener("click", () => {
+    const b = buildReport();
+    const what = document.getElementById("repWhat").value;
+    const subj = "Trener Lambdina — " + what;
+    if(!CONFIG.reportEmail){
+      repToast.textContent = "Nie ustawiono adresu e-mail w pliku (CONFIG.reportEmail). Użyj „Skopiuj zgłoszenie”.";
+      return;
+    }
+    location.href = "mailto:" + encodeURIComponent(CONFIG.reportEmail) +
+      "?subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(b);
+  });
+
+  document.getElementById("copyRep").addEventListener("click", async () => {
+    const b = buildReport();
+    let ok = false;
+    try{ await navigator.clipboard.writeText(b); ok = true; }catch(e){}
+    if(!ok){
+      try{
+        const ta = document.createElement("textarea");
+        ta.value = b; ta.style.position="fixed"; ta.style.opacity="0";
+        document.body.appendChild(ta); ta.select();
+        ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+      }catch(e){}
+    }
+    repToast.textContent = ok ? "Skopiowano — wklej w e-mailu lub wiadomości." : "Nie udało się skopiować; zaznacz tekst ramki powyżej i skopiuj ręcznie.";
+  });
+
+  function buildFormUrl(){
+    let base = CONFIG.reportFormUrl || "";
+    if(!base) return "";
+    // zamień końcówkę /edit lub /viewform?... na czysty /viewform
+    base = base.split("#")[0].replace(/\/edit(\?.*)?$/,"/viewform").split("?")[0];
+    const c = currentContext();
+    const f = CONFIG.formFields || {};
+    const ctxText = "Miejsce: " + c.level + " | Tryb: " + c.mode + (c.filter ? " | Filtr: " + c.filter : "") + " | Hasło: " + c.entry +
+                    " | Data: " + c.when + " | Wersja: " + c.ver;
+    const parts = ["usp=pp_url"];
+    const add = (id, val) => { if(id && val) parts.push(encodeURIComponent(id) + "=" + encodeURIComponent(val)); };
+    add(f.what, document.getElementById("repWhat").value);
+    add(f.desc, document.getElementById("repText").value.trim());
+    add(f.contact, document.getElementById("repFrom").value.trim());
+    add(f.context, ctxText);
+    return base + "?" + parts.join("&");
+  }
+
+  if(CONFIG.reportFormUrl){
+    const fb = document.getElementById("openForm");
+    fb.style.display = "";
+    fb.addEventListener("click", () => {
+      const url = buildFormUrl();
+      window.open(url, "_blank", "noopener");
+      const mapped = Object.values(CONFIG.formFields || {}).some(Boolean);
+      repToast.textContent = mapped
+        ? "Otwarto formularz z wypełnionym kontekstem."
+        : "Otwarto formularz. Wskazówka: skopiuj zgłoszenie i wklej je w formularzu.";
+    });
+  }
+
+  /* ------------------------- START ------------------------- */
+  (function init(){
+    document.getElementById("verLabel").textContent = CONFIG.version;
+    // bez ustawionego adresu przycisk e-mail nie ma dokąd wysłać — pokazujemy samo kopiowanie
+    if(!CONFIG.reportEmail){
+      document.getElementById("sendMail").style.display = "none";
+      document.getElementById("copyRep").classList.add("primary");
+    }
+    measureBar();
+    renderProgress();
+    const id = location.hash.replace("#","");
+    if(IDS.includes(id)) openLevel(id, false); else showMenu();
+  })();
+</script>
+</body>
+</html>
